@@ -1,5 +1,4 @@
 package com.smartstudy.DomainModel;
-import com.smartstudy.DomainModel.enums.SeatStatus;
 import com.smartstudy.DomainModel.enums.SeatType;
 
 public class Seat extends BaseModel{
