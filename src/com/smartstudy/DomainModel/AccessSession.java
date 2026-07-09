@@ -8,8 +8,8 @@ public class AccessSession extends BaseModel{
     private final long libraryId;
     private final long userId;
 
-    public AccessSession(LocalDateTime entryTime, long libraryId, int user) {
-        this.entryTime = entryTime;
+    public AccessSession(long libraryId, int user) {
+        this.entryTime = LocalDateTime.now();
         this.libraryId = libraryId;
         this.userId = user;
     }
@@ -40,10 +40,7 @@ public class AccessSession extends BaseModel{
 
     public boolean isActive() {return exitTime == null;}
 
-    public void closeSession(LocalDateTime exitTime) throws IllegalArgumentException{
-        if(exitTime.isBefore(entryTime)){
-            throw new IllegalArgumentException("Exit time non valido");
-        }
-        this.exitTime = exitTime;
+    public void closeSession(){
+        this.exitTime = LocalDateTime.now();
     }
 }

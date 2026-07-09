@@ -11,18 +11,19 @@ public class AbbandonmentReport extends BaseModel{
     private final String description;
     private final long reservationId;
     private final long studentId;
-    private long adminId;
+    private Long adminId;
 
-    public AbbandonmentReport(LocalDateTime createdAt, long reservationId, String description, long studentId, long adminId) {
+    public AbbandonmentReport(long reservationId, String description, long studentId, long adminId) {
         super();
-        this.createdAt = createdAt;
+        this.createdAt = LocalDateTime.now();
         this.reservationId = reservationId;
         this.description = description;
         this.studentId = studentId;
         this.adminId = adminId;
+        this.status = ReportStatus.OPENED;
     }
 
-    public AbbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, long reservationId, String description, long studentId, long adminId) {
+    public AbbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, long reservationId, String description, long studentId, Long adminId) {
         super(id);
         this.createdAt = createdAt;
         this.resolvedAt = resolvedAt;

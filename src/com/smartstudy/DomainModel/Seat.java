@@ -1,16 +1,13 @@
 package com.smartstudy.DomainModel;
-import com.smartstudy.DomainModel.enums.ReservationStatus;
 import com.smartstudy.DomainModel.enums.SeatStatus;
 import com.smartstudy.DomainModel.enums.SeatType;
-
 import javax.management.RuntimeErrorException;
-import java.time.LocalDateTime;
 
 public class Seat extends BaseModel{
     private final String qrCode;
     private SeatType type;
     private SeatStatus status;
-    private long studyAreaId;
+    private final long studyAreaId;
 
     public Seat(long id, String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
         super(id);
@@ -41,21 +38,21 @@ public class Seat extends BaseModel{
         return type;
     }
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
-    public void Occupy(AccessSession accessSession){
+    public void occupy(AccessSession accessSession){
         if(status == SeatStatus.AVAILABLE){
             status = SeatStatus.UNAVAILABLE;
         }else{
             throw new RuntimeErrorException(new Error("Il posto "));
         }
     }
-    public void release(){
+    public void setStatusAvailable(){
         status = SeatStatus.AVAILABLE;
     }
 
     public void changeSeatType(SeatType newType){
         type = newType;
     }
-    public void changeStudyArea(int studyAreaId){
-        this.studyAreaId = studyAreaId;
-    }
+    public void setSeatBroken() { status = SeatStatus.BROKEN; }
+    public boolean isBroken() {return status == SeatStatus.BROKEN; }
+
 }

@@ -42,9 +42,13 @@ public class Reservation extends BaseModel{
     public long getSessionId() { return sessionId; }
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
-    protected void close(){
-        endTime = LocalDateTime.now();
-        status = ReservationStatus.CLOSED;
+    protected void close() throws IllegalAccessException {
+        if(endTime == null && status != ReservationStatus.CLOSED) {
+            endTime = LocalDateTime.now();
+            status = ReservationStatus.CLOSED;
+        }else{
+            throw new IllegalAccessException("La prenotazione è già stata chiusa");
+        }
     }
 
     public void markTemporarilyLeft(){

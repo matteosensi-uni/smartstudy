@@ -3,8 +3,8 @@ package com.smartstudy.DomainModel;
 import java.time.LocalTime;
 
 public class TimePolicy extends BaseModel{
-    private int maxTemporaryLeaveMin;
-    private int maxTemporaryLeaveTimes;
+    private final int maxTemporaryLeaveMin;
+    private final int maxTemporaryLeaveTimes;
 
     public TimePolicy(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes) {
         super(id);
@@ -21,23 +21,13 @@ public class TimePolicy extends BaseModel{
     public int getMaxTemporaryLeaveMin() {
         return maxTemporaryLeaveMin;
     }
-
-    public void setMaxTemporaryLeaveMin(int maxTemporaryLeaveMin) {
-        this.maxTemporaryLeaveMin = maxTemporaryLeaveMin;
-    }
-
     public int getMaxTemporaryLeaveTimes() {
         return maxTemporaryLeaveTimes;
-    }
-
-    public void setMaxTemporaryLeaveTimes(int maxTemporaryLeaveTimes) {
-        this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
     }
 
     public LocalTime calculateEnd(LocalTime startTime){
         return startTime.plusMinutes(maxTemporaryLeaveMin);
     }
-
     public boolean reachedLimit(int times){
         return times >= maxTemporaryLeaveTimes;
     }

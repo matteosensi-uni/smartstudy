@@ -6,7 +6,7 @@ public class StudyArea extends BaseModel {
     private String name;
     private final int floor;
     private StudyAreaType type;
-    private long libraryId;
+    private final long libraryId;
     private long timePolicyId;
 
     public StudyArea(String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
@@ -39,7 +39,6 @@ public class StudyArea extends BaseModel {
     public void changeStudyAreaType(StudyAreaType newType){
         type = newType;
     }
-    public void changeLibrary(long libraryId){ this.libraryId = libraryId; }
     public void changePolicy(long timePolicyId){ this.timePolicyId = timePolicyId; }
 
 }
