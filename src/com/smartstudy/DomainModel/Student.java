@@ -16,7 +16,4 @@ public class Student extends User {
     public boolean isCard_active() {
         return card_active;
     }
-    public void setCard_active(boolean card_active) {
-        this.card_active = card_active;
-    }
 }

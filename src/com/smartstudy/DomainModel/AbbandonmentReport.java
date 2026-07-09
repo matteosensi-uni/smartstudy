@@ -9,7 +9,6 @@ public class AbbandonmentReport extends BaseModel{
     private LocalDateTime resolved_at;
     private ReportStatus status;
     private final String description;
-
     private final long id_reservation;
     private final long student_id;
     private long admin_id;
@@ -56,7 +55,7 @@ public class AbbandonmentReport extends BaseModel{
     }
 
     public void takeInCharge(long admin_id){
-        if(status == ReportStatus.SENDED){
+        if(status == ReportStatus.OPENED){
             this.admin_id = admin_id;
             status = ReportStatus.PENDING;
         }

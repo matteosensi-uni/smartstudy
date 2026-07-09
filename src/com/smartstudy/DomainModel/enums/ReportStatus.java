@@ -1,7 +1,7 @@
 package com.smartstudy.DomainModel.enums;
 
 public enum ReportStatus {
-    SENDED,
+    OPENED,
     PENDING,
     CONFIRMED,
     REJECTED

@@ -3,12 +3,10 @@ package com.smartstudy.DomainModel;
 import java.time.LocalDateTime;
 
 public class AccessSession extends BaseModel{
-    private LocalDateTime entry_time;
+    private final LocalDateTime entry_time;
     private LocalDateTime exit_time;
-    private long library_id;
-    private long user_id;
-
-    private AccessSession() {}
+    private final long library_id;
+    private final long user_id;
 
     public AccessSession(LocalDateTime entry_time, long library_id, int user) {
         this.entry_time = entry_time;

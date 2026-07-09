@@ -31,16 +31,12 @@ public class DataBaseInitializer {
         } catch (SQLException e) {
             try {
                 connection.rollback();
-            } catch (SQLException rollbackException) {
-                rollbackException.printStackTrace();
-            }
+            } catch (SQLException ignored) { }
             throw new RuntimeException("Errore durante l'inizializzazione del database", e);
         } finally {
             try {
                 connection.setAutoCommit(true);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            } catch (SQLException ignored) { }
         }
     }
 
@@ -79,12 +75,18 @@ public class DataBaseInitializer {
         String sql = """
             CREATE TABLE IF NOT EXISTS admin (
                 user_id INTEGER PRIMARY KEY,
-
+                is_present BOOLEAN NOT NULL,
+                id_library INTEGER NOT NULL,
                 CONSTRAINT fk_admin_user
                     FOREIGN KEY (user_id)
                     REFERENCES app_user(user_id)
                     ON UPDATE CASCADE
-                    ON DELETE CASCADE
+                    ON DELETE CASCADE,
+                CONSTRAINT fk_admin_library
+                    FOREIGN KEY (id_library)
+                    REFERENCES library(id_library)
+                    ON UPDATE CASCADE
+                    ON DELETE RESTRICT
             )
         """;
         Statement statement = connection.createStatement();
