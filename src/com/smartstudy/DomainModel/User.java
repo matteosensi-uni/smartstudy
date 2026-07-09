@@ -5,15 +5,18 @@ public abstract class User extends BaseModel {
     private String surname;
     private String email;
 
-    public User(int id, String name, String surname, String email){
-        super(id);
+    public User(String name, String surname, String email){
+        super();
         this.name = name;
         this.surname = surname;
         this.email = email;
     }
 
-    public boolean is_admin() {
-        return false;
+    public User(int id, String name, String surname, String email){
+        super(id);
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
     }
 
     public String getEmail() {

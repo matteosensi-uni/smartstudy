@@ -8,6 +8,14 @@ public class AccessSession extends BaseModel{
     private long library_id;
     private long user_id;
 
+    private AccessSession() {}
+
+    public AccessSession(LocalDateTime entry_time, long library_id, int user) {
+        this.entry_time = entry_time;
+        this.library_id = library_id;
+        this.user_id = user;
+    }
+
     public AccessSession(long id, LocalDateTime entry_time, LocalDateTime exit_time, long library_id, int user) {
         super(id);
         this.entry_time = entry_time;
@@ -20,31 +28,24 @@ public class AccessSession extends BaseModel{
         return entry_time;
     }
 
-    public void setEntry_time(LocalDateTime entry_time) {
-        this.entry_time = entry_time;
-    }
-
     public LocalDateTime getExit_time() {
         return exit_time;
-    }
-
-    public void setExit_time(LocalDateTime exit_time) {
-        this.exit_time = exit_time;
     }
 
     public long getLibraryId() {
         return library_id;
     }
 
-    public void setLibraryId(long library_id) {
-        this.library_id = library_id;
-    }
-
     public long getUserId() {
         return user_id;
     }
 
-    public void setUserId(long user_id) {
-        this.user_id = user_id;
+    public boolean isActive() {return exit_time == null;}
+
+    public void closeSession(LocalDateTime exitTime) throws IllegalArgumentException{
+        if(exitTime.isBefore(entry_time)){
+            throw new IllegalArgumentException("Exit time non valido");
+        }
+        this.exit_time = exitTime;
     }
 }

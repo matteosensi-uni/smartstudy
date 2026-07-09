@@ -10,6 +10,15 @@ public class StudyArea extends BaseModel {
     private long library_id;
     private TimePolicy timepolicy;
 
+    public StudyArea(String name, int floor, StudyAreaType type, long library_id, TimePolicy timepolicy) {
+        super();
+        this.name = name;
+        this.floor = floor;
+        this.type = type;
+        this.library_id = library_id;
+        this.timepolicy = timepolicy;
+    }
+
     public StudyArea(long id, String name, int floor, StudyAreaType type, long library_id, TimePolicy timepolicy) {
         super(id);
         this.name = name;
