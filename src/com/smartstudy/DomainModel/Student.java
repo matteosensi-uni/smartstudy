@@ -1,19 +1,19 @@
 package com.smartstudy.DomainModel;
 
 public class Student extends User {
-    public boolean card_active;
+    public boolean cardActive;
 
-    public Student(String name, String surname, String email, boolean card_active){
-        super(name, surname, email);
-        this.card_active = card_active;
+    public Student(String name, String password, String surname, String email, boolean cardActive){
+        super(name,password, surname, email);
+        this.cardActive = cardActive;
     }
 
-    public Student(int id, String name, String surname, String email, boolean card_active){
-        super(id, name, surname, email);
-        this.card_active = card_active;
+    public Student(int id, String name, String password, String surname, String email, boolean cardActive){
+        super(id, name, password, surname, email);
+        this.cardActive = cardActive;
     }
 
-    public boolean isCard_active() {
-        return card_active;
+    public boolean isCardActive() {
+        return cardActive;
     }
 }

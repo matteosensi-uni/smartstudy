@@ -3,42 +3,42 @@ package com.smartstudy.DomainModel;
 import java.time.LocalTime;
 
 public class TimePolicy extends BaseModel{
-    private int max_temporary_leave_min;
-    private int max_temporary_leave_times;
+    private int maxTemporaryLeaveMin;
+    private int maxTemporaryLeaveTimes;
 
-    public TimePolicy(long id, int max_temporary_leave_min, int max_temporary_leave_times) {
+    public TimePolicy(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes) {
         super(id);
-        this.max_temporary_leave_min = max_temporary_leave_min;
-        this.max_temporary_leave_times = max_temporary_leave_times;
+        this.maxTemporaryLeaveMin = maxTemporaryLeaveMin;
+        this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
     }
 
-    public TimePolicy(int max_temporary_leave_min, int max_temporary_leave_times) {
+    public TimePolicy(int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes) {
         super();
-        this.max_temporary_leave_min = max_temporary_leave_min;
-        this.max_temporary_leave_times = max_temporary_leave_times;
+        this.maxTemporaryLeaveMin = maxTemporaryLeaveMin;
+        this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
     }
 
-    public int getMax_temporary_leave_min() {
-        return max_temporary_leave_min;
+    public int getMaxTemporaryLeaveMin() {
+        return maxTemporaryLeaveMin;
     }
 
-    public void setMax_temporary_leave_min(int max_temporary_leave_min) {
-        this.max_temporary_leave_min = max_temporary_leave_min;
+    public void setMaxTemporaryLeaveMin(int maxTemporaryLeaveMin) {
+        this.maxTemporaryLeaveMin = maxTemporaryLeaveMin;
     }
 
-    public int getMax_temporary_leave_times() {
-        return max_temporary_leave_times;
+    public int getMaxTemporaryLeaveTimes() {
+        return maxTemporaryLeaveTimes;
     }
 
-    public void setMax_temporary_leave_times(int max_temporary_leave_times) {
-        this.max_temporary_leave_times = max_temporary_leave_times;
+    public void setMaxTemporaryLeaveTimes(int maxTemporaryLeaveTimes) {
+        this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
     }
 
     public LocalTime calculateEnd(LocalTime startTime){
-        return startTime.plusMinutes(max_temporary_leave_min);
+        return startTime.plusMinutes(maxTemporaryLeaveMin);
     }
 
     public boolean reachedLimit(int times){
-        return times >= max_temporary_leave_times;
+        return times >= maxTemporaryLeaveTimes;
     }
 }

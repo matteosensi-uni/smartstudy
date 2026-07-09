@@ -5,38 +5,38 @@ import com.smartstudy.DomainModel.enums.ReportStatus;
 import java.time.LocalDateTime;
 
 public class AbbandonmentReport extends BaseModel{
-    private final LocalDateTime created_at;
-    private LocalDateTime resolved_at;
+    private final LocalDateTime createdAt;
+    private LocalDateTime resolvedAt;
     private ReportStatus status;
     private final String description;
-    private final long id_reservation;
-    private final long student_id;
-    private long admin_id;
+    private final long reservationId;
+    private final long studentId;
+    private long adminId;
 
-    public AbbandonmentReport(LocalDateTime created_at, long id_reservation, String description, long student_id, long admin_id) {
+    public AbbandonmentReport(LocalDateTime createdAt, long reservationId, String description, long studentId, long adminId) {
         super();
-        this.created_at = created_at;
-        this.id_reservation = id_reservation;
+        this.createdAt = createdAt;
+        this.reservationId = reservationId;
         this.description = description;
-        this.student_id = student_id;
-        this.admin_id = admin_id;
+        this.studentId = studentId;
+        this.adminId = adminId;
     }
 
-    public AbbandonmentReport(long id, LocalDateTime created_at, LocalDateTime resolved_at, long id_reservation, String description, long student_id, long admin_id) {
+    public AbbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, long reservationId, String description, long studentId, long adminId) {
         super(id);
-        this.created_at = created_at;
-        this.resolved_at = resolved_at;
-        this.id_reservation = id_reservation;
+        this.createdAt = createdAt;
+        this.resolvedAt = resolvedAt;
+        this.reservationId = reservationId;
         this.description = description;
-        this.student_id = student_id;
-        this.admin_id = admin_id;
+        this.studentId = studentId;
+        this.adminId = adminId;
     }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
-    public LocalDateTime getResolved_at() {
-        return resolved_at;
+    public LocalDateTime getResolvedAt() {
+        return resolvedAt;
     }
     public ReportStatus getStatus() {
         return status;
@@ -44,34 +44,34 @@ public class AbbandonmentReport extends BaseModel{
     public String getDescription() {
         return description;
     }
-    public long getId_reservation() {
-        return id_reservation;
+    public long getReservationId() {
+        return reservationId;
     }
-    public long getStudent_id() {
-        return student_id;
+    public long getStudentId() {
+        return studentId;
     }
-    public long getAdmin_id() {
-        return admin_id;
+    public long getAdminId() {
+        return adminId;
     }
 
-    public void takeInCharge(long admin_id){
+    public void takeInCharge(long adminId){
         if(status == ReportStatus.OPENED){
-            this.admin_id = admin_id;
+            this.adminId = adminId;
             status = ReportStatus.PENDING;
         }
     }
 
-    public void confirm(long admin_id) throws IllegalAccessException {
-        handleReport(admin_id, ReportStatus.CONFIRMED);
+    public void confirm(long adminId) throws IllegalAccessException {
+        handleReport(adminId, ReportStatus.CONFIRMED);
     }
 
-    public void reject(long admin_id) throws IllegalAccessException {
-        handleReport(admin_id, ReportStatus.REJECTED);
+    public void reject(long adminId) throws IllegalAccessException {
+        handleReport(adminId, ReportStatus.REJECTED);
     }
 
-    private void handleReport(long admin_id, ReportStatus action) throws IllegalAccessException {
+    private void handleReport(long adminId, ReportStatus action) throws IllegalAccessException {
         if (status == ReportStatus.PENDING) {
-            if (admin_id == this.admin_id) {
+            if (adminId == this.adminId) {
                 status = action;
             } else {
                 throw new IllegalAccessException("Il report è gestito da un admin diverso");

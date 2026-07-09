@@ -7,35 +7,35 @@ import javax.management.RuntimeErrorException;
 import java.time.LocalDateTime;
 
 public class Seat extends BaseModel{
-    private final String qr_code;
+    private final String qrCode;
     private SeatType type;
     private SeatStatus status;
-    private long studyArea_id;
+    private long studyAreaId;
 
-    public Seat(long id, String qr_code, SeatType type, SeatStatus status, long studyArea_id) {
+    public Seat(long id, String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
         super(id);
-        this.qr_code = qr_code;
+        this.qrCode = qrCode;
         this.type = type;
         this.status = status;
-        this.studyArea_id = studyArea_id;
+        this.studyAreaId = studyAreaId;
     }
 
-    public Seat(String qr_code, SeatType type, SeatStatus status, long studyArea_id) {
+    public Seat(String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
         super();
-        this.qr_code = qr_code;
+        this.qrCode = qrCode;
         this.type = type;
         this.status = status;
-        this.studyArea_id = studyArea_id;
+        this.studyAreaId = studyAreaId;
     }
 
-    public String getQr_code() {
-        return qr_code;
+    public String getQrCode() {
+        return qrCode;
     }
     public SeatStatus getStatusId() {
         return status;
     }
     public long getStudyAreaId() {
-        return studyArea_id;
+        return studyAreaId;
     }
     public SeatType getType() {
         return type;
@@ -52,10 +52,10 @@ public class Seat extends BaseModel{
         status = SeatStatus.AVAILABLE;
     }
 
-    public void changeSeatType(SeatType new_type){
-        type = new_type;
+    public void changeSeatType(SeatType newType){
+        type = newType;
     }
-    public void changeStudyArea(int studyArea_id){
-        this.studyArea_id = studyArea_id;
+    public void changeStudyArea(int studyAreaId){
+        this.studyAreaId = studyAreaId;
     }
 }

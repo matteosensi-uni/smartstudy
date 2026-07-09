@@ -4,50 +4,50 @@ import com.smartstudy.DomainModel.enums.ReservationStatus;
 import java.time.LocalDateTime;
 
 public class Reservation extends BaseModel{
-    private final LocalDateTime start_time;
-    private LocalDateTime end_time;
+    private final LocalDateTime startTime;
+    private LocalDateTime endTime;
     private ReservationStatus status;
-    private final long seat_id;
-    private final long session_id;
+    private final long seatId;
+    private final long sessionId;
 
-    public Reservation(LocalDateTime start_time, ReservationStatus status, long session_id, long seat_id) {
+    public Reservation(LocalDateTime startTime, ReservationStatus status, long sessionId, long seatId) {
         super();
-        this.start_time = start_time;
+        this.startTime = startTime;
         this.status = status;
-        this.session_id = session_id;
-        this.seat_id = seat_id;
+        this.sessionId = sessionId;
+        this.seatId = seatId;
     }
 
-    public Reservation(long id, LocalDateTime start_time, LocalDateTime end_time, ReservationStatus status, long session_id, long seat_id) {
+    public Reservation(long id, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status, long sessionId, long seatId) {
         super(id);
-        this.start_time = start_time;
-        this.end_time = end_time;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.status = status;
-        this.session_id = session_id;
-        this.seat_id = seat_id;
+        this.sessionId = sessionId;
+        this.seatId = seatId;
     }
 
-    public LocalDateTime getStart_time() {
-        return start_time;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
-    public LocalDateTime getEnd_time() {
-        return end_time;
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
     public ReservationStatus getStatus() {
         return status;
     }
     public long getSeat() {
-        return seat_id;
+        return seatId;
     }
-    public long getSessionId() { return session_id; }
+    public long getSessionId() { return sessionId; }
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
     protected void close(){
-        end_time = LocalDateTime.now();
+        endTime = LocalDateTime.now();
         status = ReservationStatus.CLOSED;
     }
 
-    public void markTemporariliLeft(){
+    public void markTemporarilyLeft(){
         status = ReservationStatus.TEMPORARILY_LEFT;
     }
 

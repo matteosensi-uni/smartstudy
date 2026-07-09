@@ -3,32 +3,31 @@ package com.smartstudy.DomainModel;
 import java.time.LocalDateTime;
 
 public class TemporaryLeave extends BaseModel {
-    private final LocalDateTime start_time;
-    private final LocalDateTime expected_end_time;
-    private final long reservation_id;
+    private final LocalDateTime startTime;
+    private final LocalDateTime expectedEndTime;
+    private final long reservationId;
 
-    public TemporaryLeave(LocalDateTime start_time, LocalDateTime expected_end_time, long reservation_id) {
+    public TemporaryLeave(LocalDateTime startTime, LocalDateTime expectedEndTime, long reservationId) {
         super();
-        this.start_time = start_time;
-        this.expected_end_time = expected_end_time;
-        this.reservation_id = reservation_id;
+        this.startTime = startTime;
+        this.expectedEndTime = expectedEndTime;
+        this.reservationId = reservationId;
     }
 
-    public TemporaryLeave(long id, LocalDateTime start_time, LocalDateTime expected_end_time, long reservation_id) {
+    public TemporaryLeave(long id, LocalDateTime startTime, LocalDateTime expectedEndTime, long reservationId) {
         super(id);
-        this.start_time = start_time;
-        this.expected_end_time = expected_end_time;
-        this.reservation_id = reservation_id;
+        this.startTime = startTime;
+        this.expectedEndTime = expectedEndTime;
+        this.reservationId = reservationId;
     }
 
-    public LocalDateTime getStart_time() {
-        return start_time;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
-    public LocalDateTime getExpected_end_time() {
-        return expected_end_time;
+    public LocalDateTime getExpectedEndTime() {
+        return expectedEndTime;
     }
-    public long getReservation_id() {
-        return reservation_id;
+    public long getReservationId() {
+        return reservationId;
     }
 }
-

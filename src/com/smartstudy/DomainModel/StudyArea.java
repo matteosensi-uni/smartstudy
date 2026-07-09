@@ -6,25 +6,25 @@ public class StudyArea extends BaseModel {
     private String name;
     private final int floor;
     private StudyAreaType type;
-    private long library_id;
-    private long timePolicy_id ;
+    private long libraryId;
+    private long timePolicyId;
 
-    public StudyArea(String name, int floor, StudyAreaType type, long library_id, long timepolicy_id) {
+    public StudyArea(String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
         super();
         this.name = name;
         this.floor = floor;
         this.type = type;
-        this.library_id = library_id;
-        this.timePolicy_id = timepolicy_id;
+        this.libraryId = libraryId;
+        this.timePolicyId = timePolicyId;
     }
 
-    public StudyArea(long id, String name, int floor, StudyAreaType type, long library_id, long timepolicy_id) {
+    public StudyArea(long id, String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
         super(id);
         this.name = name;
         this.floor = floor;
         this.type = type;
-        this.library_id = library_id;
-        this.timePolicy_id = timepolicy_id;
+        this.libraryId = libraryId;
+        this.timePolicyId = timePolicyId;
     }
 
     public String getName() { return name; }
@@ -32,14 +32,14 @@ public class StudyArea extends BaseModel {
 
     public StudyAreaType getType() { return type; }
     public int getFloor() { return floor; }
-    public long getLibraryId() {return library_id;}
-    public long getTimePolicyId() {return timePolicy_id;}
+    public long getLibraryId() {return libraryId;}
+    public long getTimePolicyId() {return timePolicyId;}
 
 
-    public void changeStudyAreaType(StudyAreaType new_type){
-        type = new_type;
+    public void changeStudyAreaType(StudyAreaType newType){
+        type = newType;
     }
-    public void changeLibrary(long library_id){ this.library_id = library_id; }
-    public void changePolicy(long timePolicy_id ){ this.timePolicy_id = timePolicy_id; }
+    public void changeLibrary(long libraryId){ this.libraryId = libraryId; }
+    public void changePolicy(long timePolicyId){ this.timePolicyId = timePolicyId; }
 
 }

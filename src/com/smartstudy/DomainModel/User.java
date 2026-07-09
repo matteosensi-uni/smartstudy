@@ -1,20 +1,23 @@
 package com.smartstudy.DomainModel;
 
 public abstract class User extends BaseModel {
-    private String name;
-    private String surname;
-    private String email;
+    private final String name;
+    private final String surname;
+    private final String email;
+    private final String password;
 
-    public User(String name, String surname, String email){
+    public User(String name, String password, String surname, String email){
         super();
         this.name = name;
+        this.password = password;
         this.surname = surname;
         this.email = email;
     }
 
-    public User(int id, String name, String surname, String email){
+    public User(int id, String name, String password, String surname, String email){
         super(id);
         this.name = name;
+        this.password = password;
         this.surname = surname;
         this.email = email;
     }
@@ -22,25 +25,12 @@ public abstract class User extends BaseModel {
     public String getEmail() {
         return email;
     }
-
     public String getName() {
         return name;
     }
-
     public String getSurname() {
         return surname;
     }
+    public String getPassword() {return password; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 }
-
