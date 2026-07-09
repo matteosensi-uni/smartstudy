@@ -33,27 +33,13 @@ public class AbbandonmentReport extends BaseModel{
         this.adminId = adminId;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public LocalDateTime getResolvedAt() {
-        return resolvedAt;
-    }
-    public ReportStatus getStatus() {
-        return status;
-    }
-    public String getDescription() {
-        return description;
-    }
-    public long getReservationId() {
-        return reservationId;
-    }
-    public long getStudentId() {
-        return studentId;
-    }
-    public long getAdminId() {
-        return adminId;
-    }
+    public LocalDateTime getCreatedAt() {return createdAt;}
+    public LocalDateTime getResolvedAt() {return resolvedAt;}
+    public ReportStatus getStatus() {return status;}
+    public String getDescription() {return description;}
+    public long getReservationId() {return reservationId;}
+    public long getStudentId() {return studentId;}
+    public long getAdminId() {return adminId;}
 
     public void takeInCharge(long adminId){
         if(status == ReportStatus.OPENED){

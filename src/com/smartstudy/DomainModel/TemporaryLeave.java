@@ -21,13 +21,7 @@ public class TemporaryLeave extends BaseModel {
         this.reservationId = reservationId;
     }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-    public LocalDateTime getExpectedEndTime() {
-        return expectedEndTime;
-    }
-    public long getReservationId() {
-        return reservationId;
-    }
+    public LocalDateTime getStartTime() {return startTime;}
+    public LocalDateTime getExpectedEndTime() {return expectedEndTime;}
+    public long getReservationId() {return reservationId;}
 }

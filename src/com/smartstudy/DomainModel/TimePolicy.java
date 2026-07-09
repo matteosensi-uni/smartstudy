@@ -18,12 +18,8 @@ public class TimePolicy extends BaseModel{
         this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
     }
 
-    public int getMaxTemporaryLeaveMin() {
-        return maxTemporaryLeaveMin;
-    }
-    public int getMaxTemporaryLeaveTimes() {
-        return maxTemporaryLeaveTimes;
-    }
+    public int getMaxTemporaryLeaveMin() {return maxTemporaryLeaveMin;}
+    public int getMaxTemporaryLeaveTimes() {return maxTemporaryLeaveTimes;}
 
     public LocalTime calculateEnd(LocalTime startTime){
         return startTime.plusMinutes(maxTemporaryLeaveMin);

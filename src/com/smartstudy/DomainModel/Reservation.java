@@ -27,19 +27,11 @@ public class Reservation extends BaseModel{
         this.seatId = seatId;
     }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-    public ReservationStatus getStatus() {
-        return status;
-    }
-    public long getSeat() {
-        return seatId;
-    }
-    public long getSessionId() { return sessionId; }
+    public LocalDateTime getStartTime() {return startTime;}
+    public LocalDateTime getEndTime() {return endTime;}
+    public ReservationStatus getStatus() {return status;}
+    public long getSeat() {return seatId;}
+    public long getSessionId() {return sessionId;}
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
     protected void close() throws IllegalAccessException {

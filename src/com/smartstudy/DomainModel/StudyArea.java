@@ -28,7 +28,7 @@ public class StudyArea extends BaseModel {
     }
 
     public String getName() { return name; }
-    public void setName(String name) {  this.name=name; }
+    public void setName(String name) {this.name = name;}
 
     public StudyAreaType getType() { return type; }
     public int getFloor() { return floor; }

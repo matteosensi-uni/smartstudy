@@ -30,29 +30,13 @@ public class Library extends BaseModel {
         this.city = city;
     }
 
-    public LocalTime getOpeningTime() {
-        return openingTime;
-    }
-    public String getName() {
-        return name;
-    }
-    public LocalTime getClosingTime() { return closingTime; }
-    public String getStreet() {
-        return street;
-    }
-    public String getNumber() {
-        return number;
-    }
-    public String getCity() {
-        return city;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public void setOpeningTime(LocalTime openingTime) {
-        this.openingTime = openingTime;
-    }
-    public void setClosingTime(LocalTime closingTime) {
-        this.closingTime = closingTime;
-    }
+    public LocalTime getOpeningTime() {return openingTime;}
+    public String getName() {return name;}
+    public LocalTime getClosingTime() {return closingTime;}
+    public String getStreet() {return street;}
+    public String getNumber() {return number;}
+    public String getCity() {return city;}
+    public void setName(String name) {this.name = name;}
+    public void setOpeningTime(LocalTime openingTime) {this.openingTime = openingTime;}
+    public void setClosingTime(LocalTime closingTime) {this.closingTime = closingTime;}
 }

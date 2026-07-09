@@ -25,18 +25,10 @@ public class Seat extends BaseModel{
         this.studyAreaId = studyAreaId;
     }
 
-    public String getQrCode() {
-        return qrCode;
-    }
-    public SeatStatus getStatusId() {
-        return status;
-    }
-    public long getStudyAreaId() {
-        return studyAreaId;
-    }
-    public SeatType getType() {
-        return type;
-    }
+    public String getQrCode() {return qrCode;}
+    public SeatStatus getStatusId() {return status;}
+    public long getStudyAreaId() {return studyAreaId;}
+    public SeatType getType() {return type;}
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
     public void occupy(AccessSession accessSession){
         if(status == SeatStatus.AVAILABLE){
@@ -45,9 +37,7 @@ public class Seat extends BaseModel{
             throw new RuntimeErrorException(new Error("Il posto "));
         }
     }
-    public void setStatusAvailable(){
-        status = SeatStatus.AVAILABLE;
-    }
+    public void setStatusAvailable() {status = SeatStatus.AVAILABLE;}
 
     public void changeSeatType(SeatType newType){
         type = newType;

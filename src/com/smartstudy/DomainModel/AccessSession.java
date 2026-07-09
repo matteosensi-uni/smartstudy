@@ -22,21 +22,13 @@ public class AccessSession extends BaseModel{
         this.userId = user;
     }
 
-    public LocalDateTime getEntryTime() {
-        return entryTime;
-    }
+    public LocalDateTime getEntryTime() {return entryTime;}
 
-    public LocalDateTime getExitTime() {
-        return exitTime;
-    }
+    public LocalDateTime getExitTime() {return exitTime;}
 
-    public long getLibraryId() {
-        return libraryId;
-    }
+    public long getLibraryId() {return libraryId;}
 
-    public long getUserId() {
-        return userId;
-    }
+    public long getUserId() {return userId;}
 
     public boolean isActive() {return exitTime == null;}
 

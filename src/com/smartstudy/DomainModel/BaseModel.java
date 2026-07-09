@@ -10,7 +10,5 @@ public abstract class BaseModel {
         this.id = id;
     }
 
-    public long getId() {
-        return id;
-    }
+    public long getId() {return id;}
 }
