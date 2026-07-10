@@ -14,7 +14,7 @@ public abstract class User extends BaseModel {
         this.email = email;
     }
 
-    public User(int id, String name, String surname, String password, String email){
+    public User(long id, String name, String surname, String password, String email){
         super(id);
         this.name = name;
         this.surname = surname;

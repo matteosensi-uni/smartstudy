@@ -10,7 +10,7 @@ public class Admin extends User {
         this.present = present;
     }
 
-    public Admin(int id, String name, String surname, String password, String email, boolean present, long libraryId){
+    public Admin(long id, String name, String surname, String password, String email, boolean present, long libraryId){
         super(id, name, surname, password, email);
         this.libraryId = libraryId;
         this.present = present;

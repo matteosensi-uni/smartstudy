@@ -8,7 +8,7 @@ public class Student extends User {
         this.cardActive = cardActive;
     }
 
-    public Student(int id, String name, String surname, String password, String email, boolean cardActive){
+    public Student(long id, String name, String surname, String password, String email, boolean cardActive){
         super(id, name, surname, password, email);
         this.cardActive = cardActive;
     }
