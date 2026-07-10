@@ -7,11 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class StudentDAO {
-    private StudentDAO() {}
-    public static Student getStudentById(long adminId){
+public class StudentDAO extends BaseDAO{
+    public static final String tableName = "student";
+    public static final String pkName = "user_id";
+
+    public StudentDAO(Connection conn) { super(conn); }
+    public Student getStudentById(long adminId){
         try{
-            Connection conn = ConnectionManager.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT app_user.*, student.card_active
                 FROM student LEFT JOIN app_user ON student.user_id = app_user.user_id
@@ -26,10 +28,8 @@ public class StudentDAO {
             throw new RuntimeException(e);
         }
     }
-
-    public static boolean existsById(long studentId){
+    public boolean existsById(long studentId){
         try{
-            Connection conn = ConnectionManager.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM student
@@ -43,8 +43,7 @@ public class StudentDAO {
             throw new RuntimeException(e);
         }
     }
-
-    private static Student createStudentFromResultSet(ResultSet rs) throws SQLException {
+    private Student createStudentFromResultSet(ResultSet rs) throws SQLException {
         if(rs.next()){
             return new Student(
                     rs.getLong("user_id"),

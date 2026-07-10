@@ -6,10 +6,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class UserDAO {
-    public static boolean credentialsValid(long userId, String password){
+public class UserDAO extends BaseDAO{
+    public static final String tableName = "app_user";
+    public static final String pkName = "user_id";
+    public UserDAO(Connection conn) {
+        super(conn);
+    }
+
+    public boolean credentialsValid(long userId, String password){
         try{
-            Connection conn = ConnectionManager.getInstance().getConnection();
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM app_user

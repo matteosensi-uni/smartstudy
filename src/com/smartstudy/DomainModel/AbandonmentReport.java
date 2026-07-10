@@ -4,7 +4,7 @@ import com.smartstudy.DomainModel.enums.ReportStatus;
 
 import java.time.LocalDateTime;
 
-public class AbbandonmentReport extends BaseModel{
+public class AbandonmentReport extends BaseModel{
     private final LocalDateTime createdAt;
     private LocalDateTime resolvedAt;
     private ReportStatus status;
@@ -13,7 +13,7 @@ public class AbbandonmentReport extends BaseModel{
     private final long studentId;
     private Long adminId;
 
-    public AbbandonmentReport(long reservationId, String description, long studentId, long adminId) {
+    public AbandonmentReport(String description,long reservationId,  long studentId, long adminId) {
         super();
         this.createdAt = LocalDateTime.now();
         this.reservationId = reservationId;
@@ -23,13 +23,14 @@ public class AbbandonmentReport extends BaseModel{
         this.status = ReportStatus.OPENED;
     }
 
-    public AbbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, long reservationId, String description, long studentId, Long adminId) {
+    public AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status ,String description, long reservationId, long studentId, Long adminId) {
         super(id);
         this.createdAt = createdAt;
         this.resolvedAt = resolvedAt;
         this.reservationId = reservationId;
         this.description = description;
         this.studentId = studentId;
+        this.status = status;
         this.adminId = adminId;
     }
 

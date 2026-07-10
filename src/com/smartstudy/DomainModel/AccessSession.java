@@ -6,20 +6,20 @@ public class AccessSession extends BaseModel{
     private final LocalDateTime entryTime;
     private LocalDateTime exitTime;
     private final long libraryId;
-    private final long userId;
+    private final long student_id;
 
     public AccessSession(long libraryId, int user) {
         this.entryTime = LocalDateTime.now();
         this.libraryId = libraryId;
-        this.userId = user;
+        this.student_id = user;
     }
 
-    public AccessSession(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, int user) {
+    public AccessSession(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, long user) {
         super(id);
         this.entryTime = entryTime;
         this.exitTime = exitTime;
         this.libraryId = libraryId;
-        this.userId = user;
+        this.student_id = user;
     }
 
     public LocalDateTime getEntryTime() {return entryTime;}
@@ -28,7 +28,7 @@ public class AccessSession extends BaseModel{
 
     public long getLibraryId() {return libraryId;}
 
-    public long getUserId() {return userId;}
+    public long getStudent_id() {return student_id;}
 
     public boolean isActive() {return exitTime == null;}
 
