@@ -1,7 +1,6 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.utils.SQLUtils;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Map;

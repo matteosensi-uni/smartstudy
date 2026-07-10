@@ -1,7 +1,5 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.db.ConnectionManager;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

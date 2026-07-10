@@ -12,6 +12,7 @@ public class AdminDAO extends BaseDAO implements Updatable {
     public static final String tableName = "admin";
     public static final String pkName = "user_id";
     public AdminDAO(Connection conn) { super(conn); }
+
     public Admin getAdminById(long adminId){
         try{
             PreparedStatement ps = conn.prepareStatement("""

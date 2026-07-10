@@ -12,7 +12,7 @@ public class StudentDAO extends BaseDAO{
     public static final String pkName = "user_id";
 
     public StudentDAO(Connection conn) { super(conn); }
-    public Student getStudentById(long adminId){
+    public Student getStudentById(long studentId){
         try{
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT app_user.*, student.card_active
@@ -20,7 +20,7 @@ public class StudentDAO extends BaseDAO{
                 WHERE student.user_id = ?
             """
             );
-            ps.setLong(1, adminId);
+            ps.setLong(1, studentId);
             ResultSet rs = ps.executeQuery();
             return createStudentFromResultSet(rs);
 

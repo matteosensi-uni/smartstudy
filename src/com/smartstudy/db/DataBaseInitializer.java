@@ -183,7 +183,7 @@ public class DataBaseInitializer {
                 entry_time TIMESTAMP NOT NULL,
                 exit_time TIMESTAMP,
                 id_library INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
+                student_id INTEGER NOT NULL,
 
                 CONSTRAINT fk_access_session_library
                     FOREIGN KEY (id_library)
@@ -192,7 +192,7 @@ public class DataBaseInitializer {
                     ON DELETE CASCADE,
 
                 CONSTRAINT fk_access_session_student
-                    FOREIGN KEY (user_id)
+                    FOREIGN KEY (student_id)
                     REFERENCES student(user_id)
                     ON UPDATE CASCADE
                     ON DELETE CASCADE,

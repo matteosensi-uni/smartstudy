@@ -1,7 +1,6 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.Reservation;
-import com.smartstudy.DomainModel.Seat;
 import com.smartstudy.DomainModel.enums.ReservationStatus;
 import com.smartstudy.utils.TimeUtils;
 
@@ -87,16 +86,16 @@ public class ReservationDAO extends BaseDAO implements Updatable, Insertable{
         }
     }
 
-    public ArrayList<Reservation> getReservationsByUser(long userId){
+    public ArrayList<Reservation> getReservationsByStudent(long studentId){
         try{
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.* FROM
                 (reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access)
-                LEFT JOIN student ON access_session.user_id = student.user_id
+                LEFT JOIN student ON access_session.student_id = student.user_id
                 WHERE student.user_id = ? AND reservation.status = 'CLOSED'
             """
             );
-            ps.setLong(1, userId);
+            ps.setLong(1, studentId);
             ResultSet rs = ps.executeQuery();
             ArrayList<Reservation> res = new ArrayList<>();
             while(rs.next())

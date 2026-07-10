@@ -1,10 +1,7 @@
 package com.smartstudy.ORM;
-
 import com.smartstudy.DomainModel.AbandonmentReport;
-import com.smartstudy.DomainModel.TemporaryLeave;
 import com.smartstudy.DomainModel.enums.ReportStatus;
 import com.smartstudy.utils.TimeUtils;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -1,7 +1,5 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.Reservation;
-import com.smartstudy.DomainModel.Seat;
 import com.smartstudy.DomainModel.TemporaryLeave;
 import com.smartstudy.utils.TimeUtils;
 
@@ -44,7 +42,6 @@ public class TemporaryLeaveDAO extends BaseDAO implements Updatable, Insertable{
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
                 WHERE reservation.id_reservation = ?
                 AND reservation.id_reservation = 'TEMPORARY_LEFT'
-                
             """
             );
             ps.setLong(1, reservationId);

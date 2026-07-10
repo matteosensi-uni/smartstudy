@@ -33,14 +33,14 @@ public class AccessSessionDAO extends BaseDAO implements Updatable, Insertable{
         }
     }
 
-    public AccessSession getActiveAccessSessionByUser(long userId){
+    public AccessSession getActiveAccessSessionByStudent(long studentId){
         try{
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
-                WHERE user_id = ? AND exit_time IS NOT NULL
+                WHERE student_id = ? AND exit_time IS NOT NULL
             """
             );
-            ps.setLong(1, userId);
+            ps.setLong(1, studentId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()){
                 return createAccessSessionFromResultSet(rs);
@@ -51,14 +51,14 @@ public class AccessSessionDAO extends BaseDAO implements Updatable, Insertable{
         }
     }
 
-    public boolean hasActiveAccessSessionByUser(long userId){
+    public boolean hasActiveAccessSessionByStudent(long studentId){
         try{
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1 FROM access_session
-                WHERE user_id = ? AND exit_time IS NOT NULL
+                WHERE student_id = ? AND exit_time IS NOT NULL
             """
             );
-            ps.setLong(1, userId);
+            ps.setLong(1, studentId);
             ResultSet rs = ps.executeQuery();
             return rs.next();
         } catch (Exception e) {

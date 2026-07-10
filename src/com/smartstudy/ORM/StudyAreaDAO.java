@@ -35,7 +35,7 @@ public class StudyAreaDAO extends BaseDAO implements Updatable{
         }
     }
 
-    public ArrayList<StudyArea> getLibraryStudyAreas(long library_id){
+    public ArrayList<StudyArea> getLibraryStudyAreas(long libraryId){
         try{
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT *
@@ -43,7 +43,7 @@ public class StudyAreaDAO extends BaseDAO implements Updatable{
                 WHERE study_area.id_library = ?
             """
             );
-            ps.setLong(1, library_id);
+            ps.setLong(1, libraryId);
             ResultSet rs = ps.executeQuery();
             ArrayList<StudyArea> res = new ArrayList<>();
             while(rs.next())
@@ -54,7 +54,7 @@ public class StudyAreaDAO extends BaseDAO implements Updatable{
         }
     }
 
-    public StudyArea getStudyAreaBySeat(long seat_id){
+    public StudyArea getStudyAreaBySeat(long seatId){
         try{
             PreparedStatement ps = conn.prepareStatement("""
                 SELECT study_area.*
@@ -62,7 +62,7 @@ public class StudyAreaDAO extends BaseDAO implements Updatable{
                 WHERE id_seat = ?
             """
             );
-            ps.setLong(1, seat_id);
+            ps.setLong(1, seatId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()){
                 return createStudyAreaFromResultSet(rs);
