@@ -1,7 +1,6 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.Library;
-import com.smartstudy.db.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,37 +12,36 @@ public class LibraryDAO extends BaseDAO{
     public static final String pkName = "id_library";
     public LibraryDAO(Connection conn) { super(conn); }
     public Library getLibraryById(long libraryId) throws RuntimeException{
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM library WHERE id_library = ?
             """
-            );
+            )){
             ps.setLong(1, libraryId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createLibraryFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createLibraryFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public Library getLibraryByAdmin(long adminId) throws RuntimeException{
-        try{
-            Connection conn = ConnectionManager.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT library.*
                 FROM library LEFT JOIN admin ON admin.id_library = library.id_library
                 WHERE admin.user_id = ?
             """
-            );
+            )){
             ps.setLong(1, adminId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createLibraryFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createLibraryFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

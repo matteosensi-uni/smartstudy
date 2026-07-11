@@ -13,53 +13,53 @@ public class TimePolicyDAO extends BaseDAO{
     }
 
     public TimePolicy getTimePolicyByStudyArea(long studyAreaId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM
                 time_policy LEFT JOIN study_area ON time_policy.id_policy = study_area.id_policy
                 WHERE study_area.id_area = ?
             """
-            );
+            )){
             ps.setLong(1, studyAreaId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createTimePolicyFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createTimePolicyFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public TimePolicy getTimePolicyById(long policyId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM temporary_leave WHERE id_leave = ?
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT * FROM time_policy WHERE id_policy = ?
             """
-            );
+            )){
             ps.setLong(1, policyId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createTimePolicyFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createTimePolicyFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public ArrayList<TimePolicy> getAllPolicies(){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM time_policy
             """
-            );
-            ResultSet rs = ps.executeQuery();
-            ArrayList<TimePolicy> res = new ArrayList<>();
-            while(rs.next()){
-                res.add(createTimePolicyFromResultSet(rs));
+            )){
+            try(ResultSet rs = ps.executeQuery()){
+                ArrayList<TimePolicy> res = new ArrayList<>();
+                while(rs.next()){
+                    res.add(createTimePolicyFromResultSet(rs));
+                }
+                return res;
             }
-            return res;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

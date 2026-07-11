@@ -16,51 +16,51 @@ public class AccessSessionDAO extends BaseDAO implements Updatable, Insertable{
     public AccessSessionDAO(Connection conn) { super(conn); }
 
     public AccessSession getActiveAccessSessionById(long sessionId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
                 WHERE id_access = ?
             """
-            );
+            )){
             ps.setLong(1, sessionId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createAccessSessionFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createAccessSessionFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public AccessSession getActiveAccessSessionByStudent(long studentId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
-                WHERE student_id = ? AND exit_time IS NOT NULL
+                WHERE student_id = ? AND exit_time IS NULL
             """
-            );
+            )){
             ps.setLong(1, studentId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createAccessSessionFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createAccessSessionFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public boolean hasActiveAccessSessionByStudent(long studentId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1 FROM access_session
-                WHERE student_id = ? AND exit_time IS NOT NULL
+                WHERE student_id = ? AND exit_time IS NULL
             """
-            );
+            )){
             ps.setLong(1, studentId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try(ResultSet rs = ps.executeQuery()){
+                return rs.next();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

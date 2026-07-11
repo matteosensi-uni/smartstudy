@@ -1,6 +1,5 @@
 package com.smartstudy.ORM;
 import com.smartstudy.DomainModel.Admin;
-import com.smartstudy.db.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,50 +13,50 @@ public class AdminDAO extends BaseDAO implements Updatable {
     public AdminDAO(Connection conn) { super(conn); }
 
     public Admin getAdminById(long adminId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT app_user.*, admin.is_present, admin.id_library
                 FROM admin LEFT JOIN app_user ON admin.user_id = app_user.user_id
                 WHERE admin.user_id = ?
             """
-            );
+            )){
             ps.setLong(1, adminId);
-            ResultSet rs = ps.executeQuery();
-            return createAdminFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createAdminFromResultSet(rs);
+                }
+                return null;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public boolean existsById(long adminId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM admin
                 WHERE admin.user_id = ?
             """
-            );
+            )){
             ps.setLong(1, adminId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try(ResultSet rs = ps.executeQuery()){
+                return rs.next();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private Admin createAdminFromResultSet(ResultSet rs) throws SQLException {
-        if(rs.next()){
-            return new Admin(
-                    rs.getLong("user_id"),
-                    rs.getString("name"),
-                    rs.getString("password"),
-                    rs.getString("surname"),
-                    rs.getString("email"),
-                    rs.getBoolean("is_present"),
-                    rs.getLong("id_library")
-            );
-        }
-        return null;
+        return new Admin(
+                rs.getLong("user_id"),
+                rs.getString("name"),
+                rs.getString("password"),
+                rs.getString("surname"),
+                rs.getString("email"),
+                rs.getBoolean("is_present"),
+                rs.getLong("id_library")
+        );
     }
 
     @Override

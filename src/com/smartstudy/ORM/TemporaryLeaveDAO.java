@@ -19,88 +19,91 @@ public class TemporaryLeaveDAO extends BaseDAO implements Updatable, Insertable{
     }
 
     public int countTemporaryLeavesByReservation(long reservationId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT count(id_seat) AS total
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
                 WHERE reservation.id_reservation = ?
-                AND (reservation.id_reservation = 'ACTIVE' OR reservation.id_reservation = 'TEMPORARY_LEFT')
+                AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
             """
-            );
+            )){
             ps.setLong(1, reservationId);
-            ResultSet rs = ps.executeQuery();
-            return rs.getInt("total");
+            try(ResultSet rs = ps.executeQuery()){
+                rs.next();
+                return rs.getInt("total");
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public boolean hasValidTemporaryLeave(long reservationId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
                 WHERE reservation.id_reservation = ?
-                AND reservation.id_reservation = 'TEMPORARY_LEFT'
+                AND reservation.status = 'TEMPORARILY_LEFT'
             """
-            );
+            )){
             ps.setLong(1, reservationId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try(ResultSet rs = ps.executeQuery()){
+                return rs.next();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public TemporaryLeave getTemporaryLeaveById(long temporaryLeaveId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM temporary_leave WHERE id_leave = ?
             """
-            );
+            )){
             ps.setLong(1, temporaryLeaveId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()){
-                return createTemporaryLeaveFromResultSet(rs);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createTemporaryLeaveFromResultSet(rs);
+                }
+                return null;
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public ArrayList<TemporaryLeave> getTemporaryLeavesByReservation(long reservationId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT temporary_leave.*
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
                 WHERE reservation.id_reservation = ?
-                AND (reservation.id_reservation = 'ACTIVE' OR reservation.id_reservation = 'TEMPORARY_LEFT')
+                AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
             """
-            );
+            )){
             ps.setLong(1, reservationId);
-            ResultSet rs = ps.executeQuery();
-            ArrayList<TemporaryLeave> res = new ArrayList<>();
-            while(rs.next())
-                res.add(createTemporaryLeaveFromResultSet(rs));
-            return res;
+            try(ResultSet rs = ps.executeQuery()){
+                ArrayList<TemporaryLeave> res = new ArrayList<>();
+                while(rs.next())
+                    res.add(createTemporaryLeaveFromResultSet(rs));
+                return res;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public ArrayList<TemporaryLeave> getExpiredTemporaryLeaves(long reservationId){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM temporary_leave
-                WHERE expected_end_time > now()
+                WHERE id_reservation = ?
+                AND expected_end_time < now()
             """
-            );
-            ResultSet rs = ps.executeQuery();
-            ArrayList<TemporaryLeave> res = new ArrayList<>();
-            while(rs.next())
-                res.add(createTemporaryLeaveFromResultSet(rs));
-            return res;
+            )){
+            ps.setLong(1, reservationId);
+            try(ResultSet rs = ps.executeQuery()){
+                ArrayList<TemporaryLeave> res = new ArrayList<>();
+                while(rs.next())
+                    res.add(createTemporaryLeaveFromResultSet(rs));
+                return res;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

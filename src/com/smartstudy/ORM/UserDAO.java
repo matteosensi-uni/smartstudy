@@ -12,17 +12,17 @@ public class UserDAO extends BaseDAO{
     }
 
     public boolean credentialsValid(long userId, String password){
-        try{
-            PreparedStatement ps = conn.prepareStatement("""
+        try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM app_user
                 WHERE app_user.user_id = ? AND app_user.password = ?
             """
-            );
+            )){
             ps.setLong(1, userId);
             ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try(ResultSet rs = ps.executeQuery()){
+                return rs.next();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
