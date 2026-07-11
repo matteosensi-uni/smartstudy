@@ -7,9 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class StudyAreaDAO extends BaseDAO implements Updatable{
+public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
     public static final String tableName = "study_area";
     public static final String pkName = "id_area";
 
@@ -85,7 +86,11 @@ public class StudyAreaDAO extends BaseDAO implements Updatable{
     }
 
     @Override
-    public void update(Map<String, Object> values, long id) {
-        DAOUtils.update(conn, values, tableName, pkName, id);
+    public void update(StudyArea studyArea) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("name", studyArea.getName());
+        values.put("type",  studyArea.getType().name());
+        values.put("id_policy", studyArea.getTimePolicyId());
+        DAOUtils.update(conn, values, tableName, pkName, studyArea.getId());
     }
 }

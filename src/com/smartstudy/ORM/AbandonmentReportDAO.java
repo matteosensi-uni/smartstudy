@@ -152,7 +152,7 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
         if(abandonmentReport.getResolvedAt() != null) {
             values.put("resolved_at", abandonmentReport.getResolvedAt());
         }
-        values.put("status", abandonmentReport.getStatus());
+        values.put("status", abandonmentReport.getStatus().name());
         if(abandonmentReport.getDescription() != null && !abandonmentReport.getDescription().isEmpty()) {
             values.put("description", abandonmentReport.getDescription());
         }
@@ -167,7 +167,7 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
     @Override
     public void update(AbandonmentReport abandonmentReport) {
         Map<String, Object> values = new LinkedHashMap<>();
-        values.put("status", abandonmentReport.getStatus());
+        values.put("status", abandonmentReport.getStatus().name());
         values.put("adminId", abandonmentReport.getAdminId());
         values.put("resolved_at", abandonmentReport.getResolvedAt());
         DAOUtils.update(conn, values, tableName, pkName, abandonmentReport.getId());

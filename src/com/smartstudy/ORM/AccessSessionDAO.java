@@ -94,6 +94,8 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
         Map<String, Object> values = new LinkedHashMap<>();
         if(accessSession.getExitTime() != null){
             values.put("exit_time", accessSession.getExitTime());
+        }else{
+            throw new IllegalArgumentException("AccessSession update list vuota");
         }
         DAOUtils.update(conn, values, tableName, pkName, accessSession.getId());
     }

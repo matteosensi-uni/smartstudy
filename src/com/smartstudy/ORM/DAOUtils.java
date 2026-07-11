@@ -19,6 +19,7 @@ final class DAOUtils {
                 }
                 ps.setLong(index, id);
                 ps.executeUpdate();
+
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

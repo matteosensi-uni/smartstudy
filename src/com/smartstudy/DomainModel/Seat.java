@@ -26,7 +26,7 @@ public class Seat extends BaseModel{
     }
 
     public String getQrCode() {return qrCode;}
-    public SeatStatus getStatusId() {return status;}
+    public SeatStatus getStatus() {return status;}
     public long getStudyAreaId() {return studyAreaId;}
     public SeatType getType() {return type;}
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
