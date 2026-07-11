@@ -6,9 +6,10 @@ import com.smartstudy.utils.TimeUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ReservationDAO extends BaseDAO implements Updatable, Insertable{
+public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, Insertable<Reservation>{
     public static final String tableName = "reservation";
     public static final String pkName = "id_reservation";
     public ReservationDAO(Connection conn) {
@@ -118,12 +119,25 @@ public class ReservationDAO extends BaseDAO implements Updatable, Insertable{
     }
 
     @Override
-    public void insert(Map<String, Object> values) {
+    public void insert(Reservation reservation) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("start_time", reservation.getStartTime());
+        if(reservation.getEndTime() != null){
+            values.put("end_time", reservation.getEndTime());
+        }
+        values.put("status", reservation.getStatus().name());
+        values.put("id_seat", reservation.getSeat());
+        values.put("access_id", reservation.getSessionId());
         DAOUtils.insert(conn, values, tableName);
     }
 
     @Override
-    public void update(Map<String, Object> values, long id) {
-        DAOUtils.update(conn, values, tableName, pkName, id);
+    public void update(Reservation reservation) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        if(reservation.getEndTime() != null){
+            values.put("end_time", reservation.getEndTime());
+        }
+        values.put("status", reservation.getStatus().name());
+        DAOUtils.update(conn, values, tableName, pkName, reservation.getId());
     }
 }

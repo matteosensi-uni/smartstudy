@@ -17,7 +17,7 @@ public class SQLUtils {
                 + pk_name + "= ?";
     }
 
-    public static String buildUInsertString(String tableName, Map<String, Object> values){
+    public static String buildInsertString(String tableName, Map<String, Object> values){
         StringBuilder columns = new StringBuilder();
         StringBuilder placeholders = new StringBuilder();
 

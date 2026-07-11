@@ -8,9 +8,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TemporaryLeaveDAO extends BaseDAO implements Updatable, Insertable{
+public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLeave>{
     public static final String tableName = "temporary_leave";
     public static final String pkName = "id_leave";
 
@@ -119,12 +120,12 @@ public class TemporaryLeaveDAO extends BaseDAO implements Updatable, Insertable{
     }
 
     @Override
-    public void insert(Map<String, Object> values) {
+    public void insert(TemporaryLeave temporaryLeave) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("start_time", temporaryLeave.getStartTime());
+        values.put("expected_end_time", temporaryLeave.getExpectedEndTime());
+        values.put("id_reservation", temporaryLeave.getReservationId());
         DAOUtils.insert(conn, values, tableName);
     }
 
-    @Override
-    public void update(Map<String, Object> values, long id) {
-        DAOUtils.update(conn, values, tableName, pkName, id);
-    }
 }

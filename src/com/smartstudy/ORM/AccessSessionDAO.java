@@ -7,9 +7,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class AccessSessionDAO extends BaseDAO implements Updatable, Insertable{
+public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession>, Insertable<AccessSession>{
     public static final String tableName = "access_session";
     public static final String pkName = "id_access";
 
@@ -77,12 +78,23 @@ public class AccessSessionDAO extends BaseDAO implements Updatable, Insertable{
     }
 
     @Override
-    public void insert(Map<String, Object> values) {
+    public void insert(AccessSession accessSession) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("entry_time", accessSession.getEntryTime());
+        if(accessSession.getExitTime() != null){
+            values.put("exit_time", accessSession.getExitTime());
+        }
+        values.put("id_library", accessSession.getLibraryId());
+        values.put("student_id", accessSession.getStudent_id());
         DAOUtils.insert(conn, values, tableName);
     }
 
     @Override
-    public void update(Map<String, Object> values, long id) {
-        DAOUtils.update(conn, values, tableName, pkName, id);
+    public void update(AccessSession accessSession) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        if(accessSession.getExitTime() != null){
+            values.put("exit_time", accessSession.getExitTime());
+        }
+        DAOUtils.update(conn, values, tableName, pkName, accessSession.getId());
     }
 }

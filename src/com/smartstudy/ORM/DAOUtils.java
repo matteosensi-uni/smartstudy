@@ -27,7 +27,7 @@ final class DAOUtils {
     static void insert(Connection conn, Map<String, Object> values, String tableName){
         Map<String, Object> orderedValues = new LinkedHashMap<>(values);
         try {
-            String sql = SQLUtils.buildUInsertString(tableName, orderedValues);
+            String sql = SQLUtils.buildInsertString(tableName, orderedValues);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 int index = 1;
                 for (Map.Entry<String, Object> entry : orderedValues.entrySet()) {

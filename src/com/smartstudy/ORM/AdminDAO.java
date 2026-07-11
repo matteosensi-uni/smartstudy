@@ -5,9 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class AdminDAO extends BaseDAO implements Updatable {
+public class AdminDAO extends BaseDAO implements Updatable<Admin> {
     public static final String tableName = "admin";
     public static final String pkName = "user_id";
     public AdminDAO(Connection conn) { super(conn); }
@@ -60,7 +61,9 @@ public class AdminDAO extends BaseDAO implements Updatable {
     }
 
     @Override
-    public void update(Map<String, Object> values, long id) {
-        DAOUtils.update(conn, values, tableName, pkName, id);
+    public void update(Admin admin) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("is_present", admin.isPresent());
+        DAOUtils.update(conn, values, tableName, pkName, admin.getId());
     }
 }
