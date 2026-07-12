@@ -74,7 +74,7 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
     }
 
     private StudyArea createStudyAreaFromResultSet(ResultSet rs) throws SQLException {
-        return new StudyArea(
+        return StudyArea.valueOf(
                 rs.getLong("id_area"),
                 rs.getString("name"),
                 rs.getInt("floor"),

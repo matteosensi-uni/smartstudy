@@ -1,16 +1,14 @@
 package com.smartstudy.DomainModel;
 
 public class Student extends User {
-    public boolean cardActive;
+    private final boolean cardActive;
 
-    public Student(String name, String surname, String password, String email, boolean cardActive){
-        super(name, surname, password, email);
-        this.cardActive = cardActive;
-    }
-
-    public Student(long id, String name, String surname, String password, String email, boolean cardActive){
+    private Student(long id, String name, String surname, String password, String email, boolean cardActive){
         super(id, name, surname, password, email);
         this.cardActive = cardActive;
+    }
+    public static Student valueOf(long id, String name, String surname, String password, String email, boolean cardActive){
+        return new Student(id, name, surname, password, email, cardActive);
     }
 
     public boolean isCardActive() {return cardActive;}

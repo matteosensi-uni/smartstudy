@@ -48,7 +48,7 @@ public class LibraryDAO extends BaseDAO{
     }
 
     private Library createLibraryFromResultSet(ResultSet rs) throws SQLException {
-            return new Library(
+            return Library.valueOf(
                     rs.getLong("id_library"),
                     rs.getString("name"),
                     rs.getTime("opening_time").toLocalTime(),

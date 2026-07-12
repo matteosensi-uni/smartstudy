@@ -108,7 +108,7 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
 
     private Reservation createReservationFromResultSet(ResultSet rs) throws SQLException {
 
-        return new Reservation(
+        return Reservation.valueOf(
                 rs.getLong("id_reservation"),
                 TimeUtils.getLocalTime(rs.getTimestamp("start_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("end_time")),

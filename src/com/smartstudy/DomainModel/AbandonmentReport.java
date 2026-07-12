@@ -13,7 +13,7 @@ public class AbandonmentReport extends BaseModel{
     private final long studentId;
     private Long adminId;
 
-    public AbandonmentReport(String description,long reservationId,  long studentId, long adminId) {
+    private AbandonmentReport(String description,long reservationId,  long studentId, long adminId) {
         super();
         this.createdAt = LocalDateTime.now();
         this.reservationId = reservationId;
@@ -23,7 +23,7 @@ public class AbandonmentReport extends BaseModel{
         this.status = ReportStatus.OPENED;
     }
 
-    public AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status ,String description, long reservationId, long studentId, Long adminId) {
+    private AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status ,String description, long reservationId, long studentId, Long adminId) {
         super(id);
         this.createdAt = createdAt;
         this.resolvedAt = resolvedAt;
@@ -34,7 +34,15 @@ public class AbandonmentReport extends BaseModel{
         this.adminId = adminId;
     }
 
-    public LocalDateTime getCreatedAt() {return createdAt;}
+    public static AbandonmentReport open(String description, long reservationId, long studentId, long adminId) {
+        return new AbandonmentReport(description, reservationId, studentId, adminId);
+    }
+
+    public static AbandonmentReport valueOf(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status , String description, long reservationId, long studentId, Long adminId){
+        return new AbandonmentReport(id, createdAt, resolvedAt, status, description, reservationId, studentId, adminId);
+    }
+
+    public LocalDateTime getCreatedAt() {return  createdAt;}
     public LocalDateTime getResolvedAt() {return resolvedAt;}
     public ReportStatus getStatus() {return status;}
     public String getDescription() {return description;}
@@ -42,31 +50,31 @@ public class AbandonmentReport extends BaseModel{
     public long getStudentId() {return studentId;}
     public long getAdminId() {return adminId;}
 
-    public void takeInCharge(long adminId){
-        if(status == ReportStatus.OPENED){
+    public void takeInCharge(long adminId) throws IllegalStateException{
+        if(status == ReportStatus.OPENED && this.adminId == null){
             this.adminId = adminId;
             status = ReportStatus.PENDING;
+        }else{
+            throw new IllegalStateException("Lo stato è già stato gestito");
         }
     }
 
-    public void confirm(long adminId) throws IllegalAccessException {
+    public void confirm(long adminId) throws IllegalAccessException, IllegalStateException {
         handleReport(adminId, ReportStatus.CONFIRMED);
     }
 
-    public void reject(long adminId) throws IllegalAccessException {
+    public void reject(long adminId) throws IllegalAccessException, IllegalStateException {
         handleReport(adminId, ReportStatus.REJECTED);
     }
 
-    private void handleReport(long adminId, ReportStatus action) throws IllegalAccessException {
-        if (status == ReportStatus.PENDING) {
-            if (adminId == this.adminId) {
-                status = action;
-            } else {
-                throw new IllegalAccessException("Il report è gestito da un admin diverso");
-            }
-        }else{
-            throw new IllegalAccessException("Il report non può essere ancora gestito, è necessario che qualcuno lo prenda in carico!");
+    private void handleReport(long adminId, ReportStatus finalState) throws IllegalAccessException, IllegalStateException {
+        if (status != ReportStatus.PENDING) {
+            throw new IllegalStateException("Il report non può essere gestito");
         }
+        if (adminId != this.adminId) {
+            throw new IllegalAccessException("Il report è gestito da un admin diverso");
+        }
+        status = finalState;
     }
 
 

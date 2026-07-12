@@ -68,7 +68,7 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
     }
 
     private AccessSession createAccessSessionFromResultSet(ResultSet rs) throws SQLException {
-        return new AccessSession(
+        return AccessSession.valueOf(
                 rs.getLong("id_access"),
                 TimeUtils.getLocalTime(rs.getTimestamp("entry_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("exit_time")),

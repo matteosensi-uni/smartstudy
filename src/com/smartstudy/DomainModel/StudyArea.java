@@ -9,16 +9,7 @@ public class StudyArea extends BaseModel {
     private final long libraryId;
     private long timePolicyId;
 
-    public StudyArea(String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
-        super();
-        this.name = name;
-        this.floor = floor;
-        this.type = type;
-        this.libraryId = libraryId;
-        this.timePolicyId = timePolicyId;
-    }
-
-    public StudyArea(long id, String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
+    private StudyArea(long id, String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
         super(id);
         this.name = name;
         this.floor = floor;
@@ -27,18 +18,23 @@ public class StudyArea extends BaseModel {
         this.timePolicyId = timePolicyId;
     }
 
-    public String getName() { return name; }
-    public void setName(String name) {this.name = name;}
+    public static StudyArea valueOf(long id, String name, int floor, StudyAreaType type, long libraryId, long timePolicyId){
+        return new StudyArea(id, name, floor, type, libraryId, timePolicyId);
+    }
 
+    public String getName() { return name; }
     public StudyAreaType getType() { return type; }
     public int getFloor() { return floor; }
     public long getLibraryId() {return libraryId;}
     public long getTimePolicyId() {return timePolicyId;}
 
-
-    public void changeStudyAreaType(StudyAreaType newType){
-        type = newType;
+    public void setName(String name) {
+        if(name == null || name.isBlank()){
+            throw new IllegalArgumentException("Il nuovo nome non può essere vuoto");
+        }
+        this.name = name;
     }
+    public void changeStudyAreaType(StudyAreaType newType){ type = newType; }
     public void changePolicy(long timePolicyId){ this.timePolicyId = timePolicyId; }
 
 }

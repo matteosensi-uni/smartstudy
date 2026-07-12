@@ -66,7 +66,7 @@ public class TimePolicyDAO extends BaseDAO{
     }
 
     private TimePolicy createTimePolicyFromResultSet(ResultSet rs) throws SQLException {
-        return new TimePolicy(
+        return TimePolicy.valueOf(
                 rs.getLong("id_policy"),
                 rs.getInt("max_temporary_leave_min"),
                 rs.getInt("max_temporary_leave_times"),

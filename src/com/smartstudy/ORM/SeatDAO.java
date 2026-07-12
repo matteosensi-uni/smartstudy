@@ -146,7 +146,7 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
     }
 
     private Seat createSeatFromResultSet(ResultSet rs) throws SQLException {
-        return new Seat(
+        return Seat.valueOf(
                 rs.getLong("id_seat"),
                 rs.getString("qr_code"),
                 SeatType.valueOf(rs.getString("type")),

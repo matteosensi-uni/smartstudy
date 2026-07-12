@@ -1,7 +1,6 @@
 package com.smartstudy.DomainModel;
 import com.smartstudy.DomainModel.enums.SeatStatus;
 import com.smartstudy.DomainModel.enums.SeatType;
-import javax.management.RuntimeErrorException;
 
 public class Seat extends BaseModel{
     private final String qrCode;
@@ -9,7 +8,7 @@ public class Seat extends BaseModel{
     private SeatStatus status;
     private final long studyAreaId;
 
-    public Seat(long id, String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
+    private Seat(long id, String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
         super(id);
         this.qrCode = qrCode;
         this.type = type;
@@ -17,12 +16,8 @@ public class Seat extends BaseModel{
         this.studyAreaId = studyAreaId;
     }
 
-    public Seat(String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
-        super();
-        this.qrCode = qrCode;
-        this.type = type;
-        this.status = status;
-        this.studyAreaId = studyAreaId;
+    public static Seat valueOf(long id, String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
+        return new Seat(id, qrCode, type, status, studyAreaId);
     }
 
     public String getQrCode() {return qrCode;}
@@ -30,19 +25,30 @@ public class Seat extends BaseModel{
     public long getStudyAreaId() {return studyAreaId;}
     public SeatType getType() {return type;}
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
-    public void occupy(AccessSession accessSession){
-        if(status == SeatStatus.AVAILABLE){
-            status = SeatStatus.UNAVAILABLE;
-        }else{
-            throw new RuntimeErrorException(new Error("Il posto "));
+    public boolean isBroken() {return status == SeatStatus.BROKEN; }
+
+    public void occupy(long studyAreaId){
+        if(status != SeatStatus.AVAILABLE){
+            throw new IllegalStateException("Lo stato del posto non può essere modificato");
         }
+        status = SeatStatus.UNAVAILABLE;
     }
-    public void setStatusAvailable() {status = SeatStatus.AVAILABLE;}
+    public void free(long studyAreaId) {
+        if(status != SeatStatus.UNAVAILABLE){
+            throw new IllegalStateException("Lo stato del posto non può essere modificato");
+        }
+        status = SeatStatus.AVAILABLE;
+    }
+
+    public void markBroken(long studyAreaId) {
+        if(status != SeatStatus.AVAILABLE){
+            throw new IllegalStateException("Lo stato del posto non può essere modificato");
+        }
+        status = SeatStatus.BROKEN;
+    }
 
     public void changeSeatType(SeatType newType){
         type = newType;
     }
-    public void setSeatBroken() { status = SeatStatus.BROKEN; }
-    public boolean isBroken() {return status == SeatStatus.BROKEN; }
 
 }

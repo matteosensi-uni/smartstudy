@@ -8,13 +8,13 @@ public class AccessSession extends BaseModel{
     private final long libraryId;
     private final long student_id;
 
-    public AccessSession(long libraryId, int user) {
+    private AccessSession(long libraryId, long user) {
         this.entryTime = LocalDateTime.now();
         this.libraryId = libraryId;
         this.student_id = user;
     }
 
-    public AccessSession(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, long user) {
+    private AccessSession(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, long user) {
         super(id);
         this.entryTime = entryTime;
         this.exitTime = exitTime;
@@ -22,17 +22,30 @@ public class AccessSession extends BaseModel{
         this.student_id = user;
     }
 
-    public LocalDateTime getEntryTime() {return entryTime;}
+    public static AccessSession startSession(long libraryId, long user) {
+        return new AccessSession(libraryId, user);
+    }
 
-    public LocalDateTime getExitTime() {return exitTime;}
+    public static AccessSession valueOf(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, long user) {
+        return new AccessSession(id, entryTime, exitTime, libraryId, user);
+    }
 
-    public long getLibraryId() {return libraryId;}
+    public LocalDateTime getEntryTime() { return entryTime; }
+    public LocalDateTime getExitTime() { return exitTime; }
+    public long getLibraryId() { return libraryId; }
+    public long getStudent_id() { return student_id; }
+    public boolean isActive() { return exitTime == null; }
 
-    public long getStudent_id() {return student_id;}
-
-    public boolean isActive() {return exitTime == null;}
-
-    public void closeSession(){
+    public void closeSession(long studentId, long libraryId) throws IllegalStateException, IllegalArgumentException{
+        if(exitTime != null){
+            throw new IllegalStateException("La sessione è già stata chiusa");
+        }
+        if(libraryId != this.libraryId){
+            throw new IllegalArgumentException("La sessione non appartiene a questa biblioteca");
+        }
+        if(studentId != this.student_id){
+            throw new IllegalArgumentException("L'utente non è lo stesso della sessione");
+        }
         this.exitTime = LocalDateTime.now();
     }
 }

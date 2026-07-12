@@ -14,7 +14,6 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
     public static final String tableName = "abandonment_report";
     public static final String pkName = "id_report";
 
-
     public AbandonmentReportDAO(Connection conn) {
         super(conn);
     }
@@ -133,7 +132,7 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
     }
 
     private AbandonmentReport createReportFromResultSet(ResultSet rs) throws SQLException {
-        return new AbandonmentReport(
+        return AbandonmentReport.valueOf(
                 rs.getLong("id_report"),
                 TimeUtils.getLocalTime(rs.getTimestamp("created_at")),
                 TimeUtils.getLocalTime(rs.getTimestamp("resolved_at")),

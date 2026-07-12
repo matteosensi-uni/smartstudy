@@ -37,7 +37,7 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
         }
     }
 
-    public boolean hasValidTemporaryLeave(long reservationId){
+    public boolean hasActiveTemporaryLeave(long reservationId){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
@@ -91,14 +91,13 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
         }
     }
 
-    public ArrayList<TemporaryLeave> getExpiredTemporaryLeaves(long reservationId){
+    public ArrayList<TemporaryLeave> getExpiredTemporaryLeaves(){
         try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM temporary_leave
-                WHERE id_reservation = ?
-                AND expected_end_time < now()
+                SELECT temporary_leave.*
+                FROM temporary_leave  LEFT JOIN reservation ON  temporary_leave.id_reservation = reservation.id_reservation
+                WHERE expected_end_time < now() AND reservation.status = 'TEMPORARILY_LEFT'
             """
             )){
-            ps.setLong(1, reservationId);
             try(ResultSet rs = ps.executeQuery()){
                 ArrayList<TemporaryLeave> res = new ArrayList<>();
                 while(rs.next())
@@ -111,7 +110,7 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
     }
 
     private TemporaryLeave createTemporaryLeaveFromResultSet(ResultSet rs) throws SQLException {
-        return new TemporaryLeave(
+        return TemporaryLeave.valueOf(
                 rs.getLong("id_leave"),
                 TimeUtils.getLocalTime(rs.getTimestamp("start_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("expected_end_time")),

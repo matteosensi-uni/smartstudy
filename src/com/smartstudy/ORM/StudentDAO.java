@@ -45,7 +45,7 @@ public class StudentDAO extends BaseDAO{
         }
     }
     private Student createStudentFromResultSet(ResultSet rs) throws SQLException {
-        return new Student(
+        return Student.valueOf(
                 rs.getLong("user_id"),
                 rs.getString("name"),
                 rs.getString("password"),

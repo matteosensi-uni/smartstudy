@@ -49,7 +49,7 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
     }
 
     private Admin createAdminFromResultSet(ResultSet rs) throws SQLException {
-        return new Admin(
+        return Admin.valueOf(
                 rs.getLong("user_id"),
                 rs.getString("name"),
                 rs.getString("password"),
