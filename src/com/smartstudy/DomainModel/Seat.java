@@ -27,20 +27,20 @@ public class Seat extends BaseModel{
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
     public boolean isBroken() {return status == SeatStatus.BROKEN; }
 
-    public void occupy(long studyAreaId){
+    public void occupy(){
         if(status != SeatStatus.AVAILABLE){
             throw new IllegalStateException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.UNAVAILABLE;
     }
-    public void free(long studyAreaId) {
+    public void free() {
         if(status != SeatStatus.UNAVAILABLE){
             throw new IllegalStateException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.AVAILABLE;
     }
 
-    public void markBroken(long studyAreaId) {
+    public void markBroken() {
         if(status != SeatStatus.AVAILABLE){
             throw new IllegalStateException("Lo stato del posto non può essere modificato");
         }

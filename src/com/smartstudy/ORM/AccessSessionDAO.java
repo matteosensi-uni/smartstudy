@@ -19,7 +19,7 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
     public AccessSession getActiveAccessSessionById(long sessionId){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
-                WHERE id_access = ?
+                WHERE id_access = ? AND exit_time IS NULL
             """
             )){
             ps.setLong(1, sessionId);
@@ -73,7 +73,7 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
                 TimeUtils.getLocalTime(rs.getTimestamp("entry_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("exit_time")),
                 rs.getLong("id_library"),
-                rs.getLong("user_id")
+                rs.getLong("student_id")
         );
     }
 

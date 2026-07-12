@@ -58,4 +58,24 @@ public class LibraryDAO extends BaseDAO{
                     rs.getString("city")
             );
     }
+
+    public Library getLibraryBySeat(long seatId){
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT library.* FROM
+                library LEFT JOIN study_area ON study_area.id_library = library.id_library
+                LEFT JOIN seat ON seat.id_area = study_area.id_area
+                WHERE seat.id_seat = ?
+            """
+        )){
+            ps.setLong(1, seatId);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createLibraryFromResultSet(rs);
+                }
+                return null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

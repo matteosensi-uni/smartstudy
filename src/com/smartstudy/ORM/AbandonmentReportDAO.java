@@ -94,11 +94,11 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
 
     public ArrayList<AbandonmentReport> getReportsByLibrary(long libraryId){
         try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM
+                SELECT abandonment_report.* FROM
                 abandonment_report LEFT JOIN reservation ON reservation.id_reservation = abandonment_report.id_reservation
                 LEFT JOIN access_session ON reservation.access_id = access_session.id_access
                 WHERE access_session.id_library = ?
-                AND reservation.status = 'OPENED'
+                AND abandonment_report.status = 'OPENED'
             """
             )){
             ps.setLong(1, libraryId);
@@ -140,7 +140,7 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
                 rs.getString("description"),
                 rs.getLong("id_reservation"),
                 rs.getLong("student_id"),
-                rs.getLong("admin_id")
+                rs.getObject("admin_id", Long.class)
         );
     }
 
@@ -156,7 +156,7 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
             values.put("description", abandonmentReport.getDescription());
         }
         values.put("student_id", abandonmentReport.getStudentId());
-        if(abandonmentReport.getAdminId() != 0) {
+        if(abandonmentReport.getAdminId() != null) {
             values.put("admin_id", abandonmentReport.getAdminId());
         }
         values.put("id_reservation", abandonmentReport.getReservationId());
@@ -167,7 +167,9 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
     public void update(AbandonmentReport abandonmentReport) {
         Map<String, Object> values = new LinkedHashMap<>();
         values.put("status", abandonmentReport.getStatus().name());
-        values.put("adminId", abandonmentReport.getAdminId());
+        if (abandonmentReport.getAdminId() != null) {
+            values.put("admin_id", abandonmentReport.getAdminId());
+        }
         values.put("resolved_at", abandonmentReport.getResolvedAt());
         DAOUtils.update(conn, values, tableName, pkName, abandonmentReport.getId());
     }

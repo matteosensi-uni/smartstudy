@@ -52,8 +52,8 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
         return Admin.valueOf(
                 rs.getLong("user_id"),
                 rs.getString("name"),
-                rs.getString("password"),
                 rs.getString("surname"),
+                rs.getString("password"),
                 rs.getString("email"),
                 rs.getBoolean("is_present"),
                 rs.getLong("id_library")

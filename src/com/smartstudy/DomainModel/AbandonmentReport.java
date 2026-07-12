@@ -13,13 +13,13 @@ public class AbandonmentReport extends BaseModel{
     private final long studentId;
     private Long adminId;
 
-    private AbandonmentReport(String description,long reservationId,  long studentId, long adminId) {
+    private AbandonmentReport(String description,long reservationId,  long studentId) {
         super();
         this.createdAt = LocalDateTime.now();
         this.reservationId = reservationId;
         this.description = description;
         this.studentId = studentId;
-        this.adminId = adminId;
+        this.adminId = null;
         this.status = ReportStatus.OPENED;
     }
 
@@ -34,8 +34,8 @@ public class AbandonmentReport extends BaseModel{
         this.adminId = adminId;
     }
 
-    public static AbandonmentReport open(String description, long reservationId, long studentId, long adminId) {
-        return new AbandonmentReport(description, reservationId, studentId, adminId);
+    public static AbandonmentReport open(String description, long reservationId, long studentId) {
+        return new AbandonmentReport(description, reservationId, studentId);
     }
 
     public static AbandonmentReport valueOf(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status , String description, long reservationId, long studentId, Long adminId){
@@ -48,7 +48,7 @@ public class AbandonmentReport extends BaseModel{
     public String getDescription() {return description;}
     public long getReservationId() {return reservationId;}
     public long getStudentId() {return studentId;}
-    public long getAdminId() {return adminId;}
+    public Long getAdminId() {return adminId;}
 
     public void takeInCharge(long adminId) throws IllegalStateException{
         if(status == ReportStatus.OPENED && this.adminId == null){
@@ -71,7 +71,7 @@ public class AbandonmentReport extends BaseModel{
         if (status != ReportStatus.PENDING) {
             throw new IllegalStateException("Il report non può essere gestito");
         }
-        if (adminId != this.adminId) {
+        if (this.adminId == null || adminId != this.adminId) {
             throw new IllegalAccessException("Il report è gestito da un admin diverso");
         }
         status = finalState;
