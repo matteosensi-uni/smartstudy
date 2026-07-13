@@ -88,7 +88,10 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
             }
             values.put("id_library", accessSession.getLibraryId());
             values.put("student_id", accessSession.getStudent_id());
-            long id = DAOUtils.insert(conn, values, tableName);
+            Long id = DAOUtils.insert(conn, values, tableName);
+            if(id == null) {
+                throw new DataAccessException("Errore nell'inserimento del dato nel DB");
+            }
             return AccessSession.valueOf(id, accessSession.getEntryTime(), accessSession.getExitTime(), accessSession.getLibraryId(), accessSession.getStudent_id());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile inserire la sessione di accesso nel DB", e);

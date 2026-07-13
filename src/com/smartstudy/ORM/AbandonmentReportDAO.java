@@ -163,7 +163,10 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
             }
             values.put("id_reservation", abandonmentReport.getReservationId());
 
-            long id = DAOUtils.insert(conn, values, tableName);
+            Long id = DAOUtils.insert(conn, values, tableName);
+            if(id == null) {
+                throw new DataAccessException("Errore nell'inserimento del dato nel DB");
+            }
             return AbandonmentReport.valueOf(id, abandonmentReport.getCreatedAt(), abandonmentReport.getResolvedAt(), abandonmentReport.getStatus(), abandonmentReport.getDescription(), abandonmentReport.getReservationId(), abandonmentReport.getStudentId(), abandonmentReport.getAdminId());
         } catch (SQLException e) {
             throw new DataAccessException("Errore nell'inserimento del dato nel DB", e);

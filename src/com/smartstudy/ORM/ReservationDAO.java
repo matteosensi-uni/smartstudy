@@ -130,7 +130,10 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
             values.put("status", reservation.getStatus().name());
             values.put("id_seat", reservation.getSeat());
             values.put("access_id", reservation.getSessionId());
-            long id = DAOUtils.insert(conn, values, tableName);
+            Long id = DAOUtils.insert(conn, values, tableName);
+            if(id == null) {
+                throw new DataAccessException("Errore nell'inserimento del dato nel DB");
+            }
             return Reservation.valueOf(id, reservation.getStartTime(), reservation.getEndTime(), reservation.getStatus(), reservation.getSessionId(), reservation.getSeat());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile inserire la prenotazione nel DB", e);

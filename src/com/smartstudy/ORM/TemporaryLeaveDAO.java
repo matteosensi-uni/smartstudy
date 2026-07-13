@@ -126,11 +126,13 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
             values.put("start_time", temporaryLeave.getStartTime());
             values.put("expected_end_time", temporaryLeave.getExpectedEndTime());
             values.put("id_reservation", temporaryLeave.getReservationId());
-            long id = DAOUtils.insert(conn, values, tableName);
+            Long id = DAOUtils.insert(conn, values, tableName);
+            if(id == null) {
+                throw new DataAccessException("Errore nell'inserimento del dato nel DB");
+            }
             return TemporaryLeave.valueOf(id, temporaryLeave.getStartTime(), temporaryLeave.getExpectedEndTime(), temporaryLeave.getReservationId());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile modificare la temporary leave", e);
         }
     }
-
 }

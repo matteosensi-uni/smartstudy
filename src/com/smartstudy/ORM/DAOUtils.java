@@ -39,11 +39,11 @@ final class DAOUtils {
                     if(rs.next()){
                         return rs.getLong(1);
                     }
+                    return null;
                 }
             }
         } catch (SQLException e) {
             throw new SQLException(e);
         }
-        return null;
     }
 }
