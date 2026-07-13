@@ -1,5 +1,5 @@
 package com.smartstudy.ORM;
-import com.smartstudy.DomainModel.Student;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;

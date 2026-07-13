@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel.enums;
+package com.smartstudy.domainModel.enums;
 
 public enum StudyAreaType {
     STANDARD,

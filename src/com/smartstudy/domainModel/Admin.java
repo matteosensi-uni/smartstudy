@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 
 public class Admin extends User {
     private boolean present;

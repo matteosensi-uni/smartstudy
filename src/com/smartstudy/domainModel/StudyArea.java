@@ -1,5 +1,5 @@
-package com.smartstudy.DomainModel;
-import com.smartstudy.DomainModel.enums.StudyAreaType;
+package com.smartstudy.domainModel;
+import com.smartstudy.domainModel.enums.StudyAreaType;
 import com.smartstudy.exceptions.DomainViolationException;
 
 

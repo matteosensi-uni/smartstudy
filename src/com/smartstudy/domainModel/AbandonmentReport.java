@@ -1,6 +1,6 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 
-import com.smartstudy.DomainModel.enums.ReportStatus;
+import com.smartstudy.domainModel.enums.ReportStatus;
 import com.smartstudy.exceptions.DomainViolationException;
 
 import java.time.LocalDateTime;

@@ -1,6 +1,6 @@
 package com.smartstudy.ORM;
-import com.smartstudy.DomainModel.AbandonmentReport;
-import com.smartstudy.DomainModel.enums.ReportStatus;
+import com.smartstudy.domainModel.AbandonmentReport;
+import com.smartstudy.domainModel.enums.ReportStatus;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 import java.sql.Connection;

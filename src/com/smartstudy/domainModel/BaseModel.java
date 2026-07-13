@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 
 public abstract class BaseModel {
     private long id;

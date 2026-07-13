@@ -1,6 +1,6 @@
-package com.smartstudy.DomainModel;
-import com.smartstudy.DomainModel.enums.SeatStatus;
-import com.smartstudy.DomainModel.enums.SeatType;
+package com.smartstudy.domainModel;
+import com.smartstudy.domainModel.enums.SeatStatus;
+import com.smartstudy.domainModel.enums.SeatType;
 import com.smartstudy.exceptions.DomainViolationException;
 
 public class Seat extends BaseModel{

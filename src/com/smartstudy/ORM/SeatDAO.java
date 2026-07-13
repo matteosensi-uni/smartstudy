@@ -1,8 +1,8 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.Seat;
-import com.smartstudy.DomainModel.enums.SeatStatus;
-import com.smartstudy.DomainModel.enums.SeatType;
+import com.smartstudy.domainModel.Seat;
+import com.smartstudy.domainModel.enums.SeatStatus;
+import com.smartstudy.domainModel.enums.SeatType;
 import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;

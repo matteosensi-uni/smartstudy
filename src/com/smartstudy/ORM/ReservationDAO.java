@@ -1,7 +1,7 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.Reservation;
-import com.smartstudy.DomainModel.enums.ReservationStatus;
+import com.smartstudy.domainModel.Reservation;
+import com.smartstudy.domainModel.enums.ReservationStatus;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 

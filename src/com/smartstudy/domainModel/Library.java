@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 import java.time.LocalTime;
 
 public class Library extends BaseModel {

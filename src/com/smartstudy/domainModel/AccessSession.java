@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 
 import com.smartstudy.exceptions.DomainViolationException;
 

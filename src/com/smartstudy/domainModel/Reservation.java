@@ -1,5 +1,5 @@
-package com.smartstudy.DomainModel;
-import com.smartstudy.DomainModel.enums.ReservationStatus;
+package com.smartstudy.domainModel;
+import com.smartstudy.domainModel.enums.ReservationStatus;
 import com.smartstudy.exceptions.DomainViolationException;
 
 import java.time.LocalDateTime;

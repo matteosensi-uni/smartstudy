@@ -1,6 +1,6 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.AccessSession;
+import com.smartstudy.domainModel.AccessSession;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 

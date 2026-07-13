@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 
 public class TimePolicy extends BaseModel{
     private final int maxTemporaryLeaveMin;

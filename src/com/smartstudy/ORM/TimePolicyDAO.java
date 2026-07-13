@@ -1,6 +1,6 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.TimePolicy;
+import com.smartstudy.domainModel.TimePolicy;
 import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;

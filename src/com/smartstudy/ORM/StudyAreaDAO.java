@@ -1,7 +1,7 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.StudyArea;
-import com.smartstudy.DomainModel.enums.StudyAreaType;
+import com.smartstudy.domainModel.StudyArea;
+import com.smartstudy.domainModel.enums.StudyAreaType;
 import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;

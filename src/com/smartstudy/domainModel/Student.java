@@ -1,4 +1,4 @@
-package com.smartstudy.DomainModel;
+package com.smartstudy.domainModel;
 
 public class Student extends User {
     private final boolean cardActive;

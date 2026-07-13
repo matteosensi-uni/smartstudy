@@ -1,6 +1,6 @@
 package com.smartstudy.ORM;
 
-import com.smartstudy.DomainModel.TemporaryLeave;
+import com.smartstudy.domainModel.TemporaryLeave;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 
