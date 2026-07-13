@@ -11,10 +11,10 @@ public class Reservation extends BaseModel{
     private final long seatId;
     private final long sessionId;
 
-    private Reservation(ReservationStatus status, long sessionId, long seatId) {
+    private Reservation(long sessionId, long seatId) {
         super();
         this.startTime = LocalDateTime.now();
-        this.status = status;
+        this.status = ReservationStatus.ACTIVE;
         this.sessionId = sessionId;
         this.seatId = seatId;
     }
@@ -32,8 +32,8 @@ public class Reservation extends BaseModel{
         return new Reservation(id, startTime, endTime, status, sessionId, seatId);
     }
 
-    public static Reservation start(ReservationStatus status, long sessionId, long seatId){
-        return new Reservation(status, sessionId, seatId);
+    public static Reservation start(long sessionId, long seatId){
+        return new Reservation(sessionId, seatId);
     }
 
     public LocalDateTime getStartTime() {return startTime;}

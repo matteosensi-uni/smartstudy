@@ -35,7 +35,17 @@ public class StudyArea extends BaseModel {
         }
         this.name = name;
     }
-    public void changeStudyAreaType(StudyAreaType newType){ type = newType; }
-    public void changePolicy(long timePolicyId){ this.timePolicyId = timePolicyId; }
+    public void changeStudyAreaType(StudyAreaType newType){
+        if(newType == null){
+            throw new DomainViolationException("Il tipo non può essere nullo");
+        }
+        type = newType;
+    }
+    public void changePolicy(long timePolicyId){
+        if(timePolicyId <= 0){
+            throw new DomainViolationException("La policy indicata non è valida");
+        }
+        this.timePolicyId = timePolicyId;
+    }
 
 }

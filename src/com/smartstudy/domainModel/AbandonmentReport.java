@@ -76,6 +76,7 @@ public class AbandonmentReport extends BaseModel{
             throw new DomainViolationException("Il report è gestito da un admin diverso");
         }
         status = finalState;
+        resolvedAt = LocalDateTime.now();
     }
 
 

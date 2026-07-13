@@ -120,7 +120,7 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
     }
 
     @Override
-    public Long insert(Reservation reservation) {
+    public Reservation insert(Reservation reservation) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("start_time", reservation.getStartTime());
@@ -130,7 +130,8 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
             values.put("status", reservation.getStatus().name());
             values.put("id_seat", reservation.getSeat());
             values.put("access_id", reservation.getSessionId());
-            return DAOUtils.insert(conn, values, tableName);
+            long id = DAOUtils.insert(conn, values, tableName);
+            return Reservation.valueOf(id, reservation.getStartTime(), reservation.getEndTime(), reservation.getStatus(), reservation.getSessionId(), reservation.getSeat());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile inserire la prenotazione nel DB", e);
         }

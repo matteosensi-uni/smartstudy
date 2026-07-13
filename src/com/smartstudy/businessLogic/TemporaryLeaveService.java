@@ -29,7 +29,7 @@ public class TemporaryLeaveService {
         if(!reservation.isActive()){
             throw new BusinessViolationException("La prenotazione inserita non è attiva");
         }
-        if(accessSession.getId() != reservation.getId()){
+        if(accessSession.getId() != reservation.getSessionId()){
             throw new BusinessViolationException("La sessione dello studente non combacia con quella della reservation");
         }
         TimePolicy timePolicy = timePolicyDAO.getTimePolicyBySeat(reservation.getSeat());
@@ -37,7 +37,7 @@ public class TemporaryLeaveService {
             throw new BusinessViolationException("Non è stata trovate la regola associata al posto");
         }
         TemporaryLeave temporaryLeave = TemporaryLeave.create(timePolicy.getMaxTemporaryLeaveMin(), reservation.getId());
-        TransactionManager.executeInTransaction(() -> { //si usa il transaction manager per evitare uno stato inconsistente del database
+        return TransactionManager.executeInTransaction(() -> { //si usa il transaction manager per evitare uno stato inconsistente del database
             if (temporaryLeaveDAO.hasActiveTemporaryLeave(reservation.getId())) {
                 throw new BusinessViolationException("Lo studente ha gia una temporary leave attiva");
             }
@@ -46,17 +46,24 @@ public class TemporaryLeaveService {
             }
             reservation.markTemporarilyLeft();
             reservationDAO.update(reservation);
-            temporaryLeave.setId(temporaryLeaveDAO.insert(temporaryLeave));
+            return temporaryLeaveDAO.insert(temporaryLeave);
         });
-        return temporaryLeave;
     }
 
     public  void checkExpiredTemporaryLeaves() {
         ArrayList<TemporaryLeave> leaves = temporaryLeaveDAO.getExpiredTemporaryLeaves();
         for(TemporaryLeave leave : leaves){
-            Reservation r = reservationDAO.getReservationById(leave.getReservationId());
-            r.markActive(); // le reservation tornano segnalabili
-            reservationDAO.update(r);
+            try {
+                Reservation r = reservationDAO.getReservationById(leave.getReservationId());
+                if (r == null) {
+                    System.err.println("Prenotazione " + leave.getReservationId() + " non trovata per la temporary leave " + leave.getId());
+                    continue;
+                }
+                r.markActive(); // le reservation tornano segnalabili
+                reservationDAO.update(r);
+            } catch (RuntimeException e) {
+                System.err.println("Impossibile aggiornare la prenotazione " + leave.getReservationId() + " per la temporary leave scaduta " + leave.getId() + ": " + e.getMessage());
+            }
         }
     }
 

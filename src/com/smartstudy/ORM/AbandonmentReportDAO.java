@@ -146,7 +146,7 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
     }
 
     @Override
-    public Long insert(AbandonmentReport abandonmentReport) {
+    public AbandonmentReport insert(AbandonmentReport abandonmentReport) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("created_at", abandonmentReport.getCreatedAt());
@@ -163,7 +163,8 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
             }
             values.put("id_reservation", abandonmentReport.getReservationId());
 
-            return DAOUtils.insert(conn, values, tableName);
+            long id = DAOUtils.insert(conn, values, tableName);
+            return AbandonmentReport.valueOf(id, abandonmentReport.getCreatedAt(), abandonmentReport.getResolvedAt(), abandonmentReport.getStatus(), abandonmentReport.getDescription(), abandonmentReport.getReservationId(), abandonmentReport.getStudentId(), abandonmentReport.getAdminId());
         } catch (SQLException e) {
             throw new DataAccessException("Errore nell'inserimento del dato nel DB", e);
         }

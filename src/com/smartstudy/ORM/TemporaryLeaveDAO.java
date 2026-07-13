@@ -120,13 +120,14 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
     }
 
     @Override
-    public Long insert(TemporaryLeave temporaryLeave) {
+    public TemporaryLeave insert(TemporaryLeave temporaryLeave) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("start_time", temporaryLeave.getStartTime());
             values.put("expected_end_time", temporaryLeave.getExpectedEndTime());
             values.put("id_reservation", temporaryLeave.getReservationId());
-            return DAOUtils.insert(conn, values, tableName);
+            long id = DAOUtils.insert(conn, values, tableName);
+            return TemporaryLeave.valueOf(id, temporaryLeave.getStartTime(), temporaryLeave.getExpectedEndTime(), temporaryLeave.getReservationId());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile modificare la temporary leave", e);
         }

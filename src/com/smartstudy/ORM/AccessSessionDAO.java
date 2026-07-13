@@ -79,7 +79,7 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
     }
 
     @Override
-    public Long insert(AccessSession accessSession)  {
+    public AccessSession insert(AccessSession accessSession)  {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("entry_time", accessSession.getEntryTime());
@@ -88,7 +88,8 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
             }
             values.put("id_library", accessSession.getLibraryId());
             values.put("student_id", accessSession.getStudent_id());
-            return DAOUtils.insert(conn, values, tableName);
+            long id = DAOUtils.insert(conn, values, tableName);
+            return AccessSession.valueOf(id, accessSession.getEntryTime(), accessSession.getExitTime(), accessSession.getLibraryId(), accessSession.getStudent_id());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile inserire la sessione di accesso nel DB", e);
         }

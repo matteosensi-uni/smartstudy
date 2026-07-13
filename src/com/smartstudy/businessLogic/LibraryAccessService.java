@@ -29,12 +29,14 @@ public class LibraryAccessService {
             throw new BusinessViolationException("Admin non trovato");
         if(admin.getLibraryId() != libraryId)
             throw new BusinessViolationException("L'admin non può gestire questa biblioteca");
-        if(!admin.isPresent()) {
-            admin.accessLibrary();
-        }else{
-            admin.leaveLibrary();
-        }
-        adminDAO.update(admin);
+        TransactionManager.executeInTransaction(() -> {
+            if(!admin.isPresent()) {
+                admin.accessLibrary();
+            }else{
+                admin.leaveLibrary();
+            }
+            adminDAO.update(admin);
+        });
     }
 
     public void toggleStudentAccess(long studentId, long libraryId) {
@@ -51,7 +53,7 @@ public class LibraryAccessService {
                 if (!student.isCardActive()) {
                     throw new BusinessViolationException("La carta dello studente non è attiva");
                 }
-                AccessSession as = AccessSession.startSession(studentId, libraryId);
+                AccessSession as = AccessSession.startSession(libraryId, studentId);
                 accessSessionDAO.insert(as);
             }
         });

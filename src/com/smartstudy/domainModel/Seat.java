@@ -49,6 +49,9 @@ public class Seat extends BaseModel{
     }
 
     public void changeSeatType(SeatType newType){
+        if(status == SeatStatus.UNAVAILABLE){
+            throw new DomainViolationException("Non è possibile cambiare il tipo di un posto occupato");
+        }
         type = newType;
     }
 
