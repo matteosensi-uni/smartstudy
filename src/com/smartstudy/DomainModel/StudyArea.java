@@ -29,7 +29,7 @@ public class StudyArea extends BaseModel {
     public long getLibraryId() {return libraryId;}
     public long getTimePolicyId() {return timePolicyId;}
 
-    public void setName(String name) throws DomainViolationException{
+    public void setName(String name){
         if(name == null || name.isBlank()){
             throw new DomainViolationException("Il nuovo nome non può essere vuoto");
         }

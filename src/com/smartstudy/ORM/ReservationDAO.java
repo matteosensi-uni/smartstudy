@@ -2,6 +2,7 @@ package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.Reservation;
 import com.smartstudy.DomainModel.enums.ReservationStatus;
+import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 
 import java.sql.*;
@@ -16,7 +17,7 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
         super(conn);
     }
 
-    public Reservation getReservationById(long reservationId){
+    public Reservation getReservationById(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT *
                 FROM reservation
@@ -29,12 +30,12 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
                     return createReservationFromResultSet(rs);
                 else return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la prenotazione", e);
         }
     }
 
-    public boolean existReservationBySeat(long idSeat){
+    public boolean existReservationBySeat(long idSeat) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM reservation
@@ -45,12 +46,12 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la prenotazione del posto", e);
         }
     }
 
-    public Reservation getActiveReservationBySeat(long idSeat){
+    public Reservation getActiveReservationBySeat(long idSeat) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.*
                 FROM reservation
@@ -63,12 +64,12 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
                     return createReservationFromResultSet(rs);
                 else return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la prenotazione del posto", e);
         }
     }
 
-    public Reservation getActiveReservationByAccessSession(long accessSessionId){
+    public Reservation getActiveReservationByAccessSession(long accessSessionId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.*
                 FROM reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access
@@ -81,12 +82,12 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
                     return createReservationFromResultSet(rs);
                 else return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la prenotazione della sessione", e);
         }
     }
 
-    public ArrayList<Reservation> getReservationsByStudent(long studentId){
+    public ArrayList<Reservation> getReservationsByStudent(long studentId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.* FROM
                 (reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access)
@@ -101,8 +102,8 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
                     res.add(createReservationFromResultSet(rs));
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le prenotazioni dello studente", e);
         }
     }
 
@@ -119,25 +120,33 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
     }
 
     @Override
-    public void insert(Reservation reservation) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("start_time", reservation.getStartTime());
-        if(reservation.getEndTime() != null){
-            values.put("end_time", reservation.getEndTime());
+    public Long insert(Reservation reservation) {
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("start_time", reservation.getStartTime());
+            if (reservation.getEndTime() != null) {
+                values.put("end_time", reservation.getEndTime());
+            }
+            values.put("status", reservation.getStatus().name());
+            values.put("id_seat", reservation.getSeat());
+            values.put("access_id", reservation.getSessionId());
+            return DAOUtils.insert(conn, values, tableName);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile inserire la prenotazione nel DB", e);
         }
-        values.put("status", reservation.getStatus().name());
-        values.put("id_seat", reservation.getSeat());
-        values.put("access_id", reservation.getSessionId());
-        DAOUtils.insert(conn, values, tableName);
     }
 
     @Override
     public void update(Reservation reservation) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        if(reservation.getEndTime() != null){
-            values.put("end_time", reservation.getEndTime());
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            if (reservation.getEndTime() != null) {
+                values.put("end_time", reservation.getEndTime());
+            }
+            values.put("status", reservation.getStatus().name());
+            DAOUtils.update(conn, values, tableName, pkName, reservation.getId());
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile modificare la prenotazione nel DB", e);
         }
-        values.put("status", reservation.getStatus().name());
-        DAOUtils.update(conn, values, tableName, pkName, reservation.getId());
     }
 }

@@ -1,6 +1,7 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.AccessSession;
+import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 
 import java.sql.Connection;
@@ -16,7 +17,7 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
 
     public AccessSessionDAO(Connection conn) { super(conn); }
 
-    public AccessSession getActiveAccessSessionById(long sessionId){
+    public AccessSession getActiveAccessSessionById(long sessionId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
                 WHERE id_access = ? AND exit_time IS NULL
@@ -29,12 +30,12 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le sessioni di accesso", e);
         }
     }
 
-    public AccessSession getActiveAccessSessionByStudent(long studentId){
+    public AccessSession getActiveAccessSessionByStudent(long studentId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
                 WHERE student_id = ? AND exit_time IS NULL
@@ -47,12 +48,12 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la sessione di accesso dello studente", e);
         }
     }
 
-    public boolean hasActiveAccessSessionByStudent(long studentId){
+    public boolean hasActiveAccessSessionByStudent(long studentId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1 FROM access_session
                 WHERE student_id = ? AND exit_time IS NULL
@@ -62,8 +63,8 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la sessione di accesso dello studente", e);
         }
     }
 
@@ -78,25 +79,33 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
     }
 
     @Override
-    public void insert(AccessSession accessSession) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("entry_time", accessSession.getEntryTime());
-        if(accessSession.getExitTime() != null){
-            values.put("exit_time", accessSession.getExitTime());
+    public Long insert(AccessSession accessSession)  {
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("entry_time", accessSession.getEntryTime());
+            if (accessSession.getExitTime() != null) {
+                values.put("exit_time", accessSession.getExitTime());
+            }
+            values.put("id_library", accessSession.getLibraryId());
+            values.put("student_id", accessSession.getStudent_id());
+            return DAOUtils.insert(conn, values, tableName);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile inserire la sessione di accesso nel DB", e);
         }
-        values.put("id_library", accessSession.getLibraryId());
-        values.put("student_id", accessSession.getStudent_id());
-        DAOUtils.insert(conn, values, tableName);
     }
 
     @Override
     public void update(AccessSession accessSession) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        if(accessSession.getExitTime() != null){
-            values.put("exit_time", accessSession.getExitTime());
-        }else{
-            throw new IllegalArgumentException("AccessSession update list vuota");
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            if (accessSession.getExitTime() != null) {
+                values.put("exit_time", accessSession.getExitTime());
+            } else {
+                throw new IllegalArgumentException("AccessSession update list vuota");
+            }
+            DAOUtils.update(conn, values, tableName, pkName, accessSession.getId());
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile modificare la sessione di accesso nel DB", e);
         }
-        DAOUtils.update(conn, values, tableName, pkName, accessSession.getId());
     }
 }

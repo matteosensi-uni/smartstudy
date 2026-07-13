@@ -1,8 +1,11 @@
 package com.smartstudy.ORM;
 
+import com.smartstudy.exceptions.DataAccessException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserDAO extends BaseDAO{
     public static final String tableName = "app_user";
@@ -11,7 +14,7 @@ public class UserDAO extends BaseDAO{
         super(conn);
     }
 
-    public boolean credentialsValid(long userId, String password){
+    public boolean credentialsValid(long userId, String password) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM app_user
@@ -23,8 +26,8 @@ public class UserDAO extends BaseDAO{
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile verificare le credenziali", e);
         }
     }
 }

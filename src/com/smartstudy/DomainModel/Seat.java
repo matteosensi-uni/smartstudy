@@ -28,20 +28,20 @@ public class Seat extends BaseModel{
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
     public boolean isBroken() {return status == SeatStatus.BROKEN; }
 
-    public void occupy() throws DomainViolationException{
+    public void occupy() {
         if(status != SeatStatus.AVAILABLE){
             throw new DomainViolationException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.UNAVAILABLE;
     }
-    public void free() throws DomainViolationException{
+    public void free() {
         if(status != SeatStatus.UNAVAILABLE){
             throw new DomainViolationException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.AVAILABLE;
     }
 
-    public void markBroken() throws DomainViolationException {
+    public void markBroken()  {
         if(status != SeatStatus.AVAILABLE){
             throw new IllegalStateException("Lo stato del posto non può essere modificato");
         }

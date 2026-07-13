@@ -2,6 +2,8 @@ package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.StudyArea;
 import com.smartstudy.DomainModel.enums.StudyAreaType;
+import com.smartstudy.exceptions.DataAccessException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,8 +32,8 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
                     return createStudyAreaFromResultSet(rs);
                 else return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare l'area studio", e);
         }
     }
 
@@ -49,8 +51,8 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
                     res.add(createStudyAreaFromResultSet(rs));
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le aree studio", e);
         }
     }
 
@@ -68,8 +70,8 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
                 }else
                     return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare l'area studio dal posto", e);
         }
     }
 
@@ -87,10 +89,14 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
 
     @Override
     public void update(StudyArea studyArea) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("name", studyArea.getName());
-        values.put("type",  studyArea.getType().name());
-        values.put("id_policy", studyArea.getTimePolicyId());
-        DAOUtils.update(conn, values, tableName, pkName, studyArea.getId());
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("name", studyArea.getName());
+            values.put("type", studyArea.getType().name());
+            values.put("id_policy", studyArea.getTimePolicyId());
+            DAOUtils.update(conn, values, tableName, pkName, studyArea.getId());
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile aggriornare l'area studio", e);
+        }
     }
 }

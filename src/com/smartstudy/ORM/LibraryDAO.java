@@ -1,6 +1,7 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.Library;
+import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +12,7 @@ public class LibraryDAO extends BaseDAO{
     public static final String tableName = "library";
     public static final String pkName = "id_library";
     public LibraryDAO(Connection conn) { super(conn); }
-    public Library getLibraryById(long libraryId) throws RuntimeException{
+    public Library getLibraryById(long libraryId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM library WHERE id_library = ?
             """
@@ -23,12 +24,12 @@ public class LibraryDAO extends BaseDAO{
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
         }
     }
 
-    public Library getLibraryByAdmin(long adminId) throws RuntimeException{
+    public Library getLibraryByAdmin(long adminId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT library.*
                 FROM library LEFT JOIN admin ON admin.id_library = library.id_library
@@ -42,8 +43,8 @@ public class LibraryDAO extends BaseDAO{
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
         }
     }
 
@@ -59,7 +60,7 @@ public class LibraryDAO extends BaseDAO{
             );
     }
 
-    public Library getLibraryBySeat(long seatId){
+    public Library getLibraryBySeat(long seatId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT library.* FROM
                 library LEFT JOIN study_area ON study_area.id_library = library.id_library
@@ -74,8 +75,8 @@ public class LibraryDAO extends BaseDAO{
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
         }
     }
 }

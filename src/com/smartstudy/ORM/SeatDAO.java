@@ -3,6 +3,8 @@ package com.smartstudy.ORM;
 import com.smartstudy.DomainModel.Seat;
 import com.smartstudy.DomainModel.enums.SeatStatus;
 import com.smartstudy.DomainModel.enums.SeatType;
+import com.smartstudy.exceptions.DataAccessException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,8 +31,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                     return createSeatFromResultSet(rs);
                 else return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare il posto", e);
         }
     }
 
@@ -48,8 +50,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                     res.add(createSeatFromResultSet(rs));
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare i posti dell'area", e);
         }
     }
 
@@ -66,8 +68,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                     return createSeatFromResultSet(rs);
                 else return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare il posto", e);
         }
     }
 
@@ -86,8 +88,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                     res.add(createSeatFromResultSet(rs));
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare i posti della libreria", e);
         }
     }
 
@@ -104,8 +106,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                 rs.next();
                 return rs.getInt("total");
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare i posti", e);
         }
     }
 
@@ -122,8 +124,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                 rs.next();
                 return rs.getInt("total");
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare i posti", e);
         }
     }
 
@@ -140,8 +142,8 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
                 rs.next();
                 return rs.getInt("total");
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare il posti", e);
         }
     }
 
@@ -158,9 +160,13 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
 
     @Override
     public void update(Seat seat) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("status", seat.getStatus().name());
-        values.put("type", seat.getType().name());
-        DAOUtils.update(conn, values, tableName, pkName, seat.getId());
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("status", seat.getStatus().name());
+            values.put("type", seat.getType().name());
+            DAOUtils.update(conn, values, tableName, pkName, seat.getId());
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile modificare il posto", e);
+        }
     }
 }

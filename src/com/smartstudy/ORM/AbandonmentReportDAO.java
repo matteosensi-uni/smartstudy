@@ -1,6 +1,7 @@
 package com.smartstudy.ORM;
 import com.smartstudy.DomainModel.AbandonmentReport;
 import com.smartstudy.DomainModel.enums.ReportStatus;
+import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,12 +31,12 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nel recupero della segnalazione", e);
         }
     }
 
-    public ArrayList<AbandonmentReport> getOpenReportsByStudent(long reportId){
+    public ArrayList<AbandonmentReport> getOpenReportsByStudent(long reportId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM abandonment_report WHERE student_id = ?
                 AND (status = 'OPENED' OR status = 'PENDING')
@@ -49,12 +50,12 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
                 }
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nel recupero delle segnalazione aperte dello studente", e);
         }
     }
 
-    public ArrayList<AbandonmentReport> getInProgressReportsByAdmin(long adminId){
+    public ArrayList<AbandonmentReport> getInProgressReportsByAdmin(long adminId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM abandonment_report WHERE admin_id = ?
                 AND status = 'PENDING'
@@ -68,12 +69,12 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
                 }
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nel recupero delle prenotazioni prese in carico dall'admin", e);
         }
     }
 
-    public ArrayList<AbandonmentReport> getClosedReportsByAdmin(long adminId){
+    public ArrayList<AbandonmentReport> getClosedReportsByAdmin(long adminId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM abandonment_report WHERE admin_id = ?
                 AND (status = 'CONFIRMED' OR status = 'REJECTED')
@@ -87,12 +88,12 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
                 }
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nel recupero delle segnalazione chiuse della biblioteca", e);
         }
     }
 
-    public ArrayList<AbandonmentReport> getReportsByLibrary(long libraryId){
+    public ArrayList<AbandonmentReport> getReportsByLibrary(long libraryId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT abandonment_report.* FROM
                 abandonment_report LEFT JOIN reservation ON reservation.id_reservation = abandonment_report.id_reservation
@@ -109,12 +110,12 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
                 }
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nel recupero delle segnalazione della biblioteca", e);
         }
     }
 
-    public boolean existsOpenReportByReservation(long reservationId){
+    public boolean existsOpenReportByReservation(long reservationId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM abandonment_report
@@ -126,8 +127,8 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nel recupero delle segnalazione aperte", e);
         }
     }
 
@@ -145,32 +146,41 @@ public class AbandonmentReportDAO extends BaseDAO implements Updatable<Abandonme
     }
 
     @Override
-    public void insert(AbandonmentReport abandonmentReport) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("created_at", abandonmentReport.getCreatedAt());
-        if(abandonmentReport.getResolvedAt() != null) {
-            values.put("resolved_at", abandonmentReport.getResolvedAt());
+    public Long insert(AbandonmentReport abandonmentReport) {
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("created_at", abandonmentReport.getCreatedAt());
+            if(abandonmentReport.getResolvedAt() != null) {
+                values.put("resolved_at", abandonmentReport.getResolvedAt());
+            }
+            values.put("status", abandonmentReport.getStatus().name());
+            if(abandonmentReport.getDescription() != null && !abandonmentReport.getDescription().isEmpty()) {
+                values.put("description", abandonmentReport.getDescription());
+            }
+            values.put("student_id", abandonmentReport.getStudentId());
+            if(abandonmentReport.getAdminId() != null) {
+                values.put("admin_id", abandonmentReport.getAdminId());
+            }
+            values.put("id_reservation", abandonmentReport.getReservationId());
+
+            return DAOUtils.insert(conn, values, tableName);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nell'inserimento del dato nel DB", e);
         }
-        values.put("status", abandonmentReport.getStatus().name());
-        if(abandonmentReport.getDescription() != null && !abandonmentReport.getDescription().isEmpty()) {
-            values.put("description", abandonmentReport.getDescription());
-        }
-        values.put("student_id", abandonmentReport.getStudentId());
-        if(abandonmentReport.getAdminId() != null) {
-            values.put("admin_id", abandonmentReport.getAdminId());
-        }
-        values.put("id_reservation", abandonmentReport.getReservationId());
-        DAOUtils.insert(conn, values, tableName);
     }
 
     @Override
     public void update(AbandonmentReport abandonmentReport) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("status", abandonmentReport.getStatus().name());
-        if (abandonmentReport.getAdminId() != null) {
-            values.put("admin_id", abandonmentReport.getAdminId());
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("status", abandonmentReport.getStatus().name());
+            if (abandonmentReport.getAdminId() != null) {
+                values.put("admin_id", abandonmentReport.getAdminId());
+            }
+            values.put("resolved_at", abandonmentReport.getResolvedAt());
+            DAOUtils.update(conn, values, tableName, pkName, abandonmentReport.getId());
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore nella modifica del dato nel DB", e);
         }
-        values.put("resolved_at", abandonmentReport.getResolvedAt());
-        DAOUtils.update(conn, values, tableName, pkName, abandonmentReport.getId());
     }
 }

@@ -38,7 +38,7 @@ public class AccessSession extends BaseModel{
     public long getStudent_id() { return student_id; }
     public boolean isActive() { return exitTime == null; }
 
-    public void closeSession(long studentId, long libraryId) throws DomainViolationException{
+    public void closeSession(long studentId, long libraryId){
         if(exitTime != null){
             throw new DomainViolationException("La sessione è già stata chiusa");
         }

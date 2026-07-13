@@ -43,21 +43,21 @@ public class Reservation extends BaseModel{
     public long getSessionId() {return sessionId;}
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
-    public void close() throws DomainViolationException {
+    public void close() {
         if(endTime != null || status == ReservationStatus.CLOSED)
             throw new DomainViolationException("La prenotazione è già stata chiusa");
         endTime =  LocalDateTime.now();
         status = ReservationStatus.CLOSED;
     }
 
-    public void markTemporarilyLeft() throws DomainViolationException{
+    public void markTemporarilyLeft(){
         if(status == ReservationStatus.CLOSED){
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }
         status = ReservationStatus.TEMPORARILY_LEFT;
     }
 
-    public void markActive() throws DomainViolationException{
+    public void markActive(){
         if(status == ReservationStatus.CLOSED){
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }

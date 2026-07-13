@@ -1,6 +1,7 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.TemporaryLeave;
+import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 
 import java.sql.Connection;
@@ -19,7 +20,7 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
         super(conn);
     }
 
-    public int countTemporaryLeavesByReservation(long reservationId){
+    public int countTemporaryLeavesByReservation(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT count(id_seat) AS total
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
@@ -32,12 +33,12 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
                 rs.next();
                 return rs.getInt("total");
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le temporary leaves", e);
         }
     }
 
-    public boolean hasActiveTemporaryLeave(long reservationId){
+    public boolean hasActiveTemporaryLeave(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
@@ -49,12 +50,12 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la temporary leave", e);
         }
     }
 
-    public TemporaryLeave getTemporaryLeaveById(long temporaryLeaveId){
+    public TemporaryLeave getTemporaryLeaveById(long temporaryLeaveId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM temporary_leave WHERE id_leave = ?
             """
@@ -66,12 +67,12 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le temporary leaves", e);
         }
     }
 
-    public ArrayList<TemporaryLeave> getTemporaryLeavesByReservation(long reservationId){
+    public ArrayList<TemporaryLeave> getTemporaryLeavesByReservation(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT temporary_leave.*
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
@@ -86,12 +87,12 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
                     res.add(createTemporaryLeaveFromResultSet(rs));
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le temporary leaves", e);
         }
     }
 
-    public ArrayList<TemporaryLeave> getExpiredTemporaryLeaves(){
+    public ArrayList<TemporaryLeave> getExpiredTemporaryLeaves() {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT temporary_leave.*
                 FROM temporary_leave  LEFT JOIN reservation ON  temporary_leave.id_reservation = reservation.id_reservation
@@ -104,8 +105,8 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
                     res.add(createTemporaryLeaveFromResultSet(rs));
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le temporary leaves", e);
         }
     }
 
@@ -119,12 +120,16 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
     }
 
     @Override
-    public void insert(TemporaryLeave temporaryLeave) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("start_time", temporaryLeave.getStartTime());
-        values.put("expected_end_time", temporaryLeave.getExpectedEndTime());
-        values.put("id_reservation", temporaryLeave.getReservationId());
-        DAOUtils.insert(conn, values, tableName);
+    public Long insert(TemporaryLeave temporaryLeave) {
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("start_time", temporaryLeave.getStartTime());
+            values.put("expected_end_time", temporaryLeave.getExpectedEndTime());
+            values.put("id_reservation", temporaryLeave.getReservationId());
+            return DAOUtils.insert(conn, values, tableName);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile modificare la temporary leave", e);
+        }
     }
 
 }

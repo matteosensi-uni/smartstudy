@@ -1,5 +1,6 @@
 package com.smartstudy.ORM;
 import com.smartstudy.DomainModel.Student;
+import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,8 +26,8 @@ public class StudentDAO extends BaseDAO{
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare lo studente", e);
         }
     }
     public boolean existsById(long studentId){
@@ -40,8 +41,8 @@ public class StudentDAO extends BaseDAO{
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare l'utente", e);
         }
     }
     private Student createStudentFromResultSet(ResultSet rs) throws SQLException {

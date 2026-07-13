@@ -1,5 +1,6 @@
 package com.smartstudy.ORM;
 import com.smartstudy.DomainModel.Admin;
+import com.smartstudy.exceptions.DataAccessException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,7 +14,7 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
     public static final String pkName = "user_id";
     public AdminDAO(Connection conn) { super(conn); }
 
-    public Admin getAdminById(long adminId){
+    public Admin getAdminById(long adminId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT app_user.*, admin.is_present, admin.id_library
                 FROM admin LEFT JOIN app_user ON admin.user_id = app_user.user_id
@@ -27,12 +28,12 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare l'admin", e);
         }
     }
 
-    public boolean existsById(long adminId){
+    public boolean existsById(long adminId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT 1
                 FROM admin
@@ -43,8 +44,8 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare l'admin", e);
         }
     }
 
@@ -62,8 +63,12 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
 
     @Override
     public void update(Admin admin) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        values.put("is_present", admin.isPresent());
-        DAOUtils.update(conn, values, tableName, pkName, admin.getId());
+        try {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("is_present", admin.isPresent());
+            DAOUtils.update(conn, values, tableName, pkName, admin.getId());
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile aggiornare il dato", e);
+        }
     }
 }

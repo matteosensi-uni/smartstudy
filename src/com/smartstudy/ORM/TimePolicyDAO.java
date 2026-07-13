@@ -1,6 +1,8 @@
 package com.smartstudy.ORM;
 
 import com.smartstudy.DomainModel.TimePolicy;
+import com.smartstudy.exceptions.DataAccessException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,9 +14,9 @@ public class TimePolicyDAO extends BaseDAO{
         super(conn);
     }
 
-    public TimePolicy getTimePolicyByStudyArea(long studyAreaId){
+    public TimePolicy getTimePolicyByStudyArea(long studyAreaId) {
         try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM
+                SELECT time_policy.* FROM
                 time_policy LEFT JOIN study_area ON time_policy.id_policy = study_area.id_policy
                 WHERE study_area.id_area = ?
             """
@@ -26,12 +28,32 @@ public class TimePolicyDAO extends BaseDAO{
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la regola dell'area", e);
         }
     }
 
-    public TimePolicy getTimePolicyById(long policyId){
+    public TimePolicy getTimePolicyBySeat(long seatId) {
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT time_policy.* FROM
+                time_policy LEFT JOIN study_area ON time_policy.id_policy = study_area.id_policy
+                LEFT JOIN seat ON study_area.id_area = seat.id_area
+                WHERE seat.id_seat = ?
+            """
+        )){
+            ps.setLong(1, seatId);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createTimePolicyFromResultSet(rs);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la regola", e);
+        }
+    }
+
+    public TimePolicy getTimePolicyById(long policyId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM time_policy WHERE id_policy = ?
             """
@@ -43,12 +65,12 @@ public class TimePolicyDAO extends BaseDAO{
                 }
                 return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }  catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la regola", e);
         }
     }
 
-    public ArrayList<TimePolicy> getAllPolicies(){
+    public ArrayList<TimePolicy> getAllPolicies() {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM time_policy
             """
@@ -60,8 +82,8 @@ public class TimePolicyDAO extends BaseDAO{
                 }
                 return res;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }  catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le time policies", e);
         }
     }
 

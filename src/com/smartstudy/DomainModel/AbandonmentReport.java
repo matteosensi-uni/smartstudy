@@ -51,7 +51,7 @@ public class AbandonmentReport extends BaseModel{
     public long getStudentId() {return studentId;}
     public Long getAdminId() {return adminId;}
 
-    public void takeInCharge(long adminId) throws DomainViolationException {
+    public void takeInCharge(long adminId) {
         if(status == ReportStatus.OPENED && this.adminId == null){
             this.adminId = adminId;
             status = ReportStatus.PENDING;
@@ -60,15 +60,15 @@ public class AbandonmentReport extends BaseModel{
         }
     }
 
-    public void confirm(long adminId) throws DomainViolationException {
+    public void confirm(long adminId) {
         handleReport(adminId, ReportStatus.CONFIRMED);
     }
 
-    public void reject(long adminId) throws DomainViolationException {
+    public void reject(long adminId) {
         handleReport(adminId, ReportStatus.REJECTED);
     }
 
-    private void handleReport(long adminId, ReportStatus finalState) throws DomainViolationException {
+    private void handleReport(long adminId, ReportStatus finalState) {
         if (status != ReportStatus.PENDING) {
             throw new DomainViolationException("Il report non può essere gestito");
         }
