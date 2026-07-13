@@ -18,4 +18,5 @@ public abstract class User extends BaseModel {
     public final String getName() {return name;}
     public final String getSurname() {return surname;}
     public final String getPassword() {return password;}
+    public abstract boolean isAdmin();
 }

@@ -12,4 +12,6 @@ public class Student extends User {
     }
 
     public boolean isCardActive() {return cardActive;}
+
+    public boolean isAdmin() {return false;}
 }

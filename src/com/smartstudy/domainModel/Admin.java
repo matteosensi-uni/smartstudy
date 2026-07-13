@@ -22,4 +22,6 @@ public class Admin extends User {
         this.present = false;
     }
     public boolean isPresent() {return this.present;}
+
+    public boolean isAdmin() {return true;}
 }
