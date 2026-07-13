@@ -1,6 +1,7 @@
 package com.smartstudy.DomainModel;
 
 import com.smartstudy.DomainModel.enums.ReportStatus;
+import com.smartstudy.exceptions.DomainViolationException;
 
 import java.time.LocalDateTime;
 
@@ -50,29 +51,29 @@ public class AbandonmentReport extends BaseModel{
     public long getStudentId() {return studentId;}
     public Long getAdminId() {return adminId;}
 
-    public void takeInCharge(long adminId) throws IllegalStateException{
+    public void takeInCharge(long adminId) throws DomainViolationException {
         if(status == ReportStatus.OPENED && this.adminId == null){
             this.adminId = adminId;
             status = ReportStatus.PENDING;
         }else{
-            throw new IllegalStateException("Lo stato è già stato gestito");
+            throw new DomainViolationException("Lo stato è già stato gestito");
         }
     }
 
-    public void confirm(long adminId) throws IllegalAccessException, IllegalStateException {
+    public void confirm(long adminId) throws DomainViolationException {
         handleReport(adminId, ReportStatus.CONFIRMED);
     }
 
-    public void reject(long adminId) throws IllegalAccessException, IllegalStateException {
+    public void reject(long adminId) throws DomainViolationException {
         handleReport(adminId, ReportStatus.REJECTED);
     }
 
-    private void handleReport(long adminId, ReportStatus finalState) throws IllegalAccessException, IllegalStateException {
+    private void handleReport(long adminId, ReportStatus finalState) throws DomainViolationException {
         if (status != ReportStatus.PENDING) {
-            throw new IllegalStateException("Il report non può essere gestito");
+            throw new DomainViolationException("Il report non può essere gestito");
         }
         if (this.adminId == null || adminId != this.adminId) {
-            throw new IllegalAccessException("Il report è gestito da un admin diverso");
+            throw new DomainViolationException("Il report è gestito da un admin diverso");
         }
         status = finalState;
     }

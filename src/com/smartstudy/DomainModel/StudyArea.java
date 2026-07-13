@@ -1,5 +1,6 @@
 package com.smartstudy.DomainModel;
 import com.smartstudy.DomainModel.enums.StudyAreaType;
+import com.smartstudy.exceptions.DomainViolationException;
 
 
 public class StudyArea extends BaseModel {
@@ -28,9 +29,9 @@ public class StudyArea extends BaseModel {
     public long getLibraryId() {return libraryId;}
     public long getTimePolicyId() {return timePolicyId;}
 
-    public void setName(String name) {
+    public void setName(String name) throws DomainViolationException{
         if(name == null || name.isBlank()){
-            throw new IllegalArgumentException("Il nuovo nome non può essere vuoto");
+            throw new DomainViolationException("Il nuovo nome non può essere vuoto");
         }
         this.name = name;
     }

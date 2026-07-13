@@ -1,5 +1,7 @@
 package com.smartstudy.DomainModel;
 
+import com.smartstudy.exceptions.DomainViolationException;
+
 import java.time.LocalDateTime;
 
 public class AccessSession extends BaseModel{
@@ -36,15 +38,15 @@ public class AccessSession extends BaseModel{
     public long getStudent_id() { return student_id; }
     public boolean isActive() { return exitTime == null; }
 
-    public void closeSession(long studentId, long libraryId) throws IllegalStateException, IllegalArgumentException{
+    public void closeSession(long studentId, long libraryId) throws DomainViolationException{
         if(exitTime != null){
-            throw new IllegalStateException("La sessione è già stata chiusa");
+            throw new DomainViolationException("La sessione è già stata chiusa");
         }
         if(libraryId != this.libraryId){
-            throw new IllegalArgumentException("La sessione non appartiene a questa biblioteca");
+            throw new DomainViolationException("La sessione non appartiene a questa biblioteca");
         }
         if(studentId != this.student_id){
-            throw new IllegalArgumentException("L'utente non è lo stesso della sessione");
+            throw new DomainViolationException("L'utente non è lo stesso della sessione");
         }
         this.exitTime = LocalDateTime.now();
     }

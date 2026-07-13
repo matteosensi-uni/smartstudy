@@ -1,6 +1,7 @@
 package com.smartstudy.DomainModel;
 import com.smartstudy.DomainModel.enums.SeatStatus;
 import com.smartstudy.DomainModel.enums.SeatType;
+import com.smartstudy.exceptions.DomainViolationException;
 
 public class Seat extends BaseModel{
     private final String qrCode;
@@ -27,20 +28,20 @@ public class Seat extends BaseModel{
     public boolean isAvailable(){ return status == SeatStatus.AVAILABLE;}
     public boolean isBroken() {return status == SeatStatus.BROKEN; }
 
-    public void occupy(){
+    public void occupy() throws DomainViolationException{
         if(status != SeatStatus.AVAILABLE){
-            throw new IllegalStateException("Lo stato del posto non può essere modificato");
+            throw new DomainViolationException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.UNAVAILABLE;
     }
-    public void free() {
+    public void free() throws DomainViolationException{
         if(status != SeatStatus.UNAVAILABLE){
-            throw new IllegalStateException("Lo stato del posto non può essere modificato");
+            throw new DomainViolationException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.AVAILABLE;
     }
 
-    public void markBroken() {
+    public void markBroken() throws DomainViolationException {
         if(status != SeatStatus.AVAILABLE){
             throw new IllegalStateException("Lo stato del posto non può essere modificato");
         }

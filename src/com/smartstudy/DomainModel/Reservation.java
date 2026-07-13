@@ -1,5 +1,6 @@
 package com.smartstudy.DomainModel;
 import com.smartstudy.DomainModel.enums.ReservationStatus;
+import com.smartstudy.exceptions.DomainViolationException;
 
 import java.time.LocalDateTime;
 
@@ -42,23 +43,23 @@ public class Reservation extends BaseModel{
     public long getSessionId() {return sessionId;}
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
-    public void close() throws IllegalAccessException {
+    public void close() throws DomainViolationException {
         if(endTime != null || status == ReservationStatus.CLOSED)
-            throw new IllegalAccessException("La prenotazione è già stata chiusa");
+            throw new DomainViolationException("La prenotazione è già stata chiusa");
         endTime =  LocalDateTime.now();
         status = ReservationStatus.CLOSED;
     }
 
-    public void markTemporarilyLeft(){
+    public void markTemporarilyLeft() throws DomainViolationException{
         if(status == ReservationStatus.CLOSED){
-            throw new IllegalStateException("La prenotazione non può essere modificata");
+            throw new DomainViolationException("La prenotazione non può essere modificata");
         }
         status = ReservationStatus.TEMPORARILY_LEFT;
     }
 
-    public void markActive(){
+    public void markActive() throws DomainViolationException{
         if(status == ReservationStatus.CLOSED){
-            throw new IllegalStateException("La prenotazione non può essere modificata");
+            throw new DomainViolationException("La prenotazione non può essere modificata");
         }
         status = ReservationStatus.ACTIVE;
     }
