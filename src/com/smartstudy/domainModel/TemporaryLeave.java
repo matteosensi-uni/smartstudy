@@ -1,5 +1,7 @@
 package com.smartstudy.domainModel;
 
+import com.smartstudy.exceptions.DomainViolationException;
+
 import java.time.LocalDateTime;
 
 public class TemporaryLeave extends BaseModel {
@@ -9,6 +11,9 @@ public class TemporaryLeave extends BaseModel {
 
     private TemporaryLeave(int minutes, long reservationId) {
         super();
+        checkId(reservationId, "Reservation");
+        if(minutes <= 0)
+            throw new DomainViolationException("I minuti della pausa non possono essere negativi o zero");
         this.startTime = LocalDateTime.now();
         this.expectedEndTime = startTime.plusMinutes(minutes);
         this.reservationId = reservationId;
@@ -16,6 +21,10 @@ public class TemporaryLeave extends BaseModel {
 
     private TemporaryLeave(long id, LocalDateTime startTime, LocalDateTime expectedEndTime, long reservationId) {
         super(id);
+        checkId(reservationId, "Reservation");
+        if(startTime == null || expectedEndTime == null){
+            throw new DomainViolationException("I tempi di inizio e fine non possono essere nulli");
+        }
         this.startTime = startTime;
         this.expectedEndTime = expectedEndTime;
         this.reservationId = reservationId;

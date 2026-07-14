@@ -4,6 +4,7 @@ import com.smartstudy.domainModel.*;
 import com.smartstudy.ORM.*;
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.exceptions.BusinessViolationException;
+import com.smartstudy.exceptions.DataAccessException;
 
 import java.util.ArrayList;
 
@@ -61,7 +62,7 @@ public class TemporaryLeaveService {
                 }
                 r.markActive(); // le reservation tornano segnalabili
                 reservationDAO.update(r);
-            } catch (RuntimeException e) {
+            } catch (DataAccessException e) {
                 System.err.println("Impossibile aggiornare la prenotazione " + leave.getReservationId() + " per la temporary leave scaduta " + leave.getId() + ": " + e.getMessage());
             }
         }

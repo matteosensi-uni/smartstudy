@@ -30,11 +30,7 @@ public class LibraryAccessService {
         if(admin.getLibraryId() != libraryId)
             throw new BusinessViolationException("L'admin non può gestire questa biblioteca");
         TransactionManager.executeInTransaction(() -> {
-            if(!admin.isPresent()) {
-                admin.accessLibrary();
-            }else{
-                admin.leaveLibrary();
-            }
+            admin.togglePresence();
             adminDAO.update(admin);
         });
     }

@@ -16,6 +16,8 @@ public class AbandonmentReport extends BaseModel{
 
     private AbandonmentReport(String description,long reservationId,  long studentId) {
         super();
+        checkId(reservationId, "Reservation");
+        checkId(studentId, "Student");
         this.createdAt = LocalDateTime.now();
         this.reservationId = reservationId;
         this.description = description;
@@ -26,6 +28,14 @@ public class AbandonmentReport extends BaseModel{
 
     private AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status ,String description, long reservationId, long studentId, Long adminId) {
         super(id);
+        checkId(reservationId, "Reservation");
+        checkId(studentId, "Student");
+        if(createdAt == null){
+            throw new DomainViolationException("La data di creazione non può essere nulla");
+        }
+        if(status == null){
+            throw new DomainViolationException("Lo stato non può essere nullo");
+        }
         this.createdAt = createdAt;
         this.resolvedAt = resolvedAt;
         this.reservationId = reservationId;
@@ -53,6 +63,7 @@ public class AbandonmentReport extends BaseModel{
 
     public void takeInCharge(long adminId) {
         if(status == ReportStatus.OPENED && this.adminId == null){
+            checkId(adminId, "Admin");
             this.adminId = adminId;
             status = ReportStatus.PENDING;
         }else{
@@ -75,6 +86,8 @@ public class AbandonmentReport extends BaseModel{
         if (this.adminId == null || adminId != this.adminId) {
             throw new DomainViolationException("Il report è gestito da un admin diverso");
         }
+        checkId(adminId, "Admin");
+        this.adminId = adminId;
         status = finalState;
         resolvedAt = LocalDateTime.now();
     }

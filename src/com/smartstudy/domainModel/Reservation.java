@@ -13,6 +13,8 @@ public class Reservation extends BaseModel{
 
     private Reservation(long sessionId, long seatId) {
         super();
+        checkId(sessionId, "AccessSession");
+        checkId(seatId, "Seat");
         this.startTime = LocalDateTime.now();
         this.status = ReservationStatus.ACTIVE;
         this.sessionId = sessionId;
@@ -21,6 +23,14 @@ public class Reservation extends BaseModel{
 
     private Reservation(long id, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status, long sessionId, long seatId) {
         super(id);
+        checkId(sessionId, "AccessSession");
+        checkId(seatId, "Seat");
+        if(startTime == null){
+            throw new DomainViolationException("la data di inizio prenotazione non può essere nulla");
+        }
+        if(status == null){
+            throw new DomainViolationException("Lo stato della prenotazione non può essere nullo");
+        }
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;

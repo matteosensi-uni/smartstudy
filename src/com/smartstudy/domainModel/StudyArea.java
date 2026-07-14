@@ -12,6 +12,12 @@ public class StudyArea extends BaseModel {
 
     private StudyArea(long id, String name, int floor, StudyAreaType type, long libraryId, long timePolicyId) {
         super(id);
+        checkId(libraryId, "Library");
+        checkId(timePolicyId, "TimePolicy");
+        if(name == null || name.isBlank())
+            throw new DomainViolationException("Il nome della studyArea non può essere vuoto");
+        if(type == null)
+            throw new DomainViolationException("Il tipo della studyArea non può essere nullo");
         this.name = name;
         this.floor = floor;
         this.type = type;
@@ -42,9 +48,7 @@ public class StudyArea extends BaseModel {
         type = newType;
     }
     public void changePolicy(long timePolicyId){
-        if(timePolicyId <= 0){
-            throw new DomainViolationException("La policy indicata non è valida");
-        }
+        checkId(timePolicyId, "TimePolicy");
         this.timePolicyId = timePolicyId;
     }
 

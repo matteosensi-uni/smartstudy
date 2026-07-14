@@ -70,6 +70,23 @@ public class TimePolicyDAO extends BaseDAO{
         }
     }
 
+    public TimePolicy getTimePolicyByName(String name) {
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT * FROM time_policy WHERE name = ?
+            """
+        )){
+            ps.setString(1, name);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createTimePolicyFromResultSet(rs);
+                }
+                return null;
+            }
+        }  catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la regola", e);
+        }
+    }
+
     public ArrayList<TimePolicy> getAllPolicies() {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM time_policy

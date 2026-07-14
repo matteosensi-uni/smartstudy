@@ -1,4 +1,6 @@
 package com.smartstudy.domainModel;
+import com.smartstudy.exceptions.DomainViolationException;
+
 import java.time.LocalTime;
 
 public class Library extends BaseModel {
@@ -12,6 +14,21 @@ public class Library extends BaseModel {
 
     private Library(long id, String name, LocalTime openingTime, LocalTime closingTime, String street, String number, String city) {
         super(id);
+        if(name == null || name.isBlank()){
+            throw new DomainViolationException("Il nome non può essere vuoto");
+        }
+        if(street == null || street.isBlank()){
+            throw new DomainViolationException("Il cognome non può essere vuoto");
+        }
+        if(number == null || number.isBlank()){
+            throw new DomainViolationException("La password non può essere vuota");
+        }
+        if(city == null || city.isBlank()){
+            throw new DomainViolationException("L'email non può essere vuota");
+        }
+        if(openingTime == null || closingTime == null){
+            throw new DomainViolationException("I tempi di apertura e chiusura della biblioteca non possono essere nulli");
+        }
         this.name = name;
         this.openingTime = openingTime;
         this.closingTime = closingTime;

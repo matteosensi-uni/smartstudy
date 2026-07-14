@@ -11,6 +11,13 @@ public class Seat extends BaseModel{
 
     private Seat(long id, String qrCode, SeatType type, SeatStatus status, long studyAreaId) {
         super(id);
+        checkId(studyAreaId, "StudyArea");
+        if(qrCode == null || qrCode.isBlank())
+            throw new DomainViolationException("il qrCode è nullo");
+        if(type == null)
+            throw new DomainViolationException("il type è nullo");
+        if(status == null)
+            throw new DomainViolationException("Lo status è nullo");
         this.qrCode = qrCode;
         this.type = type;
         this.status = status;
@@ -49,6 +56,9 @@ public class Seat extends BaseModel{
     }
 
     public void changeSeatType(SeatType newType){
+        if(newType == null){
+            throw new DomainViolationException("Il nuovo tipo non può essere nullo");
+        }
         if(status == SeatStatus.UNAVAILABLE){
             throw new DomainViolationException("Non è possibile cambiare il tipo di un posto occupato");
         }

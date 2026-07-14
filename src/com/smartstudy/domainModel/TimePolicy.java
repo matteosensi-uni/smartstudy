@@ -1,5 +1,7 @@
 package com.smartstudy.domainModel;
 
+import com.smartstudy.exceptions.DomainViolationException;
+
 public class TimePolicy extends BaseModel{
     private final int maxTemporaryLeaveMin;
     private final int maxTemporaryLeaveTimes;
@@ -7,6 +9,11 @@ public class TimePolicy extends BaseModel{
 
     private TimePolicy(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes, String name) {
         super(id);
+        if(name == null || name.isBlank())
+            throw new DomainViolationException("Il nome della regola è vuoto");
+        if(maxTemporaryLeaveMin <= 0 || maxTemporaryLeaveTimes <= 0){
+            throw new DomainViolationException("Le regole devono essere maggiori di 0");
+        }
         this.maxTemporaryLeaveMin = maxTemporaryLeaveMin;
         this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
         this.name = name;

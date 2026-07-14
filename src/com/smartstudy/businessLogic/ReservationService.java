@@ -1,6 +1,7 @@
 package com.smartstudy.businessLogic;
 
 import com.smartstudy.ORM.*;
+import com.smartstudy.db.TransactionManager;
 import com.smartstudy.domainModel.*;
 import com.smartstudy.exceptions.BusinessViolationException;
 
@@ -22,14 +23,15 @@ public class ReservationService {
     }
 
     public Seat scanSeat(String qrCode, long studentId){
-        AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
-        if(accessSession == null){
-            throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
-        }
-        if(!studentDAO.existsById(studentId)){
-            throw new BusinessViolationException("L'utente non è registrato nel sistema");
-        }
-        return seatDAO.getSeatByQR(qrCode);
+        return TransactionManager.executeInTransaction(() -> {
+            if (accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) {
+                throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
+            }
+            if (!studentDAO.existsById(studentId)) {
+                throw new BusinessViolationException("L'utente non è registrato nel sistema");
+            }
+            return seatDAO.getSeatByQR(qrCode);
+        });
     }
     public Reservation createReservation(long accessSessionId, long seatId){
         AccessSession accessSession = accessSessionDAO.getActiveAccessSessionById(accessSessionId);
@@ -40,41 +42,59 @@ public class ReservationService {
         if(seat == null){
             throw new BusinessViolationException("Il posto indicato non risulta valido");
         }
-        Reservation res = reservationDAO.getActiveReservationBySeat(seatId);
-        if(res != null){
-            throw new BusinessViolationException("Il posto ha già una prenotazione valida attiva");
-        }
-        Reservation newReservation = Reservation.start(accessSessionId, seatId);
-        reservationDAO.insert(newReservation);
-        return newReservation;
+        return TransactionManager.executeInTransaction(() -> {
+            Reservation res = reservationDAO.getActiveReservationBySeat(seatId);
+            if (res != null) {
+                throw new BusinessViolationException("Il posto ha già una prenotazione valida attiva");
+            }
+            Library library = libraryDAO.getLibraryBySeat(seatId);
+            if (library == null) {
+                throw new BusinessViolationException("Il posto indicato non ha una biblioteca associata");
+            }
+            if (library.getId() != accessSession.getLibraryId()) {
+                throw new BusinessViolationException("Il posto selezionato risulta in una biblioteca diversa di quella della sessione");
+            }
+            Reservation newReservation = Reservation.start(accessSessionId, seatId);
+            reservationDAO.insert(newReservation);
+            return newReservation;
+        });
     }
 
     public Reservation closeReservation(long reservationId, long accessSessionId){
-        AccessSession accessSession = accessSessionDAO.getActiveAccessSessionById(accessSessionId);
-        if(accessSession == null){
-            throw new BusinessViolationException("L'utente non ha un accesso valido alla biblioteca");
-        }
-        Reservation reservation = reservationDAO.getReservationById(reservationId);
-        if(reservation == null){
-            throw new BusinessViolationException("La prenotazione inserita non è valida");
-        }
-        Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
-        if(library == null){
-            throw new BusinessViolationException("Impossibile trovare la libreria associata alla prenotazione");
-        }
-        if(accessSession.getLibraryId() != library.getId()){
-            throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
-        }
-        reservation.close();
-        reservationDAO.update(reservation);
-        return reservation;
+        return TransactionManager.executeInTransaction(() -> {
+            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionById(accessSessionId);
+            if (accessSession == null) {
+                throw new BusinessViolationException("L'utente non ha un accesso valido alla biblioteca");
+            }
+            Reservation reservation = reservationDAO.getReservationById(reservationId);
+            if (reservation == null) {
+                throw new BusinessViolationException("La prenotazione inserita non è valida");
+            }
+            Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
+            if (library == null) {
+                throw new BusinessViolationException("Impossibile trovare la libreria associata alla prenotazione");
+            }
+            if (accessSession.getLibraryId() != library.getId()) {
+                throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
+            }
+            reservation.close();
+            reservationDAO.update(reservation);
+            return reservation;
+        });
     }
 
     public ArrayList<Reservation> getReservationHistory(long studentId){
+        if(!studentDAO.existsById(studentId)) {
+            throw new BusinessViolationException("Studente non valido");
+        }
         return reservationDAO.getReservationsByStudent(studentId);
     }
 
     public Reservation getReservationBySeat(long seatId){
+        Seat seat = seatDAO.getSeatById(seatId);
+        if(seat == null){
+            throw new BusinessViolationException("Il posto indicato non risulta valida");
+        }
         return reservationDAO.getActiveReservationBySeat(seatId);
     }
 }

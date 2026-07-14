@@ -40,18 +40,20 @@ public class ReportService {
         if(asStudent == null){
             throw new BusinessViolationException("Lo studente non ha una access session attiva");
         }
-        AccessSession asReservation = accessSessionDAO.getActiveAccessSessionById(reservationId);
-        if(asReservation.getLibraryId() != asStudent.getLibraryId()){
-            throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
-        }
-        if(temporaryLeaveDAO.hasActiveTemporaryLeave(reservationId)){
-            throw new BusinessViolationException("La prenotazione ha una temporary leave valida");
-        }
-        if(reportDAO.existsOpenReportByReservation(reservationId)){
-            throw new BusinessViolationException("La prenotazione ha già un report associato");
-        }
-        AbandonmentReport report = AbandonmentReport.open(description, reservationId, studentId);
-        return abandonmentReportDAO.insert(report);
+        return TransactionManager.executeInTransaction(() -> {
+            AccessSession asReservation = accessSessionDAO.getActiveAccessSessionById(reservationId);
+            if (asReservation.getLibraryId() != asStudent.getLibraryId()) {
+                throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
+            }
+            if (temporaryLeaveDAO.hasActiveTemporaryLeave(reservationId)) {
+                throw new BusinessViolationException("La prenotazione ha una temporary leave valida");
+            }
+            if (reportDAO.existsOpenReportByReservation(reservationId)) {
+                throw new BusinessViolationException("La prenotazione ha già un report associato");
+            }
+            AbandonmentReport report = AbandonmentReport.open(description, reservationId, studentId);
+            return abandonmentReportDAO.insert(report);
+        });
     }
 
     public AbandonmentReport takeInCharge(long adminId, long reportId){
@@ -71,12 +73,14 @@ public class ReportService {
         if(library == null){
             throw new BusinessViolationException("La libreria associata alla postazione non esiste");
         }
-        if(library.getId() != admin.getLibraryId()){
-            throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
-        }
-        report.takeInCharge(admin.getId());
-        reportDAO.update(report);
-        return report;
+        return TransactionManager.executeInTransaction(() -> {
+            if (library.getId() != admin.getLibraryId()) {
+                throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
+            }
+            report.takeInCharge(admin.getId());
+            reportDAO.update(report);
+            return report;
+        });
     }
 
     public AbandonmentReport confirm(long adminId, long reportId){
@@ -89,20 +93,20 @@ public class ReportService {
         if(reservation == null){
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
-        Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
-        if(library == null){
-            throw new BusinessViolationException("La libreria associata alla postazione non esiste");
-        }
-        if(library.getId() != admin.getLibraryId()){
-            throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
-        }
-        TransactionManager.executeInTransaction(() -> {
+        return TransactionManager.executeInTransaction(() -> {
+            Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
+            if(library == null){
+                throw new BusinessViolationException("La libreria associata alla postazione non esiste");
+            }
+            if(library.getId() != admin.getLibraryId()){
+                throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
+            }
             report.confirm(admin.getId());
             reportDAO.update(report);
             reservation.close();
             reservationDAO.update(reservation);
+            return report;
         });
-        return report;
     }
 
     public AbandonmentReport reject(long adminId, long reportId){
@@ -115,12 +119,18 @@ public class ReportService {
         if(reservation == null){
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
-        if(libraryDAO.getLibraryBySeat(reservation.getSeat()).getId() != admin.getLibraryId()){
-            throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
-        }
-        report.reject(admin.getId());
-        reportDAO.update(report);
-        return report;
+        return TransactionManager.executeInTransaction(() -> {
+            Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
+            if (library == null) {
+                throw new BusinessViolationException("La libreria associata alla postazione non esiste");
+            }
+            if (library.getId() != admin.getLibraryId()) {
+                throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
+            }
+            report.reject(admin.getId());
+            reportDAO.update(report);
+            return report;
+        });
     }
 
     public ArrayList<AbandonmentReport> getOpenReportsByLibrary(long libraryId){
