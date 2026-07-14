@@ -12,21 +12,19 @@ public class ReportService {
     private final ReservationDAO reservationDAO;
     private final StudentDAO studentDAO;
     private final TemporaryLeaveDAO temporaryLeaveDAO;
-    private final AbandonmentReportDAO reportDAO;
     private final AccessSessionDAO accessSessionDAO;
     private final AbandonmentReportDAO abandonmentReportDAO;
     private final AdminDAO adminDAO;
     private final LibraryDAO libraryDAO;
 
-    public ReportService(ReservationDAO reservationDAO, StudentDAO studentDAO, TemporaryLeaveDAO temporaryLeaveDAO, AbandonmentReportDAO reportDAO, AbandonmentReportDAO abandonmentReportDAO, AccessSessionDAO accessSessionDAO, SeatDAO seatDAO, LibraryDAO libraryDAO, AbandonmentReportDAO abandonmentReportDAO1, AdminDAO adminDAO, LibraryDAO libraryDAO1) {
+    public ReportService(ReservationDAO reservationDAO, StudentDAO studentDAO, TemporaryLeaveDAO temporaryLeaveDAO, AbandonmentReportDAO abandonmentReportDAO, AccessSessionDAO accessSessionDAO, LibraryDAO libraryDAO, AdminDAO adminDAO) {
         this.reservationDAO = reservationDAO;
         this.studentDAO = studentDAO;
         this.temporaryLeaveDAO = temporaryLeaveDAO;
-        this.reportDAO = reportDAO;
         this.accessSessionDAO = accessSessionDAO;
-        this.abandonmentReportDAO = abandonmentReportDAO1;
+        this.abandonmentReportDAO = abandonmentReportDAO;
         this.adminDAO = adminDAO;
-        this.libraryDAO = libraryDAO1;
+        this.libraryDAO = libraryDAO;
     }
 
     public AbandonmentReport createReport(long studentId, String description, long reservationId) {
@@ -41,14 +39,14 @@ public class ReportService {
             throw new BusinessViolationException("Lo studente non ha una access session attiva");
         }
         return TransactionManager.executeInTransaction(() -> {
-            AccessSession asReservation = accessSessionDAO.getActiveAccessSessionById(reservationId);
+            AccessSession asReservation = accessSessionDAO.getActiveAccessSessionById(reservation.getSessionId());
             if (asReservation.getLibraryId() != asStudent.getLibraryId()) {
                 throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
             }
             if (temporaryLeaveDAO.hasActiveTemporaryLeave(reservationId)) {
                 throw new BusinessViolationException("La prenotazione ha una temporary leave valida");
             }
-            if (reportDAO.existsOpenReportByReservation(reservationId)) {
+            if (abandonmentReportDAO.existsOpenReportByReservation(reservationId)) {
                 throw new BusinessViolationException("La prenotazione ha già un report associato");
             }
             AbandonmentReport report = AbandonmentReport.open(description, reservationId, studentId);
@@ -78,7 +76,7 @@ public class ReportService {
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.takeInCharge(admin.getId());
-            reportDAO.update(report);
+            abandonmentReportDAO.update(report);
             return report;
         });
     }
@@ -102,7 +100,7 @@ public class ReportService {
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.confirm(admin.getId());
-            reportDAO.update(report);
+            abandonmentReportDAO.update(report);
             reservation.close();
             reservationDAO.update(reservation);
             return report;
@@ -128,7 +126,7 @@ public class ReportService {
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.reject(admin.getId());
-            reportDAO.update(report);
+            abandonmentReportDAO.update(report);
             return report;
         });
     }

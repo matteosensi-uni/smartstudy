@@ -24,7 +24,7 @@ public class ReservationService {
 
     public Seat scanSeat(String qrCode, long studentId){
         return TransactionManager.executeInTransaction(() -> {
-            if (accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) {
+            if (!accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) {
                 throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
             }
             if (!studentDAO.existsById(studentId)) {

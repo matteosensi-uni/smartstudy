@@ -114,8 +114,8 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
                 TimeUtils.getLocalTime(rs.getTimestamp("start_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("end_time")),
                 ReservationStatus.valueOf(rs.getString("status")),
-                rs.getLong("id_seat"),
-                rs.getLong("access_id")
+                rs.getLong("access_id"),
+                rs.getLong("id_seat")
         );
     }
 
