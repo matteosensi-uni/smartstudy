@@ -18,13 +18,13 @@ public class Library extends BaseModel {
             throw new DomainViolationException("Il nome non può essere vuoto");
         }
         if(street == null || street.isBlank()){
-            throw new DomainViolationException("Il cognome non può essere vuoto");
+            throw new DomainViolationException("La strada non può essere vuoto");
         }
         if(number == null || number.isBlank()){
-            throw new DomainViolationException("La password non può essere vuota");
+            throw new DomainViolationException("Il numero non può essere vuoto");
         }
         if(city == null || city.isBlank()){
-            throw new DomainViolationException("L'email non può essere vuota");
+            throw new DomainViolationException("La città non può essere vuota");
         }
         if(openingTime == null || closingTime == null){
             throw new DomainViolationException("I tempi di apertura e chiusura della biblioteca non possono essere nulli");

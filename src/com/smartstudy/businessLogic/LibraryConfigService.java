@@ -28,7 +28,7 @@ public class LibraryConfigService {
         this.timePolicyDAO = timePolicyDAO;
     }
 
-    public TimePolicy getStudyAreaTimePolicy(int studyAreaId) {
+    public TimePolicy getStudyAreaTimePolicy(long studyAreaId) {
         StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
         if(studyArea ==  null){
             throw new  BusinessViolationException("Inserire dei dati validi");
@@ -125,7 +125,7 @@ public class LibraryConfigService {
         });
     }
 
-    public Seat updateSeatTye(long seatId, long adminId, SeatType type)  {
+    public Seat updateSeatType(long seatId, long adminId, SeatType type)  {
         Seat seat = seatDAO.getSeatById(seatId);
         Admin admin = adminDAO.getAdminById(adminId);
         if(seat == null ||  admin == null){
