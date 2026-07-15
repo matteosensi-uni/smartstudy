@@ -132,6 +132,10 @@ public class ReportService {
     }
 
     public ArrayList<AbandonmentReport> getOpenReportsByLibrary(long libraryId){
+        Library library = libraryDAO.getLibraryBySeat(libraryId);
+        if(library == null){
+            throw new BusinessViolationException("La libreria non esiste");
+        }
         return abandonmentReportDAO.getReportsByLibrary(libraryId);
     }
 
