@@ -50,7 +50,7 @@ public class Seat extends BaseModel{
 
     public void markBroken()  {
         if(status != SeatStatus.AVAILABLE){
-            throw new IllegalStateException("Lo stato del posto non può essere modificato");
+            throw new DomainViolationException("Lo stato del posto non può essere modificato");
         }
         status = SeatStatus.BROKEN;
     }

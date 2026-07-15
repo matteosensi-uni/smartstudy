@@ -49,7 +49,7 @@ public class Reservation extends BaseModel{
     public LocalDateTime getStartTime() {return startTime;}
     public LocalDateTime getEndTime() {return endTime;}
     public ReservationStatus getStatus() {return status;}
-    public long getSeat() {return seatId;}
+    public long getSeatId() {return seatId;}
     public long getSessionId() {return sessionId;}
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 

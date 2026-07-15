@@ -33,7 +33,7 @@ public class TemporaryLeaveService {
         if(accessSession.getId() != reservation.getSessionId()){
             throw new BusinessViolationException("La sessione dello studente non combacia con quella della reservation");
         }
-        TimePolicy timePolicy = timePolicyDAO.getTimePolicyBySeat(reservation.getSeat());
+        TimePolicy timePolicy = timePolicyDAO.getTimePolicyBySeat(reservation.getSeatId());
         if(timePolicy == null){
             throw new BusinessViolationException("Non è stata trovate la regola associata al posto");
         }

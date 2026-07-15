@@ -35,8 +35,8 @@ public class AccessSession extends BaseModel{
         return new AccessSession(libraryId, studentId);
     }
 
-    public static AccessSession valueOf(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, long user) {
-        return new AccessSession(id, entryTime, exitTime, libraryId, user);
+    public static AccessSession valueOf(long id, LocalDateTime entryTime, LocalDateTime exitTime, long libraryId, long studentId) {
+        return new AccessSession(id, entryTime, exitTime, libraryId, studentId);
     }
 
     public LocalDateTime getEntryTime() { return entryTime; }
@@ -45,7 +45,7 @@ public class AccessSession extends BaseModel{
     public long getStudentId() { return studentId; }
     public boolean isActive() { return exitTime == null; }
 
-    public void closeSession(long studentId, long libraryId){
+    public void closeSession(long libraryId, long studentId){
         if(exitTime != null){
             throw new DomainViolationException("La sessione è già stata chiusa");
         }

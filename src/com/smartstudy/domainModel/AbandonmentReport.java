@@ -36,6 +36,15 @@ public class AbandonmentReport extends BaseModel{
         if(status == null){
             throw new DomainViolationException("Lo stato non può essere nullo");
         }
+        if(status == ReportStatus.OPENED && adminId != null){
+            throw new DomainViolationException("Non è possibile caricare uno stato OPENED con un admin associato");
+        }
+        if(status != ReportStatus.OPENED && adminId == null){
+            throw new DomainViolationException("Non è possibile caricare uno stato non OPENED senza un admin associato");
+        }
+        if((status == ReportStatus.CONFIRMED || status == ReportStatus.REJECTED) && resolvedAt == null){
+            throw new DomainViolationException("Non è possibile caricare uno stato gestito senza una data di gestione");
+        }
         this.createdAt = createdAt;
         this.resolvedAt = resolvedAt;
         this.reservationId = reservationId;

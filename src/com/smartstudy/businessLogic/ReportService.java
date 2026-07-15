@@ -67,7 +67,7 @@ public class ReportService {
         if(reservation == null){
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
-        Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
+        Library library = libraryDAO.getLibraryBySeat(reservation.getSeatId());
         if(library == null){
             throw new BusinessViolationException("La libreria associata alla postazione non esiste");
         }
@@ -92,7 +92,7 @@ public class ReportService {
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
         return TransactionManager.executeInTransaction(() -> {
-            Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
+            Library library = libraryDAO.getLibraryBySeat(reservation.getSeatId());
             if(library == null){
                 throw new BusinessViolationException("La libreria associata alla postazione non esiste");
             }
@@ -118,7 +118,7 @@ public class ReportService {
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
         return TransactionManager.executeInTransaction(() -> {
-            Library library = libraryDAO.getLibraryBySeat(reservation.getSeat());
+            Library library = libraryDAO.getLibraryBySeat(reservation.getSeatId());
             if (library == null) {
                 throw new BusinessViolationException("La libreria associata alla postazione non esiste");
             }
