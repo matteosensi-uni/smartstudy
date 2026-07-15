@@ -1,26 +1,28 @@
 package com.smartstudy.businessLogic;
 
+import com.smartstudy.ORM.ReservationDAO;
 import com.smartstudy.domainModel.AccessSession;
 import com.smartstudy.domainModel.Admin;
+import com.smartstudy.domainModel.Reservation;
 import com.smartstudy.domainModel.Student;
 import com.smartstudy.ORM.AccessSessionDAO;
 import com.smartstudy.ORM.AdminDAO;
 import com.smartstudy.ORM.StudentDAO;
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.exceptions.BusinessViolationException;
-import com.smartstudy.exceptions.DataAccessException;
 
-import java.sql.SQLException;
 
 public class LibraryAccessService {
     private final AdminDAO adminDAO;
     private final AccessSessionDAO accessSessionDAO;
     private final StudentDAO studentDAO;
+    private final ReservationDAO reservationDAO;
 
-    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO) {
+    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, ReservationDAO reservationDAO) {
         this.adminDAO = adminDAO;
         this.accessSessionDAO = accessSessionDAO;
         this.studentDAO = studentDAO;
+        this.reservationDAO = reservationDAO;
     }
 
     public void toggleUserPresence(long userId, long libraryId){
@@ -53,7 +55,15 @@ public class LibraryAccessService {
         TransactionManager.executeInTransaction(() -> {
             if (accessSessionDAO.hasActiveAccessSessionByStudent(student.getId())) { //lo studente esce dalla biblioteca
                 AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(student.getId());
-                as.closeSession(libraryId, student.getId());
+                if(as.getLibraryId() != libraryId){
+                    throw new BusinessViolationException("La libreria non combacia con quella della sessione");
+                }
+                Reservation reservation = reservationDAO.getActiveReservationByStudent(student.getId());
+                if(reservation != null){
+                    reservation.close();
+                    reservationDAO.update(reservation);
+                }
+                as.closeSession();
                 accessSessionDAO.update(as);
             } else { //lo studente entra in biblioteca
                 if (!student.isCardActive()) {

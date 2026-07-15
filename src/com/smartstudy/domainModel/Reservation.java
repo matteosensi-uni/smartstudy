@@ -31,6 +31,12 @@ public class Reservation extends BaseModel{
         if(status == null){
             throw new DomainViolationException("Lo stato della prenotazione non può essere nullo");
         }
+        if((status == ReservationStatus.ACTIVE || status == ReservationStatus.TEMPORARILY_LEFT) && endTime != null){
+            throw new DomainViolationException("Una prenotazione attiva non può avere un tempo di fine");
+        }
+        if(status == ReservationStatus.CLOSED && endTime == null){
+            throw new DomainViolationException("Una prenotazione attiva non può avere un tempo di fine");
+        }
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;
@@ -54,21 +60,21 @@ public class Reservation extends BaseModel{
     public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
     public void close() {
-        if(endTime != null || status == ReservationStatus.CLOSED)
+        if(status == ReservationStatus.CLOSED)
             throw new DomainViolationException("La prenotazione è già stata chiusa");
         endTime =  LocalDateTime.now();
         status = ReservationStatus.CLOSED;
     }
 
     public void markTemporarilyLeft(){
-        if(status == ReservationStatus.CLOSED){
+        if(status == ReservationStatus.CLOSED || status == ReservationStatus.TEMPORARILY_LEFT){
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }
         status = ReservationStatus.TEMPORARILY_LEFT;
     }
 
     public void markActive(){
-        if(status == ReservationStatus.CLOSED){
+        if(status == ReservationStatus.CLOSED || status == ReservationStatus.ACTIVE){
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }
         status = ReservationStatus.ACTIVE;

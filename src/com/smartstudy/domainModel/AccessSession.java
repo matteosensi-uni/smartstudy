@@ -45,17 +45,9 @@ public class AccessSession extends BaseModel{
     public long getStudentId() { return studentId; }
     public boolean isActive() { return exitTime == null; }
 
-    public void closeSession(long libraryId, long studentId){
+    public void closeSession(){
         if(exitTime != null){
             throw new DomainViolationException("La sessione è già stata chiusa");
-        }
-        checkId(studentId, "Student");
-        checkId(libraryId, "Library");
-        if(libraryId != this.libraryId){
-            throw new DomainViolationException("La sessione non appartiene a questa biblioteca");
-        }
-        if(studentId != this.studentId){
-            throw new DomainViolationException("L'utente non è lo stesso della sessione");
         }
         this.exitTime = LocalDateTime.now();
     }
