@@ -23,13 +23,13 @@ public class LibraryAccessService {
         this.studentDAO = studentDAO;
     }
 
-    public void toggleUserPresence(long userId, long libaryId){
+    public void toggleUserPresence(long userId, long libraryId){
         if(adminDAO.existsById(userId)){
             Admin admin = adminDAO.getAdminById(userId);
-            toggleAdminPresence(admin,libaryId);
-        }else if(studentDAO.existsById(libaryId)){
+            toggleAdminPresence(admin,libraryId);
+        }else if(studentDAO.existsById(userId)){
             Student student = studentDAO.getStudentById(userId);
-            toggleStudentAccess(student, libaryId);
+            toggleStudentAccess(student, libraryId);
         }else{
             throw new BusinessViolationException("L'utente non è stato riconosciuto dal sistema");
         }
@@ -53,7 +53,7 @@ public class LibraryAccessService {
         TransactionManager.executeInTransaction(() -> {
             if (accessSessionDAO.hasActiveAccessSessionByStudent(student.getId())) { //lo studente esce dalla biblioteca
                 AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(student.getId());
-                as.closeSession(student.getId(), libraryId);
+                as.closeSession(libraryId, student.getId());
                 accessSessionDAO.update(as);
             } else { //lo studente entra in biblioteca
                 if (!student.isCardActive()) {

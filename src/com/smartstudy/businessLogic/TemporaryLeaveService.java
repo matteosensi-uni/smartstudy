@@ -21,7 +21,7 @@ public class TemporaryLeaveService {
         this.accessSessionDAO = accessSessionDAO;
     }
 
-    public TemporaryLeave createTemporaryLeave(long reservationId, long studentId) {
+    public TemporaryLeave createTemporaryLeave(long reservationId, long studentId, int minutes) {
         Reservation reservation = reservationDAO.getReservationById(reservationId);
         AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
         if(reservation == null || accessSession == null){
@@ -37,8 +37,11 @@ public class TemporaryLeaveService {
         if(timePolicy == null){
             throw new BusinessViolationException("Non è stata trovate la regola associata al posto");
         }
-        TemporaryLeave temporaryLeave = TemporaryLeave.create(timePolicy.getMaxTemporaryLeaveMin(), reservation.getId());
-        return TransactionManager.executeInTransaction(() -> { //si usa il transaction manager per evitare uno stato inconsistente del database
+        if(minutes <= 0 || minutes > timePolicy.getMaxTemporaryLeaveMin()){
+            throw new BusinessViolationException("La durata richiesta supera il limite consentito");
+        }
+        TemporaryLeave temporaryLeave = TemporaryLeave.create(minutes, reservation.getId());
+        return TransactionManager.executeInTransaction(() -> {
             if (temporaryLeaveDAO.hasActiveTemporaryLeave(reservation.getId())) {
                 throw new BusinessViolationException("Lo studente ha gia una temporary leave attiva");
             }

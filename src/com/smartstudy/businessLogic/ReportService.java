@@ -4,7 +4,6 @@ import com.smartstudy.db.TransactionManager;
 import com.smartstudy.domainModel.*;
 import com.smartstudy.ORM.*;
 import com.smartstudy.exceptions.BusinessViolationException;
-import com.smartstudy.exceptions.DomainViolationException;
 
 import java.util.ArrayList;
 
@@ -16,8 +15,9 @@ public class ReportService {
     private final AbandonmentReportDAO abandonmentReportDAO;
     private final AdminDAO adminDAO;
     private final LibraryDAO libraryDAO;
+    private final SeatDAO seatDAO;
 
-    public ReportService(ReservationDAO reservationDAO, StudentDAO studentDAO, TemporaryLeaveDAO temporaryLeaveDAO, AbandonmentReportDAO abandonmentReportDAO, AccessSessionDAO accessSessionDAO, LibraryDAO libraryDAO, AdminDAO adminDAO) {
+    public ReportService(ReservationDAO reservationDAO, StudentDAO studentDAO, TemporaryLeaveDAO temporaryLeaveDAO, AbandonmentReportDAO abandonmentReportDAO, AccessSessionDAO accessSessionDAO, LibraryDAO libraryDAO, AdminDAO adminDAO, SeatDAO seatDAO) {
         this.reservationDAO = reservationDAO;
         this.studentDAO = studentDAO;
         this.temporaryLeaveDAO = temporaryLeaveDAO;
@@ -25,6 +25,7 @@ public class ReportService {
         this.abandonmentReportDAO = abandonmentReportDAO;
         this.adminDAO = adminDAO;
         this.libraryDAO = libraryDAO;
+        this.seatDAO = seatDAO;
     }
 
     public AbandonmentReport createReport(long studentId, String description, long reservationId) {
@@ -39,8 +40,11 @@ public class ReportService {
             throw new BusinessViolationException("Lo studente non ha una access session attiva");
         }
         return TransactionManager.executeInTransaction(() -> {
-            AccessSession asReservation = accessSessionDAO.getActiveAccessSessionById(reservation.getSessionId());
-            if (asReservation.getLibraryId() != asStudent.getLibraryId()) {
+            Library library = libraryDAO.getLibraryBySeat(reservation.getSeatId());
+            if (library == null) {
+                throw new BusinessViolationException("La libreria associata alla postazione non esiste");
+            }
+            if (library.getId() != asStudent.getLibraryId()) {
                 throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
             }
             if (temporaryLeaveDAO.hasActiveTemporaryLeave(reservationId)) {
@@ -103,6 +107,12 @@ public class ReportService {
             abandonmentReportDAO.update(report);
             reservation.close();
             reservationDAO.update(reservation);
+            Seat seat = seatDAO.getSeatById(reservation.getSeatId());
+            if(seat == null){
+                throw new BusinessViolationException("Il posto associato alla prenotazione non esiste");
+            }
+            seat.free();
+            seatDAO.update(seat);
             return report;
         });
     }
@@ -132,7 +142,7 @@ public class ReportService {
     }
 
     public ArrayList<AbandonmentReport> getOpenReportsByLibrary(long libraryId){
-        Library library = libraryDAO.getLibraryBySeat(libraryId);
+        Library library = libraryDAO.getLibraryById(libraryId);
         if(library == null){
             throw new BusinessViolationException("La libreria non esiste");
         }
@@ -141,21 +151,21 @@ public class ReportService {
 
     public ArrayList<AbandonmentReport> getReportsInChargeByAdmin(long adminId){
         if(!adminDAO.existsById(adminId)){
-            throw new DomainViolationException("L'admin non è registrato nel sistema");
+            throw new BusinessViolationException("L'admin non è registrato nel sistema");
         }
         return abandonmentReportDAO.getInProgressReportsByAdmin(adminId);
     }
 
     public ArrayList<AbandonmentReport> getClosedReportsByAdmin(long adminId){
         if(!adminDAO.existsById(adminId)){
-            throw new DomainViolationException("L'admin non è registrato nel sistema");
+            throw new BusinessViolationException("L'admin non è registrato nel sistema");
         }
         return abandonmentReportDAO.getClosedReportsByAdmin(adminId);
     }
 
     public ArrayList<AbandonmentReport> getOpenReportsByStudent(long studentId){
         if(!studentDAO.existsById(studentId)){
-            throw new DomainViolationException("Lo studente non è registrato nel sistema");
+            throw new BusinessViolationException("Lo studente non è registrato nel sistema");
         }
         return abandonmentReportDAO.getOpenReportsByStudent(studentId);
     }

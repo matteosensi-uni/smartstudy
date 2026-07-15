@@ -47,9 +47,6 @@ public class LibraryConfigService {
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (!adminDAO.existsById(admin.getId())) {
-                throw new IllegalArgumentException("L'admin non è riconosciuto dal sistema");
-            }
             if (admin.getLibraryId() != studyArea.getLibraryId()) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
@@ -66,9 +63,6 @@ public class LibraryConfigService {
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (!adminDAO.existsById(admin.getId())) {
-                throw new IllegalArgumentException("L'admin non è riconosciuto dal sistema");
-            }
             if (admin.getLibraryId() != studyArea.getLibraryId()) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
@@ -86,9 +80,6 @@ public class LibraryConfigService {
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (!adminDAO.existsById(admin.getId())) {
-                throw new IllegalArgumentException("L'admin non è riconosciuto dal sistema");
-            }
             if (admin.getLibraryId() != studyArea.getLibraryId()) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
@@ -108,18 +99,19 @@ public class LibraryConfigService {
             throw new BusinessViolationException("Inserire uno stato valido");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (!adminDAO.existsById(admin.getId())) {
-                throw new IllegalArgumentException("L'admin non è riconosciuto dal sistema");
-            }
             if (admin.getLibraryId() != libraryDAO.getLibraryBySeat(seat.getId()).getId()) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
             if(status == SeatStatus.AVAILABLE){
-                seat.free();
+                if(seat.isBroken()){
+                    seat.repair();
+                } else {
+                    seat.free();
+                }
             }else if(status == SeatStatus.BROKEN)
                 seat.markBroken();
             else
-                throw new  BusinessViolationException("Inserire uno stato valido");
+                throw new BusinessViolationException("Inserire uno stato valido");
             seatDAO.update(seat);
             return seat;
         });
@@ -132,9 +124,6 @@ public class LibraryConfigService {
             throw new BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (!adminDAO.existsById(admin.getId())) {
-                throw new IllegalArgumentException("L'admin non è riconosciuto dal sistema");
-            }
             if (admin.getLibraryId() != libraryDAO.getLibraryBySeat(seat.getId()).getId()) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }

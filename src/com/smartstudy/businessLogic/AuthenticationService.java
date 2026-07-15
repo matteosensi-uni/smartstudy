@@ -16,7 +16,7 @@ public class AuthenticationService {
         this.adminDAO = adminDAO;
     }
     public User authenticateUser(long userId, String password) {
-        if(password == null || password.isEmpty()){
+        if(password == null || password.isBlank()){
             throw new BusinessViolationException("La password non può essere vuota");
         }
         password = password.trim();

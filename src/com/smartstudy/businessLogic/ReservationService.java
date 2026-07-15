@@ -75,11 +75,7 @@ public class ReservationService {
             if (reservation == null) {
                 throw new BusinessViolationException("La prenotazione inserita non è valida");
             }
-            Library library = libraryDAO.getLibraryBySeat(reservation.getSeatId());
-            if (library == null) {
-                throw new BusinessViolationException("Impossibile trovare la libreria associata alla prenotazione");
-            }
-            if (accessSession.getLibraryId() != library.getId()) {
+            if (reservation.getSessionId() != accessSessionId) {
                 throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
             }
             Seat seat = seatDAO.getSeatById(reservation.getSeatId());

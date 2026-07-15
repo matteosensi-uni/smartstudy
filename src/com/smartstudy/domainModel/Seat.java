@@ -48,6 +48,13 @@ public class Seat extends BaseModel{
         status = SeatStatus.AVAILABLE;
     }
 
+    public void repair() {
+        if(status != SeatStatus.BROKEN){
+            throw new DomainViolationException("Lo stato del posto non può essere modificato");
+        }
+        status = SeatStatus.AVAILABLE;
+    }
+
     public void markBroken()  {
         if(status != SeatStatus.AVAILABLE){
             throw new DomainViolationException("Lo stato del posto non può essere modificato");
