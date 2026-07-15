@@ -36,25 +36,6 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
         }
     }
 
-    public ArrayList<Seat> getStudyAreaSeats(long seatAreaId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT *
-                FROM seat
-                WHERE id_area = ?
-            """
-            )){
-            ps.setLong(1, seatAreaId);
-            try(ResultSet rs = ps.executeQuery()){
-                ArrayList<Seat> res = new ArrayList<>();
-                while(rs.next())
-                    res.add(createSeatFromResultSet(rs));
-                return res;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare i posti dell'area", e);
-        }
-    }
-
     public Seat getSeatByQR(String qrCode){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT *

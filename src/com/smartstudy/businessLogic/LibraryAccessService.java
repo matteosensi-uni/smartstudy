@@ -23,8 +23,19 @@ public class LibraryAccessService {
         this.studentDAO = studentDAO;
     }
 
-    public void toggleAdminPresence(long adminId, long libraryId){
-        Admin admin = adminDAO.getAdminById(adminId);
+    public void toggleUserPresence(long userId, long libaryId){
+        if(adminDAO.existsById(userId)){
+            Admin admin = adminDAO.getAdminById(userId);
+            toggleAdminPresence(admin,libaryId);
+        }else if(studentDAO.existsById(libaryId)){
+            Student student = studentDAO.getStudentById(userId);
+            toggleStudentAccess(student, libaryId);
+        }else{
+            throw new BusinessViolationException("L'utente non è stato riconosciuto dal sistema");
+        }
+    }
+
+    private void toggleAdminPresence(Admin admin, long libraryId){
         if(admin == null)
             throw new BusinessViolationException("Admin non trovato");
         if(admin.getLibraryId() != libraryId)
@@ -35,21 +46,20 @@ public class LibraryAccessService {
         });
     }
 
-    public void toggleStudentAccess(long studentId, long libraryId) {
+    private void toggleStudentAccess(Student student, long libraryId) {
+        if (student == null) {
+            throw new BusinessViolationException("Lo studente non risulta nel sistema");
+        }
         TransactionManager.executeInTransaction(() -> {
-            if (accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) { //lo studente esce dalla biblioteca
-                AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
-                as.closeSession(studentId, libraryId);
+            if (accessSessionDAO.hasActiveAccessSessionByStudent(student.getId())) { //lo studente esce dalla biblioteca
+                AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(student.getId());
+                as.closeSession(student.getId(), libraryId);
                 accessSessionDAO.update(as);
             } else { //lo studente entra in biblioteca
-                Student student = studentDAO.getStudentById(studentId);
-                if (student == null) {
-                    throw new BusinessViolationException("Lo studente non risulta nel sistema");
-                }
                 if (!student.isCardActive()) {
                     throw new BusinessViolationException("La carta dello studente non è attiva");
                 }
-                AccessSession as = AccessSession.startSession(libraryId, studentId);
+                AccessSession as = AccessSession.startSession(libraryId, student.getId());
                 accessSessionDAO.insert(as);
             }
         });

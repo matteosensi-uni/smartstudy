@@ -69,24 +69,6 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
         }
     }
 
-    public Reservation getActiveReservationByAccessSession(long accessSessionId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT reservation.*
-                FROM reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access
-                WHERE reservation.access_id = ? AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
-            """
-            )){
-            ps.setLong(1, accessSessionId);
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next())
-                    return createReservationFromResultSet(rs);
-                else return null;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare la prenotazione della sessione", e);
-        }
-    }
-
     public ArrayList<Reservation> getReservationsByStudent(long studentId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.* FROM

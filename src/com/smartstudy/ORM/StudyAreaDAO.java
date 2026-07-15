@@ -56,25 +56,6 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
         }
     }
 
-    public StudyArea getStudyAreaBySeat(long seatId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT study_area.*
-                FROM study_area LEFT JOIN seat ON study_area.id_area = seat.id_area
-                WHERE id_seat = ?
-            """
-            )){
-            ps.setLong(1, seatId);
-            try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createStudyAreaFromResultSet(rs);
-                }else
-                    return null;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare l'area studio dal posto", e);
-        }
-    }
-
     private StudyArea createStudyAreaFromResultSet(ResultSet rs) throws SQLException {
         return StudyArea.valueOf(
                 rs.getLong("id_area"),

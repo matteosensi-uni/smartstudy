@@ -55,23 +55,6 @@ public class TemporaryLeaveDAO extends BaseDAO implements Insertable<TemporaryLe
         }
     }
 
-    public TemporaryLeave getTemporaryLeaveById(long temporaryLeaveId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM temporary_leave WHERE id_leave = ?
-            """
-            )){
-            ps.setLong(1, temporaryLeaveId);
-            try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createTemporaryLeaveFromResultSet(rs);
-                }
-                return null;
-            }
-        }catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare le temporary leaves", e);
-        }
-    }
-
     public ArrayList<TemporaryLeave> getTemporaryLeavesByReservation(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT temporary_leave.*

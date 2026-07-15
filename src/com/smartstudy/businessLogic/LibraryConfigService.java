@@ -28,6 +28,18 @@ public class LibraryConfigService {
         this.timePolicyDAO = timePolicyDAO;
     }
 
+    public TimePolicy getStudyAreaTimePolicy(int studyAreaId) {
+        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
+        if(studyArea ==  null){
+            throw new  BusinessViolationException("Inserire dei dati validi");
+        }
+        return timePolicyDAO.getTimePolicyById(studyArea.getTimePolicyId());
+    }
+
+    public ArrayList<TimePolicy> getAllPolicies(){
+        return timePolicyDAO.getAllPolicies();
+    }
+
     public StudyArea updateStudyAreaType(long studyAreaId, long adminId, StudyAreaType  studyAreaType) {
         StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
         Admin admin = adminDAO.getAdminById(adminId);
@@ -42,6 +54,25 @@ public class LibraryConfigService {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
             studyArea.changeStudyAreaType(studyAreaType);
+            studyAreaDAO.update(studyArea);
+            return studyArea;
+        });
+    }
+
+    public StudyArea updateStudyAreaName(long studyAreaId, long adminId, String name) {
+        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
+        Admin admin = adminDAO.getAdminById(adminId);
+        if(studyArea == null || admin == null){
+            throw new  BusinessViolationException("Inserire dei dati validi");
+        }
+        return TransactionManager.executeInTransaction(() -> {
+            if (!adminDAO.existsById(admin.getId())) {
+                throw new IllegalArgumentException("L'admin non è riconosciuto dal sistema");
+            }
+            if (admin.getLibraryId() != studyArea.getLibraryId()) {
+                throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
+            }
+            studyArea.setName(name);
             studyAreaDAO.update(studyArea);
             return studyArea;
         });
@@ -85,7 +116,10 @@ public class LibraryConfigService {
             }
             if(status == SeatStatus.AVAILABLE){
                 seat.free();
-            }else seat.markBroken();
+            }else if(status == SeatStatus.BROKEN)
+                seat.markBroken();
+            else
+                throw new  BusinessViolationException("Inserire uno stato valido");
             seatDAO.update(seat);
             return seat;
         });

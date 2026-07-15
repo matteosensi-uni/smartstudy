@@ -8,8 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserDAO extends BaseDAO{
-    public static final String tableName = "app_user";
-    public static final String pkName = "user_id";
     public UserDAO(Connection conn) {
         super(conn);
     }

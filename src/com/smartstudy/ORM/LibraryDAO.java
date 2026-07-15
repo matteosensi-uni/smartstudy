@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class LibraryDAO extends BaseDAO{
-    public static final String tableName = "library";
-    public static final String pkName = "id_library";
     public LibraryDAO(Connection conn) { super(conn); }
     public Library getLibraryById(long libraryId) {
         try(PreparedStatement ps = conn.prepareStatement("""
@@ -25,25 +23,6 @@ public class LibraryDAO extends BaseDAO{
                 return null;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
-        }
-    }
-
-    public Library getLibraryByAdmin(long adminId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT library.*
-                FROM library LEFT JOIN admin ON admin.id_library = library.id_library
-                WHERE admin.user_id = ?
-            """
-            )){
-            ps.setLong(1, adminId);
-            try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createLibraryFromResultSet(rs);
-                }
-                return null;
-            }
-        }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
         }
     }

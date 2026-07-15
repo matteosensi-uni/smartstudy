@@ -42,6 +42,9 @@ public class ReservationService {
         if(seat == null){
             throw new BusinessViolationException("Il posto indicato non risulta valido");
         }
+        if(seat.isBroken()){
+            throw new BusinessViolationException("Il posto indicato non può essere prenotato: è rotto");
+        }
         return TransactionManager.executeInTransaction(() -> {
             Reservation res = reservationDAO.getActiveReservationBySeat(seatId);
             if (res != null) {
@@ -54,6 +57,8 @@ public class ReservationService {
             if (library.getId() != accessSession.getLibraryId()) {
                 throw new BusinessViolationException("Il posto selezionato risulta in una biblioteca diversa di quella della sessione");
             }
+            seat.occupy();
+            seatDAO.update(seat);
             Reservation newReservation = Reservation.start(accessSessionId, seatId);
             reservationDAO.insert(newReservation);
             return newReservation;
@@ -77,6 +82,12 @@ public class ReservationService {
             if (accessSession.getLibraryId() != library.getId()) {
                 throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
             }
+            Seat seat = seatDAO.getSeatById(reservation.getSeat());
+            if(seat == null){
+                throw new BusinessViolationException("Il posto indicato non risulta valido");
+            }
+            seat.free();
+            seatDAO.update(seat);
             reservation.close();
             reservationDAO.update(reservation);
             return reservation;
@@ -96,5 +107,9 @@ public class ReservationService {
             throw new BusinessViolationException("Il posto indicato non risulta valida");
         }
         return reservationDAO.getActiveReservationBySeat(seatId);
+    }
+
+    public boolean existReservationBySeat(long seatId){
+        return  reservationDAO.existReservationBySeat(seatId);
     }
 }

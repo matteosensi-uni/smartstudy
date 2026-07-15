@@ -8,9 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StudentDAO extends BaseDAO{
-    public static final String tableName = "student";
-    public static final String pkName = "user_id";
-
     public StudentDAO(Connection conn) { super(conn); }
     public Student getStudentById(long studentId){
         try(PreparedStatement ps = conn.prepareStatement("""

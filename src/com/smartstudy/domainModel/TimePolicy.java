@@ -25,7 +25,7 @@ public class TimePolicy extends BaseModel{
 
     public int getMaxTemporaryLeaveMin() {return maxTemporaryLeaveMin;}
     public int getMaxTemporaryLeaveTimes() {return maxTemporaryLeaveTimes;}
-    public String getPolicyName() {return name;}
+    public String getName() {return name;}
 
     public boolean reachedLimit(int times){
         return times >= maxTemporaryLeaveTimes;
