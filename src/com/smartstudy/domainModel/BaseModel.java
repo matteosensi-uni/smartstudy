@@ -7,14 +7,10 @@ public abstract class BaseModel {
 
     BaseModel(){ }
     BaseModel(long id){
-        checkId(id,"");
-        this.id = id;
-    }
-
-    void checkId(long id, String entityName){
         if(id <= 0){
-            throw new DomainViolationException("Id dell'entità "+ entityName +" errato");
+            throw new DomainViolationException("Inserire un id valido");
         }
+        this.id = id;
     }
 
     public final long getId() {return id;}

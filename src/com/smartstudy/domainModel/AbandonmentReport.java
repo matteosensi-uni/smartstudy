@@ -10,93 +10,101 @@ public class AbandonmentReport extends BaseModel{
     private LocalDateTime resolvedAt;
     private ReportStatus status;
     private final String description;
-    private final long reservationId;
-    private final long studentId;
-    private Long adminId;
+    private final Student author;
+    private Admin admin;
 
-    private AbandonmentReport(String description,long reservationId,  long studentId) {
+    private AbandonmentReport(String description,  Student author) {
         super();
-        checkId(reservationId, "Reservation");
-        checkId(studentId, "Student");
+        if(author == null)
+            throw new DomainViolationException("L'autore non può essere nullo");
         this.createdAt = LocalDateTime.now();
-        this.reservationId = reservationId;
         this.description = description;
-        this.studentId = studentId;
-        this.adminId = null;
+        this.author = author;
+        this.admin = null;
         this.status = ReportStatus.OPENED;
     }
 
-    private AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status ,String description, long reservationId, long studentId, Long adminId) {
+    private AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status , String description, Student author, Admin admin) {
         super(id);
-        checkId(reservationId, "Reservation");
-        checkId(studentId, "Student");
         if(createdAt == null){
             throw new DomainViolationException("La data di creazione non può essere nulla");
         }
         if(status == null){
-            throw new DomainViolationException("Lo stato non può essere nullo");
+            throw new DomainViolationException("Lo stato del report non può essere nullo");
         }
-        if(status == ReportStatus.OPENED && adminId != null){
-            throw new DomainViolationException("Non è possibile caricare uno stato OPENED con un admin associato");
-        }
-        if(status != ReportStatus.OPENED && adminId == null){
-            throw new DomainViolationException("Non è possibile caricare uno stato non OPENED senza un admin associato");
-        }
-        if((status == ReportStatus.CONFIRMED || status == ReportStatus.REJECTED) && resolvedAt == null){
-            throw new DomainViolationException("Non è possibile caricare uno stato gestito senza una data di gestione");
+        if(author == null){
+            throw new DomainViolationException("L'autore del report non può essere nullo");
         }
         this.createdAt = createdAt;
         this.resolvedAt = resolvedAt;
-        this.reservationId = reservationId;
         this.description = description;
-        this.studentId = studentId;
+        this.author = author;
         this.status = status;
-        this.adminId = adminId;
+        this.admin = Admin.copy(admin);
     }
 
-    public static AbandonmentReport open(String description, long reservationId, long studentId) {
-        return new AbandonmentReport(description, reservationId, studentId);
+    public static AbandonmentReport open(String description, Student student) {
+        return new AbandonmentReport(description, student);
     }
 
-    public static AbandonmentReport valueOf(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status , String description, long reservationId, long studentId, Long adminId){
-        return new AbandonmentReport(id, createdAt, resolvedAt, status, description, reservationId, studentId, adminId);
+    public static AbandonmentReport valueOf(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status , String description, Student student, Admin admin){
+        return new AbandonmentReport(id, createdAt, resolvedAt, status, description, student, admin);
+    }
+
+    public static AbandonmentReport copy(AbandonmentReport abandonmentReport) {
+        return new AbandonmentReport(abandonmentReport.getId(), abandonmentReport.getCreatedAt(), abandonmentReport.getResolvedAt(), abandonmentReport.getStatus(), abandonmentReport.getDescription(),  abandonmentReport.getAuthor(), abandonmentReport.getAdmin());
     }
 
     public LocalDateTime getCreatedAt() {return  createdAt;}
     public LocalDateTime getResolvedAt() {return resolvedAt;}
     public ReportStatus getStatus() {return status;}
     public String getDescription() {return description;}
-    public long getReservationId() {return reservationId;}
-    public long getStudentId() {return studentId;}
-    public Long getAdminId() {return adminId;}
+    public Student getAuthor() {return author;}
+    public boolean isActive() {
+        return status == ReportStatus.OPENED;
+    }
+    public Admin getAdmin() {
+        return Admin.copy(admin);
+    }
 
-    public void takeInCharge(long adminId) {
-        if(status == ReportStatus.OPENED && this.adminId == null){
-            checkId(adminId, "Admin");
-            this.adminId = adminId;
+    public void takeInCharge(Admin admin) {
+        if(admin == null){
+            throw new DomainViolationException("Inserire un admin valido");
+        }
+        if(status == ReportStatus.OPENED){
+            this.admin = Admin.copy(admin);
             status = ReportStatus.PENDING;
         }else{
             throw new DomainViolationException("Lo stato è già stato gestito");
         }
     }
 
-    public void confirm(long adminId) {
-        handleReport(adminId, ReportStatus.CONFIRMED);
+    void close(){ //la prenotazione è stata chiusa prima che un admin abbia gestito la prenotazione
+        if(status == ReportStatus.PENDING || status == ReportStatus.OPENED){
+            this.status = ReportStatus.CLOSED;
+        }else {
+            throw new DomainViolationException("La prenotazione è già stata gestita");
+        }
     }
 
-    public void reject(long adminId) {
-        handleReport(adminId, ReportStatus.REJECTED);
+    public void confirm(Admin admin) {
+        handleReport(admin, ReportStatus.CONFIRMED);
     }
 
-    private void handleReport(long adminId, ReportStatus finalState) {
+    public void reject(Admin admin) {
+        handleReport(admin, ReportStatus.REJECTED);
+    }
+
+    private void handleReport(Admin admin, ReportStatus finalState) {
         if (status != ReportStatus.PENDING) {
             throw new DomainViolationException("Il report non può essere gestito");
         }
-        if (this.adminId == null || adminId != this.adminId) {
+        if(admin == null){
+            throw new DomainViolationException("Inserire un admin valido");
+        }
+        if (admin.getId() != this.admin.getId()) {
             throw new DomainViolationException("Il report è gestito da un admin diverso");
         }
-        checkId(adminId, "Admin");
-        this.adminId = adminId;
         status = finalState;
         resolvedAt = LocalDateTime.now();
     }
