@@ -6,41 +6,29 @@ import com.smartstudy.exceptions.DomainViolationException;
 import java.time.LocalDateTime;
 
 public class AbandonmentReport extends BaseModel{
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
     private LocalDateTime resolvedAt;
     private ReportStatus status;
-    private final String description;
-    private final Student author;
+    private String description;
+    private Student author;
     private Admin admin;
 
     private AbandonmentReport(String description,  Student author) {
         super();
-        if(author == null)
-            throw new DomainViolationException("L'autore non può essere nullo");
-        this.createdAt = LocalDateTime.now();
-        this.description = description;
-        this.author = author;
-        this.admin = null;
-        this.status = ReportStatus.OPENED;
+        setCreatedAt(LocalDateTime.now());
+        setStatus(ReportStatus.OPENED);
+        setDescription(description);
+        setAuthor(author);
     }
 
     private AbandonmentReport(long id, LocalDateTime createdAt, LocalDateTime resolvedAt, ReportStatus status , String description, Student author, Admin admin) {
         super(id);
-        if(createdAt == null){
-            throw new DomainViolationException("La data di creazione non può essere nulla");
-        }
-        if(status == null){
-            throw new DomainViolationException("Lo stato del report non può essere nullo");
-        }
-        if(author == null){
-            throw new DomainViolationException("L'autore del report non può essere nullo");
-        }
-        this.createdAt = createdAt;
-        this.resolvedAt = resolvedAt;
-        this.description = description;
-        this.author = author;
-        this.status = status;
-        this.admin = Admin.copy(admin);
+        setCreatedAt(createdAt);
+        setResolvedAt(resolvedAt);
+        setStatus(status);
+        setDescription(description);
+        setAuthor(author);
+        setAdmin(admin);
     }
 
     public static AbandonmentReport open(String description, Student student) {
@@ -53,6 +41,47 @@ public class AbandonmentReport extends BaseModel{
 
     public static AbandonmentReport copy(AbandonmentReport abandonmentReport) {
         return new AbandonmentReport(abandonmentReport.getId(), abandonmentReport.getCreatedAt(), abandonmentReport.getResolvedAt(), abandonmentReport.getStatus(), abandonmentReport.getDescription(),  abandonmentReport.getAuthor(), abandonmentReport.getAdmin());
+    }
+
+    private void setCreatedAt(LocalDateTime createdAt) {
+        if(createdAt == null){
+            throw new DomainViolationException("La data di creazione non può essere nulla");
+        }
+        this.createdAt = createdAt;
+    }
+
+    private void setResolvedAt(LocalDateTime resolvedAt) {
+        if(createdAt != null && resolvedAt.isBefore(createdAt)){
+            throw new DomainViolationException("Inserire una data corretta");
+        }
+        this.resolvedAt = resolvedAt;
+    }
+
+    private void setStatus(ReportStatus status) {
+        if(status == null){
+            throw new DomainViolationException("Lo stato del report non può essere nullo");
+        }
+        this.status = status;
+    }
+
+    private void setDescription(String description) {
+        this.description = description;
+    }
+
+    private void setAuthor(Student author) {
+        if(author == null)
+            throw new DomainViolationException("L'autore non può essere nullo");
+        this.author = author;
+    }
+
+    private void setAdmin(Admin admin) {
+        if(admin == null && status != ReportStatus.OPENED){
+            throw new DomainViolationException("Inserire un admin valido");
+        }
+        if(admin != null && status ==  ReportStatus.OPENED){
+            throw new DomainViolationException("Non può essere inserito un admin in un report aperto e non gestito");
+        }
+        this.admin = admin;
     }
 
     public LocalDateTime getCreatedAt() {return  createdAt;}
@@ -68,20 +97,13 @@ public class AbandonmentReport extends BaseModel{
     }
 
     public void takeInCharge(Admin admin) {
-        if(admin == null){
-            throw new DomainViolationException("Inserire un admin valido");
-        }
-        if(status == ReportStatus.OPENED){
-            this.admin = Admin.copy(admin);
-            status = ReportStatus.PENDING;
-        }else{
-            throw new DomainViolationException("Lo stato è già stato gestito");
-        }
+        setStatus(ReportStatus.PENDING);
+        setAdmin(admin);
     }
 
     void close(){ //la prenotazione è stata chiusa prima che un admin abbia gestito la prenotazione
         if(status == ReportStatus.PENDING || status == ReportStatus.OPENED){
-            this.status = ReportStatus.CLOSED;
+            setStatus(ReportStatus.CLOSED);
         }else {
             throw new DomainViolationException("La prenotazione è già stata gestita");
         }
@@ -105,8 +127,8 @@ public class AbandonmentReport extends BaseModel{
         if (admin.getId() != this.admin.getId()) {
             throw new DomainViolationException("Il report è gestito da un admin diverso");
         }
-        status = finalState;
-        resolvedAt = LocalDateTime.now();
+        setStatus(finalState);
+        setResolvedAt(LocalDateTime.now());
     }
 
 

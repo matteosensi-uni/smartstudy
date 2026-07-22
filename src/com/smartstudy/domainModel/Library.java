@@ -5,41 +5,23 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class Library extends BaseModel {
-    private final String name;
-    private final LocalTime openingTime;
-    private final LocalTime closingTime;
-    private final String street;
-    private final String number;
-    private final String city;
-    private final ArrayList<Admin> libraryAdmins;
+    private  String name;
+    private  LocalTime openingTime;
+    private  LocalTime closingTime;
+    private  String street;
+    private  String number;
+    private  String city;
+    private  ArrayList<Admin> libraryAdmins;
 
     private Library(long id, String name, LocalTime openingTime, LocalTime closingTime, String street, String number, String city, ArrayList<Admin> libraryAdmins) {
         super(id);
-        if(name == null || name.isBlank()){
-            throw new DomainViolationException("Il nome non può essere vuoto");
-        }
-        if(street == null || street.isBlank()){
-            throw new DomainViolationException("La strada non può essere vuoto");
-        }
-        if(number == null || number.isBlank()){
-            throw new DomainViolationException("Il numero non può essere vuoto");
-        }
-        if(city == null || city.isBlank()){
-            throw new DomainViolationException("La città non può essere vuota");
-        }
-        if(openingTime == null || closingTime == null) {
-            throw new DomainViolationException("I tempi di apertura e chiusura della biblioteca non possono essere nulli");
-        }
-        if(libraryAdmins == null || libraryAdmins.isEmpty()){
-            throw new DomainViolationException("La biblioteca deve avere degli admin");
-        }
-        this.name = name;
-        this.openingTime = openingTime;
-        this.closingTime = closingTime;
-        this.street = street;
-        this.number = number;
-        this.city = city;
-        this.libraryAdmins = new ArrayList<>(libraryAdmins);
+        setName(name);
+        setOpeningTime(openingTime);
+        setClosingTime(closingTime);
+        setStreet(street);
+        setNumber(number);
+        setCity(city);
+        setLibraryAdmins(libraryAdmins);
     }
     public static Library valueOf(long id, String name, LocalTime openingTime, LocalTime closingTime, String street, String number, String city, ArrayList<Admin> libraryAdmins) {
         return new Library(id, name, openingTime, closingTime, street, number, city, libraryAdmins);
@@ -47,6 +29,55 @@ public class Library extends BaseModel {
 
     public static Library copy(Library library) {
         return new Library(library.getId(), library.getName(), library.getOpeningTime(), library.getClosingTime(), library.getStreet(), library.getNumber(), library.getCity(), library.getLibraryAdmins());
+    }
+
+    private void setName(String name) {
+        if(name == null || name.isBlank()){
+            throw new DomainViolationException("Il nome della biblioteca è vuoto");
+        }
+        this.name = name;
+    }
+
+    private void setOpeningTime(LocalTime openingTime) {
+        if(openingTime == null){
+            throw new DomainViolationException("L'orario di apertura della biblioteca è nullo");
+        }
+        this.openingTime = openingTime;
+    }
+
+    private void setClosingTime(LocalTime closingTime) {
+        if(closingTime == null){
+            throw new DomainViolationException("L'orario di chiusura della biblioteca è nullo");
+        }
+        this.closingTime = closingTime;
+    }
+
+    private void setStreet(String street) {
+        if(street == null || street.isBlank()){
+            throw new DomainViolationException("La strada della biblioteca è vuota");
+        }
+        this.street = street;
+    }
+
+    private void setNumber(String number) {
+        if(number == null || number.isBlank()){
+            throw new DomainViolationException("Il della biblioteca numero è vuoto");
+        }
+        this.number = number;
+    }
+
+    private void setCity(String city) {
+        if(city == null || city.isBlank()){
+            throw new DomainViolationException("La della biblioteca città è vuota");
+        }
+        this.city = city;
+    }
+
+    private void setLibraryAdmins(ArrayList<Admin> libraryAdmins) {
+        if(libraryAdmins == null || libraryAdmins.isEmpty()){
+            throw new DomainViolationException("La biblioteca deve avere degli admin");
+        }
+        this.libraryAdmins = new ArrayList<>(libraryAdmins);
     }
 
     public LocalTime getOpeningTime() {return openingTime;}

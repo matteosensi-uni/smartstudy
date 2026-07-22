@@ -6,61 +6,34 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Reservation extends BaseModel{
-    private final LocalDateTime startTime;
+    private LocalDateTime startTime;
     private LocalDateTime endTime;
     private ReservationStatus status;
-    private final ArrayList<TemporaryLeave> temporaryLeaves;
-    private final ArrayList<AbandonmentReport> abandonmentReports;
-    private final Seat seat;
-    private final AccessSession session;
+    private ArrayList<TemporaryLeave> temporaryLeaves;
+    private ArrayList<AbandonmentReport> abandonmentReports;
+    private Seat seat;
+    private AccessSession session;
 
     private Reservation(AccessSession session, Seat seat) {
         super();
-        this.abandonmentReports = new ArrayList<>();
-        if(session == null ||  seat == null){
-            throw new DomainViolationException("La sessione e il posto non possono essere nulli");
-        }
-        this.startTime = LocalDateTime.now();
-        this.status = ReservationStatus.ACTIVE;
-        this.session = AccessSession.copy(session);
-        this.seat = seat;
-        temporaryLeaves = new ArrayList<>();
+        setSeat(seat);
+        setSession(session);
+        setSeat(seat);
+        setStartTime(LocalDateTime.now());
+        setStatus(ReservationStatus.ACTIVE);
+        setTemporaryLeaves(new ArrayList<>());
+        setAbandonmentReports(new ArrayList<>());
     }
 
     private Reservation(long id, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status, ArrayList<TemporaryLeave> temporaryLeaves, ArrayList<AbandonmentReport> abandonmentReports, AccessSession session, Seat seat) {
         super(id);
-        if(session == null ||  seat == null){
-            throw new DomainViolationException("La sessione e il posto non possono essere nulli");
-        }
-        if(temporaryLeaves == null){
-            throw new DomainViolationException("La lista delle temporary leaves non può essere nulla");
-        }
-        if(abandonmentReports == null){
-            throw new DomainViolationException("La lista dei report non può essere nulla");
-        }
-        if(startTime == null){
-            throw new DomainViolationException("la data di inizio prenotazione non può essere nulla");
-        }
-        if(status == null){
-            throw new DomainViolationException("Lo stato della prenotazione non può essere nullo");
-        }
-        if((status == ReservationStatus.ACTIVE || status == ReservationStatus.TEMPORARILY_LEFT) && endTime != null){
-            throw new DomainViolationException("Una prenotazione attiva non può avere un tempo di fine");
-        }
-        if(status == ReservationStatus.CLOSED && endTime == null){
-            throw new DomainViolationException("Una prenotazione attiva non può avere un tempo di fine");
-        }
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.status = status;
-        this.session = AccessSession.copy(session);
-        this.seat = seat;
-        this.temporaryLeaves = new ArrayList<>(temporaryLeaves);
-        this.abandonmentReports = new ArrayList<>();
-        for(AbandonmentReport report : abandonmentReports){
-            this.abandonmentReports.add(AbandonmentReport.copy(report));
-        }
-
+        setStartTime(startTime);
+        setEndTime(endTime);
+        setStatus(status);
+        setTemporaryLeaves(temporaryLeaves);
+        setAbandonmentReports(abandonmentReports);
+        setSession(session);
+        setSeat(seat);
     }
 
     public static Reservation valueOf(long id, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status, ArrayList<TemporaryLeave> temporaryLeaves, AccessSession session, Seat seat, ArrayList<AbandonmentReport> reports){
@@ -76,6 +49,67 @@ public class Reservation extends BaseModel{
     public static Reservation start(AccessSession session, Seat seat){
         seat.occupy();
         return new Reservation(session, seat);
+    }
+
+    private void setSeat(Seat seat) {
+        if(seat == null){
+            throw new DomainViolationException("Posto della prenotazione nullo");
+        }
+        this.seat = seat;
+    }
+
+    private void setAbandonmentReports(ArrayList<AbandonmentReport> abandonmentReports) {
+        if(abandonmentReports == null){
+            throw new DomainViolationException("La lista dei report non può essere nulla");
+        }
+        this.abandonmentReports = new ArrayList<>();
+        for(AbandonmentReport report : abandonmentReports){
+            this.abandonmentReports.add(AbandonmentReport.copy(report));
+        }
+    }
+
+    private void setTemporaryLeaves(ArrayList<TemporaryLeave> temporaryLeaves) {
+        if(temporaryLeaves == null){
+            throw new DomainViolationException("La lista delle temporary leaves non può essere nulla");
+        }
+        this.temporaryLeaves = new ArrayList<>(temporaryLeaves);
+    }
+
+    private void setStatus(ReservationStatus status) {
+        if(status == null){
+            throw new DomainViolationException("Lo stato della prenotazione non può essere nullo");
+        }
+        if((status == ReservationStatus.ACTIVE || status == ReservationStatus.TEMPORARILY_LEFT) && endTime != null){
+            throw new DomainViolationException("Una prenotazione attiva non può avere un tempo di fine");
+        }
+        if(status == ReservationStatus.CLOSED && endTime == null){
+            throw new DomainViolationException("Una prenotazione attiva non può avere un tempo di fine");
+        }
+        this.status = status;
+    }
+
+    private void setEndTime(LocalDateTime endTime) {
+        if(startTime != null && endTime.isBefore(startTime)){
+            throw new DomainViolationException("Inserire una data di entrata valida");
+        }
+        this.endTime = endTime;
+    }
+
+    private void setStartTime(LocalDateTime startTime) {
+        if(startTime == null){
+            throw new DomainViolationException("la data di inizio prenotazione non può essere nulla");
+        }
+        if(endTime != null && endTime.isBefore(startTime)){
+            throw new DomainViolationException("Inserire una data di entrata valida");
+        }
+        this.startTime = startTime;
+    }
+
+    private void setSession(AccessSession session) {
+        if(session == null){
+            throw new DomainViolationException("Sessione dello studente inserita nulla");
+        }
+        this.session = session;
     }
 
     public LocalDateTime getStartTime() {return startTime;}
@@ -94,8 +128,8 @@ public class Reservation extends BaseModel{
                 abandonmentReport.close();
             }catch(Exception ignored){}
         }
-        endTime =  LocalDateTime.now();
-        status = ReservationStatus.CLOSED;
+        setEndTime(LocalDateTime.now());
+        setStatus(ReservationStatus.CLOSED);
     }
 
     private void markTemporarilyLeft(){
@@ -147,13 +181,13 @@ public class Reservation extends BaseModel{
     }
 
 
-    private boolean hasActiveReport(){
+    public boolean hasActiveReport(){
         for(AbandonmentReport report : abandonmentReports){
             if(report.isActive()) return true;        }
         return false;
     }
 
-    private boolean hasValidTemporaryLeave(){
+    public boolean hasValidTemporaryLeave(){
         for(TemporaryLeave leave : temporaryLeaves){
             if(leave.isValid()) return true;
         }

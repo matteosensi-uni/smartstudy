@@ -5,32 +5,22 @@ import com.smartstudy.exceptions.DomainViolationException;
 import java.time.LocalDateTime;
 
 public class AccessSession extends BaseModel{
-    private final LocalDateTime entryTime;
+    private LocalDateTime entryTime;
     private LocalDateTime exitTime;
-    private final Library library;
-    private final Student student;
+    private Library library;
+    private Student student;
 
     private AccessSession(Library library, Student student) {
-        if(student == null || library == null){
-            throw new DomainViolationException("I dati non possono essere nulli");
-        }
-        this.entryTime = LocalDateTime.now();
-        this.library = library;
-        this.student= student;
+        setLibrary(library);
+        setStudent(student);
+        setEntryTime(LocalDateTime.now());
     }
 
     private AccessSession(long id, LocalDateTime entryTime, LocalDateTime exitTime,  Library library,  Student student) {
         super(id);
-        if(student == null || library == null){
-            throw new DomainViolationException("I dati non possono essere nulli");
-        }
-        if(entryTime == null){
-            throw new DomainViolationException("la data di ingresso non può essere nulla");
-        }
-        this.entryTime = entryTime;
-        this.exitTime = exitTime;
-        this.library = library;
-        this.student = student;
+        setEntryTime(entryTime);
+        setLibrary(library);
+        setStudent(student);
     }
 
     public static AccessSession startSession(Library library, Student student) {
@@ -48,6 +38,35 @@ public class AccessSession extends BaseModel{
         return new AccessSession(accessSession.getId(), accessSession.getEntryTime(), accessSession.getExitTime(), accessSession.getLibrary(), accessSession.getStudent());
     }
 
+    private void setEntryTime(LocalDateTime entryTime) {
+        if(entryTime == null)
+            throw new DomainViolationException("la data di ingresso è nulla");
+        if(exitTime != null &&  exitTime.isBefore(entryTime))
+            throw new DomainViolationException("Inserire la data di entrata valida");
+        this.entryTime = entryTime;
+    }
+
+    public void setLibrary(Library library) {
+        if(library == null)
+            throw new DomainViolationException("La biblioteca associata all'AccessSession è nulla");
+        this.library = library;
+    }
+
+    public void setStudent(Student student) {
+        if(student == null)
+            throw new DomainViolationException("Lo studente associato all'AccessSession è nullo");
+        this.student = student;
+    }
+
+    public void setExitTime(LocalDateTime exitTime) {
+        if(exitTime == null)
+            throw new DomainViolationException("La data di uscita è nulla");
+        if(entryTime != null &&  exitTime.isBefore(entryTime)){
+            throw new DomainViolationException("Inserire la data di uscita valida");
+        }
+        this.exitTime = exitTime;
+    }
+
     public LocalDateTime getEntryTime() { return entryTime; }
     public LocalDateTime getExitTime() { return exitTime; }
     public Library getLibrary() {return library; }
@@ -55,9 +74,6 @@ public class AccessSession extends BaseModel{
     public boolean isActive() { return exitTime == null; }
 
     public void closeSession(){
-        if(exitTime != null){
-            throw new DomainViolationException("La sessione è già stata chiusa");
-        }
-        this.exitTime = LocalDateTime.now();
+        setExitTime(LocalDateTime.now());
     }
 }

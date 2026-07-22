@@ -5,30 +5,18 @@ import com.smartstudy.exceptions.DomainViolationException;
 
 public class StudyArea extends BaseModel {
     private String name;
-    private final int floor;
+    private int floor;
     private StudyAreaType type;
     private TimePolicy timePolicy;
-    private final Library library;
+    private Library library;
 
     private StudyArea(long id, String name, int floor, StudyAreaType type, TimePolicy timePolicy, Library library) {
         super(id);
-        if(timePolicy == null){
-            throw new DomainViolationException("TimePolicy non può essere nulla");
-        }
-        if(library == null){
-            throw new DomainViolationException("La StudyArea deve essere associata ad una biblioteca");
-        }
-        if(name == null || name.isBlank()){
-            throw new DomainViolationException("La StudyArea deve avere un nome valido");
-        }
-        if(type == null){
-            throw new DomainViolationException("La StudyArea non pupò avere un tipo nullo");
-        }
-        this.name = name;
-        this.floor = floor;
-        this.type = type;
-        this.timePolicy = timePolicy; // è una classe immutabile
-        this.library = library;
+        setName(name);
+        setFloor(floor);
+        setType(type);
+        setTimePolicy(timePolicy);
+        setLibrary(library);
     }
 
     public static StudyArea valueOf(long id, String name, int floor, StudyAreaType type, TimePolicy timePolicy,  Library library) {
@@ -38,6 +26,37 @@ public class StudyArea extends BaseModel {
         return new StudyArea(sa.getId(), sa.getName(), sa.getFloor(), sa.getType(), sa.getTimePolicy(), sa.getLibrary());
     }
 
+    private void setFloor(int floor) {
+        this.floor = floor;
+    }
+
+    private void setType(StudyAreaType type) {
+        if(type == null){
+            throw new DomainViolationException("La StudyArea non pupò avere un tipo nullo");
+        }
+        this.type = type;
+    }
+
+    private void setTimePolicy(TimePolicy timePolicy) {
+        if(timePolicy == null){
+            throw new DomainViolationException("TimePolicy non può essere nulla");
+        }
+        this.timePolicy = timePolicy;
+    }
+
+    private void setLibrary(Library library) {
+        if(library == null){
+            throw new DomainViolationException("La StudyArea deve essere associata ad una biblioteca");
+        }
+        this.library = library;
+    }
+
+    private void setName(String name){
+        if(name == null || name.isBlank()){
+            throw new DomainViolationException("Il nome non può essere vuoto");
+        }
+        this.name = name;
+    }
 
     public String getName() { return name; }
     public StudyAreaType getType() { return type; }
@@ -47,22 +66,14 @@ public class StudyArea extends BaseModel {
         return library;
     }
 
-    public void setName(String name){
-        if(name == null || name.isBlank()){
-            throw new DomainViolationException("Il nuovo nome non può essere vuoto");
-        }
-        this.name = name;
+    public void changeName(String newName){
+        setName(newName);
     }
+
     public void changeStudyAreaType(StudyAreaType newType){
-        if(newType == null){
-            throw new DomainViolationException("Il tipo non può essere nullo");
-        }
-        type = newType;
+        setType(newType);
     }
     public void changePolicy(TimePolicy timePolicy){
-        if(timePolicy == null){
-            throw new DomainViolationException("La policy indicata non è valida");
-        }
-        this.timePolicy = timePolicy;
+        setTimePolicy(timePolicy);
     }
 }

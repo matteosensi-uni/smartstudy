@@ -4,26 +4,17 @@ import com.smartstudy.domainModel.enums.SeatType;
 import com.smartstudy.exceptions.DomainViolationException;
 
 public class Seat extends BaseModel{
-    private final String qrCode;
+    private String qrCode;
     private SeatType type;
     private SeatStatus status;
-    private final StudyArea area;
+    private StudyArea area;
 
     private Seat(long id, String qrCode, SeatType type, SeatStatus status, StudyArea area) {
         super(id);
-        if(qrCode == null || qrCode.isBlank())
-            throw new DomainViolationException("il qrCode è nullo");
-        if(type == null)
-            throw new DomainViolationException("il type è nullo");
-        if(status == null)
-            throw new DomainViolationException("Lo status è nullo");
-        if(area == null){
-            throw new DomainViolationException("Il posto deve essere associato ad un'area studio");
-        }
-        this.qrCode = qrCode;
-        this.type = type;
-        this.status = status;
-        this.area = area;
+        setQrCode(qrCode);
+        setType(type);
+        setStatus(status);
+        setArea(area);
     }
 
     public static Seat valueOf(long id, String qrCode, SeatType type, SeatStatus status, StudyArea area) {
@@ -32,6 +23,31 @@ public class Seat extends BaseModel{
 
     public static Seat copy(Seat seat) {
         return new Seat(seat.getId(), seat.getQrCode(), seat.getType(), seat.getStatus(), seat.getStudyArea());
+    }
+
+    private void setQrCode(String qrCode) {
+        if(qrCode == null || qrCode.isBlank())
+            throw new DomainViolationException("il qrCode è nullo");
+        this.qrCode = qrCode;
+    }
+
+    private void setType(SeatType type) {
+        if(type == null)
+            throw new DomainViolationException("il type è nullo");
+        this.type = type;
+    }
+
+    private void setStatus(SeatStatus status) {
+        if(status == null)
+            throw new DomainViolationException("Lo status è nullo");
+        this.status = status;
+    }
+
+    private void setArea(StudyArea area) {
+        if(area == null){
+            throw new DomainViolationException("Il posto deve essere associato ad un'area studio");
+        }
+        this.area = area;
     }
 
     public StudyArea getStudyArea(){ return StudyArea.copy(area); }
@@ -70,13 +86,10 @@ public class Seat extends BaseModel{
     }
 
     public void changeSeatType(SeatType newType){
-        if(newType == null){
-            throw new DomainViolationException("Il nuovo tipo non può essere nullo");
-        }
         if(!isUnavailable() || isBroken()){
             throw new DomainViolationException("Non è possibile cambiare il tipo di un posto occupato");
         }
-        type = newType;
+        setType(newType);
     }
 
 }

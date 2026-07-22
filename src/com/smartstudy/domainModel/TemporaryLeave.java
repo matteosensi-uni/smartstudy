@@ -5,25 +5,22 @@ import com.smartstudy.exceptions.DomainViolationException;
 import java.time.LocalDateTime;
 
 public class TemporaryLeave extends BaseModel {
-    private final LocalDateTime startTime;
-    private final LocalDateTime expectedEndTime;
+    private LocalDateTime startTime;
+    private LocalDateTime expectedEndTime;
 
     private TemporaryLeave(int minutes) {
         super();
         if(minutes <= 0){
             throw new IllegalArgumentException("I minuti devono essere maggiori di 0");
         }
-        this.startTime = LocalDateTime.now();
-        this.expectedEndTime = startTime.plusMinutes(minutes);
+        setStartTime(LocalDateTime.now());
+        setExpectedEndTime(LocalDateTime.now().plusMinutes(minutes));
     }
 
     private TemporaryLeave(long id, LocalDateTime startTime, LocalDateTime expectedEndTime) {
         super(id);
-        if(startTime == null || expectedEndTime == null){
-            throw new DomainViolationException("I tempi di inizio e fine non possono essere nulli");
-        }
-        this.startTime = startTime;
-        this.expectedEndTime = expectedEndTime;
+        setStartTime(startTime);
+        setExpectedEndTime(expectedEndTime);
     }
 
     public static TemporaryLeave create(int minutes) {
@@ -32,6 +29,26 @@ public class TemporaryLeave extends BaseModel {
 
     public static TemporaryLeave valueOf(long id, LocalDateTime startTime, LocalDateTime expectedEndTime) {
         return new TemporaryLeave(id, startTime, expectedEndTime);
+    }
+
+    private void setStartTime(LocalDateTime startTime) {
+        if(startTime == null){
+            throw new DomainViolationException("Il tempo di inizio è nullo");
+        }
+        if(expectedEndTime != null &&  expectedEndTime.isBefore(startTime)){
+            throw new DomainViolationException("Inserire un tempo di inizio valido");
+        }
+        this.startTime = startTime;
+    }
+
+    private void setExpectedEndTime(LocalDateTime expectedEndTime) {
+        if(expectedEndTime == null){
+            throw new DomainViolationException("Il tempo di fine è nullo");
+        }
+        if(startTime != null && expectedEndTime.isBefore(startTime)){
+            throw new DomainViolationException("Inserire un tempo di fine valido");
+        }
+        this.expectedEndTime = expectedEndTime;
     }
 
     public LocalDateTime getStartTime() {return startTime;}

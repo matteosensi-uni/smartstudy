@@ -3,24 +3,40 @@ package com.smartstudy.domainModel;
 import com.smartstudy.exceptions.DomainViolationException;
 
 public class TimePolicy extends BaseModel{
-    private final int maxTemporaryLeaveMin;
-    private final int maxTemporaryLeaveTimes;
-    private final String name;
+    private int maxTemporaryLeaveMin;
+    private int maxTemporaryLeaveTimes;
+    private String name;
 
     private TimePolicy(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes, String name) {
         super(id);
-        if(name == null || name.isBlank())
-            throw new DomainViolationException("Il nome della regola è vuoto");
-        if(maxTemporaryLeaveMin <= 0 || maxTemporaryLeaveTimes <= 0){
+        setMaxTemporaryLeaveMin(maxTemporaryLeaveMin);
+        setMaxTemporaryLeaveTimes(maxTemporaryLeaveTimes);
+        setName(name);
+    }
+
+    private static TimePolicy valueOf(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes, String name) {
+        return new TimePolicy(id, maxTemporaryLeaveMin, maxTemporaryLeaveTimes, name);
+    }
+
+    private void setMaxTemporaryLeaveMin(int maxTemporaryLeaveMin) {
+        if(maxTemporaryLeaveMin <= 0){
             throw new DomainViolationException("Le regole devono essere maggiori di 0");
         }
         this.maxTemporaryLeaveMin = maxTemporaryLeaveMin;
-        this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
-        this.name = name;
     }
 
-    public static TimePolicy valueOf(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes, String name) {
-        return new TimePolicy(id, maxTemporaryLeaveMin, maxTemporaryLeaveTimes, name);
+    private void setMaxTemporaryLeaveTimes(int maxTemporaryLeaveTimes) {
+        if(maxTemporaryLeaveTimes <= 0){
+            throw new DomainViolationException("Le regole devono essere maggiori di 0");
+        }
+        this.maxTemporaryLeaveTimes = maxTemporaryLeaveTimes;
+    }
+
+    private void setName(String name) {
+        if(name == null || name.isBlank())
+            throw new DomainViolationException("Il nome della regola è nullo");
+
+        this.name = name;
     }
 
     public int getMaxTemporaryLeaveMin() {return maxTemporaryLeaveMin;}
