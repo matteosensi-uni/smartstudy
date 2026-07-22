@@ -47,7 +47,7 @@ public class Seat extends BaseModel{
         if(area == null){
             throw new DomainViolationException("Il posto deve essere associato ad un'area studio");
         }
-        this.area = area;
+        this.area = StudyArea.copy(area);
     }
 
     public StudyArea getStudyArea(){ return StudyArea.copy(area); }
@@ -86,7 +86,7 @@ public class Seat extends BaseModel{
     }
 
     public void changeSeatType(SeatType newType){
-        if(!isUnavailable() || isBroken()){
+        if(isUnavailable() || isBroken()){
             throw new DomainViolationException("Non è possibile cambiare il tipo di un posto occupato");
         }
         setType(newType);

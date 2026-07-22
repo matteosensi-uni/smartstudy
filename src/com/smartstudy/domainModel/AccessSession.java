@@ -21,6 +21,9 @@ public class AccessSession extends BaseModel{
         setEntryTime(entryTime);
         setLibrary(library);
         setStudent(student);
+        if(exitTime != null){
+            setExitTime(exitTime);
+        }
     }
 
     public static AccessSession startSession(Library library, Student student) {
@@ -46,19 +49,19 @@ public class AccessSession extends BaseModel{
         this.entryTime = entryTime;
     }
 
-    public void setLibrary(Library library) {
+    private void setLibrary(Library library) {
         if(library == null)
             throw new DomainViolationException("La biblioteca associata all'AccessSession è nulla");
         this.library = library;
     }
 
-    public void setStudent(Student student) {
+    private void setStudent(Student student) {
         if(student == null)
             throw new DomainViolationException("Lo studente associato all'AccessSession è nullo");
         this.student = student;
     }
 
-    public void setExitTime(LocalDateTime exitTime) {
+    private void setExitTime(LocalDateTime exitTime) {
         if(exitTime == null)
             throw new DomainViolationException("La data di uscita è nulla");
         if(entryTime != null &&  exitTime.isBefore(entryTime)){
@@ -74,6 +77,9 @@ public class AccessSession extends BaseModel{
     public boolean isActive() { return exitTime == null; }
 
     public void closeSession(){
+        if(exitTime != null){
+            throw new DomainViolationException("La sessione è già stata chiusa");
+        }
         setExitTime(LocalDateTime.now());
     }
 }

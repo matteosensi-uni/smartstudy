@@ -51,7 +51,7 @@ public class AbandonmentReport extends BaseModel{
     }
 
     private void setResolvedAt(LocalDateTime resolvedAt) {
-        if(createdAt != null && resolvedAt.isBefore(createdAt)){
+        if(resolvedAt != null && createdAt != null && resolvedAt.isBefore(createdAt)){
             throw new DomainViolationException("Inserire una data corretta");
         }
         this.resolvedAt = resolvedAt;
@@ -75,13 +75,13 @@ public class AbandonmentReport extends BaseModel{
     }
 
     private void setAdmin(Admin admin) {
-        if(admin == null && status != ReportStatus.OPENED){
+        if(admin == null && status != ReportStatus.OPENED && status != ReportStatus.CLOSED){
             throw new DomainViolationException("Inserire un admin valido");
         }
         if(admin != null && status ==  ReportStatus.OPENED){
             throw new DomainViolationException("Non può essere inserito un admin in un report aperto e non gestito");
         }
-        this.admin = admin;
+        this.admin = admin == null ? null : Admin.copy(admin);
     }
 
     public LocalDateTime getCreatedAt() {return  createdAt;}
@@ -93,10 +93,13 @@ public class AbandonmentReport extends BaseModel{
         return status == ReportStatus.OPENED;
     }
     public Admin getAdmin() {
-        return Admin.copy(admin);
+        return admin == null ? null : Admin.copy(admin);
     }
 
     public void takeInCharge(Admin admin) {
+        if(status != ReportStatus.OPENED){
+            throw new DomainViolationException("Il report non può essere preso in carico");
+        }
         setStatus(ReportStatus.PENDING);
         setAdmin(admin);
     }

@@ -14,7 +14,7 @@ public class TimePolicy extends BaseModel{
         setName(name);
     }
 
-    private static TimePolicy valueOf(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes, String name) {
+    public static TimePolicy valueOf(long id, int maxTemporaryLeaveMin, int maxTemporaryLeaveTimes, String name) {
         return new TimePolicy(id, maxTemporaryLeaveMin, maxTemporaryLeaveTimes, name);
     }
 

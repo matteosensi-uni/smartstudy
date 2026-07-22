@@ -54,6 +54,6 @@ public class TemporaryLeave extends BaseModel {
     public LocalDateTime getStartTime() {return startTime;}
     public LocalDateTime getExpectedEndTime() {return expectedEndTime;}
     public boolean isValid(){
-        return expectedEndTime.isBefore(LocalDateTime.now());
+        return expectedEndTime.isAfter(LocalDateTime.now());
     }
 }

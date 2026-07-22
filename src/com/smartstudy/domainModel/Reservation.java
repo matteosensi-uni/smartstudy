@@ -18,7 +18,6 @@ public class Reservation extends BaseModel{
         super();
         setSeat(seat);
         setSession(session);
-        setSeat(seat);
         setStartTime(LocalDateTime.now());
         setStatus(ReservationStatus.ACTIVE);
         setTemporaryLeaves(new ArrayList<>());
@@ -55,7 +54,7 @@ public class Reservation extends BaseModel{
         if(seat == null){
             throw new DomainViolationException("Posto della prenotazione nullo");
         }
-        this.seat = seat;
+        this.seat = Seat.copy(seat);
     }
 
     private void setAbandonmentReports(ArrayList<AbandonmentReport> abandonmentReports) {
@@ -89,7 +88,7 @@ public class Reservation extends BaseModel{
     }
 
     private void setEndTime(LocalDateTime endTime) {
-        if(startTime != null && endTime.isBefore(startTime)){
+        if(endTime != null && startTime != null && endTime.isBefore(startTime)){
             throw new DomainViolationException("Inserire una data di entrata valida");
         }
         this.endTime = endTime;
@@ -109,7 +108,7 @@ public class Reservation extends BaseModel{
         if(session == null){
             throw new DomainViolationException("Sessione dello studente inserita nulla");
         }
-        this.session = session;
+        this.session = AccessSession.copy(session);
     }
 
     public LocalDateTime getStartTime() {return startTime;}

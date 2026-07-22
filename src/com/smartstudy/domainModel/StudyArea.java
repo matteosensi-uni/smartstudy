@@ -48,7 +48,7 @@ public class StudyArea extends BaseModel {
         if(library == null){
             throw new DomainViolationException("La StudyArea deve essere associata ad una biblioteca");
         }
-        this.library = library;
+        this.library = Library.copy(library);
     }
 
     private void setName(String name){
@@ -63,7 +63,7 @@ public class StudyArea extends BaseModel {
     public int getFloor() { return floor; }
     public TimePolicy getTimePolicy() {return timePolicy;}
     public Library getLibrary() {
-        return library;
+        return Library.copy(library);
     }
 
     public void changeName(String newName){

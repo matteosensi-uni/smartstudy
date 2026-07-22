@@ -77,7 +77,10 @@ public class Library extends BaseModel {
         if(libraryAdmins == null || libraryAdmins.isEmpty()){
             throw new DomainViolationException("La biblioteca deve avere degli admin");
         }
-        this.libraryAdmins = new ArrayList<>(libraryAdmins);
+        this.libraryAdmins = new ArrayList<>();
+        for(Admin admin : libraryAdmins){
+            this.libraryAdmins.add(Admin.copy(admin));
+        }
     }
 
     public LocalTime getOpeningTime() {return openingTime;}
