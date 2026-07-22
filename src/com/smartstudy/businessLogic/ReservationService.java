@@ -12,14 +12,14 @@ public class ReservationService {
     private final StudentDAO studentDAO;
     private final SeatDAO seatDAO;
     private final ReservationDAO reservationDAO;
-    private final LibraryDAO libraryDAO;
+    private final AbandonmentReportDAO abandonmentReportDAO;
 
-    public ReservationService(AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, SeatDAO seatDAO, ReservationDAO reservationDAO, LibraryDAO libraryDAO, TemporaryLeaveDAO temporaryLeaveDAO) {
+    public ReservationService(AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, SeatDAO seatDAO, ReservationDAO reservationDAO, AbandonmentReportDAO abandonmentReportDAO) {
         this.accessSessionDAO = accessSessionDAO;
         this.studentDAO = studentDAO;
         this.seatDAO = seatDAO;
         this.reservationDAO = reservationDAO;
-        this.libraryDAO = libraryDAO;
+        this.abandonmentReportDAO = abandonmentReportDAO;
     }
 
     public Seat scanSeat(String qrCode, long studentId){
@@ -46,20 +46,15 @@ public class ReservationService {
             throw new BusinessViolationException("Il posto indicato non può essere prenotato: è rotto");
         }
         return TransactionManager.executeInTransaction(() -> {
-            Reservation res = reservationDAO.getActiveReservationBySeat(seatId);
+            Reservation res = reservationDAO.getActiveReservationBySeat(seat.getId());
             if (res != null) {
                 throw new BusinessViolationException("Il posto ha già una prenotazione valida attiva");
             }
-            Library library = libraryDAO.getLibraryBySeat(seatId);
-            if (library == null) {
-                throw new BusinessViolationException("Il posto indicato non ha una biblioteca associata");
-            }
-            if (library.getId() != accessSession.getLibraryId()) {
+            if (seat.getStudyArea().getLibrary().getId() != accessSession.getLibrary().getId()) {
                 throw new BusinessViolationException("Il posto selezionato risulta in una biblioteca diversa di quella della sessione");
             }
-            seat.occupy();
+            Reservation newReservation = Reservation.start(accessSession, seat);
             seatDAO.update(seat);
-            Reservation newReservation = Reservation.start(accessSessionId, seatId);
             reservationDAO.insert(newReservation);
             return newReservation;
         });
@@ -75,16 +70,15 @@ public class ReservationService {
             if (reservation == null) {
                 throw new BusinessViolationException("La prenotazione inserita non è valida");
             }
-            if (reservation.getSessionId() != accessSessionId) {
+            if (reservation.getSession().getId() != accessSessionId) {
                 throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
             }
-            Seat seat = seatDAO.getSeatById(reservation.getSeatId());
-            if(seat == null){
-                throw new BusinessViolationException("Il posto indicato non risulta valido");
+
+            ArrayList<AbandonmentReport> reports = reservation.close();
+            for (AbandonmentReport report : reports) {
+                abandonmentReportDAO.update(report);
             }
-            seat.free();
-            seatDAO.update(seat);
-            reservation.close();
+            seatDAO.update(reservation.getSeat());
             reservationDAO.update(reservation);
             return reservation;
         });
@@ -108,4 +102,5 @@ public class ReservationService {
     public boolean existReservationBySeat(long seatId){
         return  reservationDAO.existReservationBySeat(seatId);
     }
+
 }

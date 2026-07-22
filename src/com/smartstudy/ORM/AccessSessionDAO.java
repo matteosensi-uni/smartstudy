@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession>, Insertable<AccessSession>{
+public class AccessSessionDAO extends BaseDAO{
     public static final String tableName = "access_session";
     public static final String pkName = "id_access";
 
@@ -69,16 +69,17 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
     }
 
     private AccessSession createAccessSessionFromResultSet(ResultSet rs) throws SQLException {
+        LibraryDAO libraryDAO = new LibraryDAO(conn);
+        StudentDAO studentDAO = new StudentDAO(conn);
         return AccessSession.valueOf(
                 rs.getLong("id_access"),
                 TimeUtils.getLocalTime(rs.getTimestamp("entry_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("exit_time")),
-                rs.getLong("id_library"),
-                rs.getLong("student_id")
+                libraryDAO.getLibraryById(rs.getLong("id_library")),
+                studentDAO.getStudentById(rs.getLong("student_id"))
         );
     }
 
-    @Override
     public AccessSession insert(AccessSession accessSession)  {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
@@ -86,19 +87,18 @@ public class AccessSessionDAO extends BaseDAO implements Updatable<AccessSession
             if (accessSession.getExitTime() != null) {
                 values.put("exit_time", accessSession.getExitTime());
             }
-            values.put("id_library", accessSession.getLibraryId());
-            values.put("student_id", accessSession.getStudentId());
+            values.put("id_library", accessSession.getLibrary().getId());
+            values.put("student_id", accessSession.getStudent().getId());
             Long id = DAOUtils.insert(conn, values, tableName);
             if(id == null) {
                 throw new DataAccessException("Errore nell'inserimento del dato nel DB");
             }
-            return AccessSession.valueOf(id, accessSession.getEntryTime(), accessSession.getExitTime(), accessSession.getLibraryId(), accessSession.getStudentId());
+            return AccessSession.valueOf(id, accessSession.getEntryTime(), accessSession.getExitTime(), accessSession.getLibrary(), accessSession.getStudent());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile inserire la sessione di accesso nel DB", e);
         }
     }
 
-    @Override
     public void update(AccessSession accessSession) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();

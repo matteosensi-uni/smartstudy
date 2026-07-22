@@ -64,7 +64,8 @@ public class Seat extends BaseModel{
         }
         status = SeatStatus.UNAVAILABLE;
     }
-    void free() {
+
+    public void free() {
         if(!isUnavailable()){
             throw new DomainViolationException("Lo stato del posto non può essere modificato");
         }

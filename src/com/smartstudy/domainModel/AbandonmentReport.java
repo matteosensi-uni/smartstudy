@@ -90,8 +90,9 @@ public class AbandonmentReport extends BaseModel{
     public String getDescription() {return description;}
     public Student getAuthor() {return author;}
     public boolean isActive() {
-        return status == ReportStatus.OPENED;
+        return status == ReportStatus.OPENED || status == ReportStatus.PENDING;
     }
+
     public Admin getAdmin() {
         return admin == null ? null : Admin.copy(admin);
     }

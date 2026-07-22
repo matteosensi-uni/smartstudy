@@ -14,25 +14,6 @@ public class TimePolicyDAO extends BaseDAO{
         super(conn);
     }
 
-    public TimePolicy getTimePolicyBySeat(long seatId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT time_policy.* FROM
-                time_policy LEFT JOIN study_area ON time_policy.id_policy = study_area.id_policy
-                LEFT JOIN seat ON study_area.id_area = seat.id_area
-                WHERE seat.id_seat = ?
-            """
-        )){
-            ps.setLong(1, seatId);
-            try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createTimePolicyFromResultSet(rs);
-                }
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare la regola", e);
-        }
-    }
 
     public TimePolicy getTimePolicyById(long policyId) {
         try(PreparedStatement ps = conn.prepareStatement("""

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
+public class StudyAreaDAO extends BaseDAO{
     public static final String tableName = "study_area";
     public static final String pkName = "id_area";
 
@@ -57,24 +57,25 @@ public class StudyAreaDAO extends BaseDAO implements Updatable<StudyArea>{
     }
 
     private StudyArea createStudyAreaFromResultSet(ResultSet rs) throws SQLException {
+        LibraryDAO libraryDAO = new LibraryDAO(conn);
+        TimePolicyDAO timePolicyDAO = new TimePolicyDAO(conn);
         return StudyArea.valueOf(
                 rs.getLong("id_area"),
                 rs.getString("name"),
                 rs.getInt("floor"),
                 StudyAreaType.valueOf(rs.getString("type")),
-                rs.getLong("id_library"),
-                rs.getLong("id_policy")
+                timePolicyDAO.getTimePolicyById(rs.getLong("id_policy")),
+                libraryDAO.getLibraryById(rs.getLong("id_library"))
         );
 
     }
 
-    @Override
     public void update(StudyArea studyArea) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("name", studyArea.getName());
             values.put("type", studyArea.getType().name());
-            values.put("id_policy", studyArea.getTimePolicyId());
+            values.put("id_policy", studyArea.getTimePolicy().getId());
             DAOUtils.update(conn, values, tableName, pkName, studyArea.getId());
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile aggriornare l'area studio", e);

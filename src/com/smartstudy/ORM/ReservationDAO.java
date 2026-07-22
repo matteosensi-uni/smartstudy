@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, Insertable<Reservation>{
+public class ReservationDAO extends BaseDAO{
     public static final String tableName = "reservation";
     public static final String pkName = "id_reservation";
     public ReservationDAO(Connection conn) {
@@ -25,6 +25,24 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
             """
             )){
             ps.setLong(1, reservationId);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next())
+                    return createReservationFromResultSet(rs);
+                else return null;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare la prenotazione", e);
+        }
+    }
+
+    public Reservation getReservationByReport(long reportId) {
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT reservation.*
+                FROM reservation LEFT JOIN abandonment_report ON reservation.id_reservation = abandonment_report.id_reservation
+                WHERE id_report = ?
+            """
+        )){
+            ps.setLong(1, reportId);
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next())
                     return createReservationFromResultSet(rs);
@@ -109,18 +127,22 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
     }
 
     private Reservation createReservationFromResultSet(ResultSet rs) throws SQLException {
-
+        AccessSessionDAO accessSessionDAO = new AccessSessionDAO(conn);
+        SeatDAO seatDAO = new SeatDAO(conn);
+        TemporaryLeaveDAO temporaryLeaveDAO = new TemporaryLeaveDAO(conn);
+        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn);
         return Reservation.valueOf(
                 rs.getLong("id_reservation"),
                 TimeUtils.getLocalTime(rs.getTimestamp("start_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("end_time")),
                 ReservationStatus.valueOf(rs.getString("status")),
-                rs.getLong("access_id"),
-                rs.getLong("id_seat")
+                temporaryLeaveDAO.getTemporaryLeavesByReservation(rs.getLong("id_reservation")),
+                accessSessionDAO.getActiveAccessSessionById(rs.getLong("access_id")),
+                seatDAO.getSeatById(rs.getLong("id_seat")),
+                abandonmentReportDAO.getReportsByReservationId(rs.getLong("id_reservation"))
         );
     }
 
-    @Override
     public Reservation insert(Reservation reservation) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();
@@ -129,19 +151,18 @@ public class ReservationDAO extends BaseDAO implements Updatable<Reservation>, I
                 values.put("end_time", reservation.getEndTime());
             }
             values.put("status", reservation.getStatus().name());
-            values.put("id_seat", reservation.getSeatId());
-            values.put("access_id", reservation.getSessionId());
+            values.put("id_seat", reservation.getSeat().getId());
+            values.put("access_id", reservation.getSession().getId());
             Long id = DAOUtils.insert(conn, values, tableName);
             if(id == null) {
                 throw new DataAccessException("Errore nell'inserimento del dato nel DB");
             }
-            return Reservation.valueOf(id, reservation.getStartTime(), reservation.getEndTime(), reservation.getStatus(), reservation.getSessionId(), reservation.getSeatId());
+            return Reservation.valueOf(id, reservation.getStartTime(), reservation.getEndTime(), reservation.getStatus(), reservation.getTemporaryLeaves(), reservation.getSession(), reservation.getSeat(), reservation.getAbandonmentReports());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile inserire la prenotazione nel DB", e);
         }
     }
 
-    @Override
     public void update(Reservation reservation) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();

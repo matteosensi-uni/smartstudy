@@ -28,34 +28,17 @@ public class LibraryDAO extends BaseDAO{
     }
 
     private Library createLibraryFromResultSet(ResultSet rs) throws SQLException {
-            return Library.valueOf(
+        AdminDAO adminDAO = new AdminDAO(conn);
+        return Library.valueOf(
                     rs.getLong("id_library"),
                     rs.getString("name"),
                     rs.getTime("opening_time").toLocalTime(),
                     rs.getTime("closing_time").toLocalTime(),
                     rs.getString("street"),
                     rs.getString("number"),
-                    rs.getString("city")
+                    rs.getString("city"),
+                    adminDAO.getAdminsByLibraryId(rs.getLong("id_library"))
             );
     }
 
-    public Library getLibraryBySeat(long seatId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT library.* FROM
-                library LEFT JOIN study_area ON study_area.id_library = library.id_library
-                LEFT JOIN seat ON seat.id_area = study_area.id_area
-                WHERE seat.id_seat = ?
-            """
-        )){
-            ps.setLong(1, seatId);
-            try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createLibraryFromResultSet(rs);
-                }
-                return null;
-            }
-        }catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
-        }
-    }
 }

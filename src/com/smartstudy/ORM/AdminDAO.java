@@ -6,10 +6,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class AdminDAO extends BaseDAO implements Updatable<Admin> {
+public class AdminDAO extends BaseDAO{
     public static final String tableName = "admin";
     public static final String pkName = "user_id";
     public AdminDAO(Connection conn) { super(conn); }
@@ -49,6 +50,26 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
         }
     }
 
+    public ArrayList<Admin> getAdminsByLibraryId(long libraryId) {
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT app_user.*, admin.is_present, admin.id_library
+                FROM admin LEFT JOIN app_user ON admin.user_id = app_user.user_id
+                WHERE admin.id_library = ?
+            """
+        )){
+            ps.setLong(1, libraryId);
+            try(ResultSet rs = ps.executeQuery()){
+                ArrayList<Admin> admins = new ArrayList<>();
+                while (rs.next()){
+                    admins.add(createAdminFromResultSet(rs));
+                }
+                return admins;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare l'admin", e);
+        }
+    }
+
     private Admin createAdminFromResultSet(ResultSet rs) throws SQLException {
         return Admin.valueOf(
                 rs.getLong("user_id"),
@@ -56,12 +77,10 @@ public class AdminDAO extends BaseDAO implements Updatable<Admin> {
                 rs.getString("surname"),
                 rs.getString("password"),
                 rs.getString("email"),
-                rs.getBoolean("is_present"),
-                rs.getLong("id_library")
+                rs.getBoolean("is_present")
         );
     }
 
-    @Override
     public void update(Admin admin) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();

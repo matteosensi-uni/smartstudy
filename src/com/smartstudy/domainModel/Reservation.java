@@ -38,12 +38,6 @@ public class Reservation extends BaseModel{
     public static Reservation valueOf(long id, LocalDateTime startTime, LocalDateTime endTime, ReservationStatus status, ArrayList<TemporaryLeave> temporaryLeaves, AccessSession session, Seat seat, ArrayList<AbandonmentReport> reports){
         return new Reservation(id, startTime, endTime, status, temporaryLeaves,reports, session, seat);
     }
-    public static Reservation copy(Reservation reservation){
-        if(reservation == null){
-            throw new DomainViolationException("Prenotazione inserita nulla");
-        }
-        return new Reservation(reservation.getId(), reservation.getStartTime(), reservation.getEndTime(), reservation.getStatus(), reservation.getTemporaryLeaves(), reservation.getAbandonmentReports(), reservation.getSession(), reservation.getSeat());
-    }
 
     public static Reservation start(AccessSession session, Seat seat){
         seat.occupy();
@@ -116,19 +110,25 @@ public class Reservation extends BaseModel{
     public ReservationStatus getStatus() {return status;}
     public Seat getSeat() {return Seat.copy(seat);}
     public AccessSession getSession() {return AccessSession.copy(session);}
-    public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
 
-    public void close() {
+    public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
+    public boolean isTemporarilyLeft(){ return status == ReservationStatus.TEMPORARILY_LEFT; }
+
+
+    public ArrayList<AbandonmentReport> close() {
         if(endTime != null || status == ReservationStatus.CLOSED)
             throw new DomainViolationException("La prenotazione è già stata chiusa");
         seat.free();
+        ArrayList<AbandonmentReport> closedReports = new ArrayList<>();
         for(AbandonmentReport abandonmentReport : abandonmentReports){
             try{
                 abandonmentReport.close();
+                closedReports.add(AbandonmentReport.copy(abandonmentReport));
             }catch(Exception ignored){}
         }
         setEndTime(LocalDateTime.now());
         setStatus(ReservationStatus.CLOSED);
+        return closedReports;
     }
 
     private void markTemporarilyLeft(){
@@ -151,6 +151,9 @@ public class Reservation extends BaseModel{
         }
         if(hasValidTemporaryLeave()){
             throw new DomainViolationException("Impossibile inserire una pausa, ne esiste già una attiva");
+        }
+        if(hasActiveReport()){
+            throw new DomainViolationException("Impossibile creare una pausa, c'è un report attivo sulla prenotazione");
         }
         markTemporarilyLeft();
         TemporaryLeave leave = TemporaryLeave.create(seat.getStudyArea().getTimePolicy().getMaxTemporaryLeaveMin());

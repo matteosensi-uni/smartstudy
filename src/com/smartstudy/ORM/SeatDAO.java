@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SeatDAO extends BaseDAO implements Updatable<Seat>{
+public class SeatDAO extends BaseDAO{
     public static final String tableName = "seat";
     public static final String pkName = "id_seat";
     public SeatDAO(Connection conn) { super(conn); }
@@ -129,17 +129,17 @@ public class SeatDAO extends BaseDAO implements Updatable<Seat>{
     }
 
     private Seat createSeatFromResultSet(ResultSet rs) throws SQLException {
+        StudyAreaDAO studyAreaDAO = new StudyAreaDAO(conn);
         return Seat.valueOf(
                 rs.getLong("id_seat"),
                 rs.getString("qr_code"),
                 SeatType.valueOf(rs.getString("type")),
                 SeatStatus.valueOf(rs.getString("status")),
-                rs.getLong("id_area")
+                studyAreaDAO.getStudyAreaById(rs.getLong("id_area"))
         );
 
     }
 
-    @Override
     public void update(Seat seat) {
         try {
             Map<String, Object> values = new LinkedHashMap<>();

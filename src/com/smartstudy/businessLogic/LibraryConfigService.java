@@ -33,7 +33,7 @@ public class LibraryConfigService {
         if(studyArea ==  null){
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
-        return timePolicyDAO.getTimePolicyById(studyArea.getTimePolicyId());
+        return studyArea.getTimePolicy();
     }
 
     public ArrayList<TimePolicy> getAllPolicies(){
@@ -47,7 +47,7 @@ public class LibraryConfigService {
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (admin.getLibraryId() != studyArea.getLibraryId()) {
+            if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
             studyArea.changeStudyAreaType(studyAreaType);
@@ -63,10 +63,10 @@ public class LibraryConfigService {
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (admin.getLibraryId() != studyArea.getLibraryId()) {
+            if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
-            studyArea.setName(name);
+            studyArea.changeName(name);
             studyAreaDAO.update(studyArea);
             return studyArea;
         });
@@ -80,10 +80,10 @@ public class LibraryConfigService {
             throw new  BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (admin.getLibraryId() != studyArea.getLibraryId()) {
+            if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
-            studyArea.changePolicy(timePolicy.getId());
+            studyArea.changePolicy(timePolicy);
             studyAreaDAO.update(studyArea);
             return studyArea;
         });
@@ -99,7 +99,7 @@ public class LibraryConfigService {
             throw new BusinessViolationException("Inserire uno stato valido");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (admin.getLibraryId() != libraryDAO.getLibraryBySeat(seat.getId()).getId()) {
+            if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
             if(status == SeatStatus.AVAILABLE){
@@ -124,7 +124,7 @@ public class LibraryConfigService {
             throw new BusinessViolationException("Inserire dei dati validi");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (admin.getLibraryId() != libraryDAO.getLibraryBySeat(seat.getId()).getId()) {
+            if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
             seat.changeSeatType(type);
