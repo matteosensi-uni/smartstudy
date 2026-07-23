@@ -1,9 +1,7 @@
 package com.smartstudy.view;
 
-import com.smartstudy.controller.LibraryAccessController;
 import com.smartstudy.domainModel.AbandonmentReport;
 import com.smartstudy.domainModel.Reservation;
-import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.TemporaryLeave;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -16,7 +14,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -30,35 +27,29 @@ import java.util.function.Supplier;
 public class StudentView extends BorderPane {
 
     private final StackPane contentArea;
-    private final boolean presentInLibrary;
 
-    public StudentView(Student student, LibraryAccessController libraryAccessController, Runnable onLogout) {
+    public StudentView(Runnable onLogout) {
         getStyleClass().add("root");
-        this.presentInLibrary = libraryAccessController.isStudentPresent(student.getId());
 
-        setTop(buildHeader(student, onLogout));
+        setTop(buildHeader(onLogout));
         setLeft(buildSidebar());
 
         contentArea = new StackPane();
         contentArea.setAlignment(Pos.TOP_LEFT);
         contentArea.setPadding(new Insets(20));
-        contentArea.getChildren().add(buildHomePanel(student));
+        contentArea.getChildren().add(buildHomePanel());
         setCenter(contentArea);
     }
 
-    private Node buildHeader(Student student, Runnable onLogout) {
+    private Node buildHeader(Runnable onLogout) {
         Label title = new Label("SmartStudy - Area Studente");
         title.getStyleClass().add("title-label");
-
-        Label statusBadge = new Label(presentInLibrary ? "In biblioteca" : "Non in biblioteca");
-        statusBadge.getStyleClass().add("status-badge");
-        statusBadge.getStyleClass().add(presentInLibrary ? "present" : "absent");
 
         Button logoutButton = new Button("Esci");
         logoutButton.getStyleClass().add("btn-secondary");
         logoutButton.setOnAction(e -> onLogout.run());
 
-        HBox header = new HBox(12, title, statusBadge, spacer(), logoutButton);
+        HBox header = new HBox(12, title, spacer(), logoutButton);
         header.getStyleClass().add("app-header");
         header.setAlignment(Pos.CENTER_LEFT);
         return header;
@@ -71,16 +62,11 @@ public class StudentView extends BorderPane {
     }
 
     private Node buildSidebar() {
-        Button homeBtn = navButton("Home", this::buildHomeFallback);
+        Button homeBtn = navButton("Home", this::buildHomePanel);
         Button scanBtn = navButton("Prenota Posto", this::buildScanPanel);
         Button reservationBtn = navButton("Prenotazione Attiva", this::buildActiveReservationPanel);
         Button reportBtn = navButton("Segnalazioni", this::buildReportsPanel);
         Button historyBtn = navButton("Storico Prenotazioni", this::buildHistoryPanel);
-
-        if (!presentInLibrary) {
-            disableWithReason(scanBtn, "Devi prima registrare l'ingresso in biblioteca");
-            disableWithReason(reservationBtn, "Devi prima registrare l'ingresso in biblioteca");
-        }
 
         VBox sidebar = new VBox(6, homeBtn, scanBtn, reservationBtn, reportBtn, historyBtn);
         sidebar.getStyleClass().add("sidebar");
@@ -89,11 +75,6 @@ public class StudentView extends BorderPane {
             ((Button) node).setMaxWidth(Double.MAX_VALUE);
         }
         return sidebar;
-    }
-
-    private void disableWithReason(Button button, String reason) {
-        button.setDisable(true);
-        Tooltip.install(button, new Tooltip(reason));
     }
 
     private Button navButton(String text, Supplier<Node> panelSupplier) {
@@ -110,23 +91,10 @@ public class StudentView extends BorderPane {
 
     // --- Pannelli ---
 
-    private Node buildHomePanel(Student student) {
-        VBox box = panelContainer("Benvenuto, " + student.getName());
-
-        String message = presentInLibrary
-                ? "Sei registrato come presente in biblioteca: puoi prenotare un posto o gestire la tua prenotazione attiva."
-                : "Non risulti presente in biblioteca. Registra l'ingresso dal totem per poter prenotare un posto.";
-        Label hint = new Label(message);
+    private Node buildHomePanel() {
+        VBox box = panelContainer("Benvenuto");
+        Label hint = new Label("Da qui puoi prenotare un posto, gestire la tua prenotazione attiva, le segnalazioni e lo storico.");
         hint.setWrapText(true);
-        hint.getStyleClass().add("hint-label");
-
-        box.getChildren().add(hint);
-        return box;
-    }
-
-    private Node buildHomeFallback() {
-        VBox box = panelContainer("Home");
-        Label hint = new Label(presentInLibrary ? "Sei presente in biblioteca." : "Non risulti presente in biblioteca.");
         hint.getStyleClass().add("hint-label");
         box.getChildren().add(hint);
         return box;

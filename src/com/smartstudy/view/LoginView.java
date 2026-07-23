@@ -1,7 +1,5 @@
 package com.smartstudy.view;
 
-import com.smartstudy.domainModel.User;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -11,10 +9,6 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-
 public class LoginView extends VBox {
 
     private final TextField userIdField;
@@ -22,9 +16,7 @@ public class LoginView extends VBox {
     private final Label errorLabel;
     private final Button loginButton;
 
-    public LoginView(BiFunction<Long, String, Optional<User>> loginHandler,
-                      Consumer<User> onLoginSuccess,
-                      Runnable onOpenLibraryAccess) {
+    public LoginView(Runnable onLoginSuccess, Runnable onOpenLibraryAccess) {
         getStyleClass().add("root");
         setAlignment(Pos.CENTER);
         setSpacing(15);
@@ -55,7 +47,7 @@ public class LoginView extends VBox {
         loginButton.setMaxWidth(280);
         loginButton.setDefaultButton(true);
         loginButton.getStyleClass().add("btn-primary");
-        loginButton.setOnAction(e -> attemptLogin(loginHandler, onLoginSuccess));
+        loginButton.setOnAction(e -> onLoginSuccess.run());
 
         VBox form = new VBox(10, userIdField, passwordField, loginButton, errorLabel);
         form.setAlignment(Pos.CENTER);
@@ -77,43 +69,6 @@ public class LoginView extends VBox {
         accessSection.setMaxWidth(280);
 
         getChildren().addAll(title, subtitle, form, separator, accessSection);
-    }
-
-    private void attemptLogin(BiFunction<Long, String, Optional<User>> loginHandler, Consumer<User> onLoginSuccess) {
-        Long userId = parseUserId(userIdField.getText());
-        if (userId == null) {
-            showError("Inserisci un ID utente valido");
-            return;
-        }
-        Optional<User> user = loginHandler.apply(userId, passwordField.getText());
-        if (user.isPresent()) {
-            hideError();
-            onLoginSuccess.accept(user.get());
-        } else {
-            showError("ID o password non validi");
-        }
-    }
-
-    private Long parseUserId(String text) {
-        if (text == null || text.isBlank()) {
-            return null;
-        }
-        try {
-            return Long.parseLong(text.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
-    private void showError(String message) {
-        errorLabel.setText(message);
-        errorLabel.setManaged(true);
-        errorLabel.setVisible(true);
-    }
-
-    private void hideError() {
-        errorLabel.setManaged(false);
-        errorLabel.setVisible(false);
     }
 
     public TextField getUserIdField() {

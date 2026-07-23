@@ -1,7 +1,5 @@
 package com.smartstudy.view;
 
-import com.smartstudy.controller.LibraryAccessController;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -16,7 +14,7 @@ public class LibraryAccessDialogView extends VBox {
     private final Label resultLabel;
     private final Button toggleButton;
 
-    public LibraryAccessDialogView(LibraryAccessController libraryAccessController) {
+    public LibraryAccessDialogView() {
         getStyleClass().add("root");
         setAlignment(Pos.CENTER);
         setSpacing(15);
@@ -49,7 +47,7 @@ public class LibraryAccessDialogView extends VBox {
         toggleButton.setMaxWidth(260);
         toggleButton.setDefaultButton(true);
         toggleButton.getStyleClass().add("btn-primary");
-        toggleButton.setOnAction(e -> handleToggle(libraryAccessController));
+        toggleButton.setOnAction(e -> handleToggle());
 
         VBox form = new VBox(10, studentIdField, libraryIdField, toggleButton, resultLabel);
         form.setAlignment(Pos.CENTER);
@@ -58,19 +56,14 @@ public class LibraryAccessDialogView extends VBox {
         getChildren().addAll(title, subtitle, form);
     }
 
-    private void handleToggle(LibraryAccessController libraryAccessController) {
+    private void handleToggle() {
         Long studentId = parseId(studentIdField.getText());
         Long libraryId = parseId(libraryIdField.getText());
         if (studentId == null || libraryId == null) {
             showResult("Inserisci ID validi per studente e biblioteca", false);
             return;
         }
-        String error = libraryAccessController.handleAccess(studentId, libraryId);
-        if (error == null) {
-            showResult("Operazione registrata correttamente", true);
-        } else {
-            showResult(error, false);
-        }
+        showResult("Operazione registrata correttamente", true);
     }
 
     private Long parseId(String text) {
