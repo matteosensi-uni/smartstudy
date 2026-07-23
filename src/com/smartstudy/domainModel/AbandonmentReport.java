@@ -78,7 +78,7 @@ public class AbandonmentReport extends BaseModel{
         if(admin == null && status != ReportStatus.OPENED && status != ReportStatus.CLOSED){
             throw new DomainViolationException("Inserire un admin valido");
         }
-        if(admin != null && status ==  ReportStatus.OPENED){
+        if(admin != null && (status ==  ReportStatus.OPENED ||  status == ReportStatus.CLOSED)){
             throw new DomainViolationException("Non può essere inserito un admin in un report aperto e non gestito");
         }
         this.admin = admin == null ? null : Admin.copy(admin);

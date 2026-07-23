@@ -1,68 +1,78 @@
 package test.domainModel;
 
 import com.smartstudy.domainModel.AbandonmentReport;
+import com.smartstudy.domainModel.Admin;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.enums.ReportStatus;
 import com.smartstudy.exceptions.DomainViolationException;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
-
 import static org.junit.Assert.*;
 
 public class AbandonmentReportTest {
+    private Student s;
+    private Admin admin1;
+    private Admin admin2;
+    private LocalDateTime createdAt;
+    private LocalDateTime resolvedAt;
+    private AbandonmentReport openedAbandonmentReport;
+    @Before
+    public void setUp(){
+        s = Student.valueOf(1, "Mario", "Rossi", "1234", "m.r@test.it", true);
+        createdAt = LocalDateTime.now();
+        resolvedAt = LocalDateTime.now().plusMinutes(5);
+        admin1 = Admin.valueOf(1, "Mario", "Rossi", "pwd", "email", false);
+        admin2 = Admin.valueOf(2, "Mario", "Rossi", "pwd", "email", false);
+        openedAbandonmentReport = AbandonmentReport.open("", s);
+    }
+
+
     @Test
     public void testOpenSuccess() {
-        AbandonmentReport abandonmentReport = AbandonmentReport.open("", 1, 1);
+        AbandonmentReport abandonmentReport = AbandonmentReport.open("", s);
         assertEquals("", abandonmentReport.getDescription());
-        assertNull(abandonmentReport.getAdminId());
+        assertNull(abandonmentReport.getAdmin());
         assertEquals(ReportStatus.OPENED, abandonmentReport.getStatus());
-        assertEquals(1, abandonmentReport.getReservationId());
-        assertEquals(1, abandonmentReport.getStudentId());
+        assertEquals(s, abandonmentReport.getAuthor());
         assertNull(abandonmentReport.getResolvedAt());
         assertNotNull(abandonmentReport.getCreatedAt());
     }
     @Test
     public void testOpenFailure() {
         assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.open("", 0, 1)
-        );
-        assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.open("", 1, 0)
+            AbandonmentReport.open("", null)
         );
     }
 
     @Test
     public void testValueOfFailure() {
-        LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime resolvedAt = LocalDateTime.now().plusMinutes(5);
         assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.OPENED, "", 1, 0, 2L)
+            AbandonmentReport.valueOf(0, createdAt, resolvedAt, ReportStatus.OPENED, "", s, null)
         );
         assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.OPENED, "", 0, 1, 2L)
+            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.OPENED, "", null, null)
         );
         assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.OPENED, "", 1, 1, 2L)
+            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", s, null)
         );
         assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", 1, 1, null)
+            AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", s, null)
         );
         assertThrows(DomainViolationException.class, () ->
-            AbandonmentReport.valueOf(1, createdAt, null, ReportStatus.CONFIRMED, "", 1, 1, 2L)
+            AbandonmentReport.valueOf(1, createdAt, null, ReportStatus.CLOSED, "", s, admin1)
         );
 
     }
 
     @Test
     public void testValueOfSuccess() {
-        LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime resolvedAt = LocalDateTime.now().plusMinutes(5);
-        AbandonmentReport report = AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", 1, 1, 2L);
+        AbandonmentReport report = AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", s, admin1);
         assertEquals("", report.getDescription());
-        assertEquals(Long.valueOf(2), report.getAdminId());
+        assertEquals(admin1.getId(), report.getAdmin().getId());
         assertEquals(ReportStatus.PENDING, report.getStatus());
-        assertEquals(1, report.getReservationId());
-        assertEquals(1, report.getStudentId());
+        assertEquals(s.getId(), report.getAuthor().getId());
         assertEquals(resolvedAt, report.getResolvedAt());
         assertEquals(createdAt, report.getCreatedAt());
     }
@@ -70,38 +80,34 @@ public class AbandonmentReportTest {
     @Test
     public void  testRejectFailure() {
         assertThrows(DomainViolationException.class, () -> {
-            AbandonmentReport abandonmentReport = AbandonmentReport.open("", 1, 1);
-            abandonmentReport.reject(2); // manda eccezione perché non è ancora stato preso in carico
+            openedAbandonmentReport.reject(admin1); // manda eccezione perché non è ancora stato preso in carico
         });
     }
     @Test
     public void  testRejectSuccess() { // non si ripetono i test per confirm in quanto usa lo stesso metodo internamente
-        AbandonmentReport abandonmentReport = AbandonmentReport.open("", 1, 1);
-        abandonmentReport.takeInCharge(2);
-        abandonmentReport.reject(2); // manda eccezione perché non è ancora stato preso in carico
-        assertEquals(ReportStatus.REJECTED, abandonmentReport.getStatus());
-        assertEquals(Long.valueOf(2), abandonmentReport.getAdminId());
-        assertNotNull(abandonmentReport.getResolvedAt());
+        openedAbandonmentReport.takeInCharge(admin1);
+        openedAbandonmentReport.reject(admin1); // manda eccezione perché non è ancora stato preso in carico
+        assertEquals(ReportStatus.REJECTED, openedAbandonmentReport.getStatus());
+        assertEquals(admin1.getId(), openedAbandonmentReport.getAdmin().getId());
+        assertNotNull(openedAbandonmentReport.getResolvedAt());
     }
 
     @Test
     public void  testReportRejectFailureWrongAdmin() {
-        AbandonmentReport abandonmentReport = AbandonmentReport.open("", 1, 1);
-        abandonmentReport.takeInCharge(2);
+        openedAbandonmentReport.takeInCharge(admin1);
         assertThrows(DomainViolationException.class, () ->
-            abandonmentReport.reject(0)
+                openedAbandonmentReport.reject(admin2)
         );
     }
 
     @Test
     public void testRepeatedRejectFailure() {
-        AbandonmentReport abandonmentReport = AbandonmentReport.open("", 1, 1);
-        abandonmentReport.takeInCharge(2); // manda eccezione perché non si può modificare un report chiuso
-        abandonmentReport.reject(2);
-        assertNotNull(abandonmentReport.getResolvedAt()); //controllo che la data venga aggiornata
-        assertEquals(ReportStatus.REJECTED, abandonmentReport.getStatus()); // controllo che lo stato venga aggiornato
+        openedAbandonmentReport.takeInCharge(admin1); // manda eccezione perché non si può modificare un report chiuso
+        openedAbandonmentReport.reject(admin1);
+        assertNotNull(openedAbandonmentReport.getResolvedAt()); //controllo che la data venga aggiornata
+        assertEquals(ReportStatus.REJECTED, openedAbandonmentReport.getStatus()); // controllo che lo stato venga aggiornato
         assertThrows(DomainViolationException.class, () ->
-            abandonmentReport.reject(2)
+                openedAbandonmentReport.reject(admin1)
         );
     }
 }

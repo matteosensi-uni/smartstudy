@@ -40,7 +40,7 @@ public class Reservation extends BaseModel{
     }
 
     public static Reservation start(AccessSession session, Seat seat){
-        seat.occupy();
+        if(seat != null) seat.occupy();
         return new Reservation(session, seat);
     }
 

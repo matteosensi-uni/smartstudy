@@ -21,7 +21,7 @@ public class UserTest {
     }
     @Test
     public void testAdminValueOfSuccess() {
-        Admin admin = Admin.valueOf(1, "Mario", "Rossi", "1234", "mario@rossi", true, 1);
+        Admin admin = Admin.valueOf(1, "Mario", "Rossi", "1234", "mario@rossi", true);
         assertEquals(1, admin.getId());
         assertEquals("Mario", admin.getName());
         assertEquals("Rossi", admin.getSurname());
@@ -29,12 +29,11 @@ public class UserTest {
         assertEquals("mario@rossi", admin.getEmail());
         assertTrue(admin.isPresent());
         assertTrue(admin.isAdmin());
-        assertEquals(1, admin.getLibraryId());
     }
 
     @Test
     public void togglePresenceSuccess(){
-        Admin admin = Admin.valueOf(1, "Mario", "Rossi", "1234", "mario@rossi", true, 1);
+        Admin admin = Admin.valueOf(1, "Mario", "Rossi", "1234", "mario@rossi", true);
         assertTrue(admin.isPresent());
         admin.togglePresence();
         assertFalse(admin.isPresent());
@@ -43,22 +42,19 @@ public class UserTest {
     public void testValueOfFailure() {
         //Per student non c'è bisogno di ripeterli in quanto fino ad 'email' dipendono dalla classe User in comune e l'ultimo parametro è un boolean
         assertThrows(DomainViolationException.class, () ->
-            Admin.valueOf(0, "Mario", "Rossi", "1234", "mario@rossi", true, 1)
+            Admin.valueOf(0, "Mario", "Rossi", "1234", "mario@rossi", true)
         );
         assertThrows(DomainViolationException.class, () ->
-            Admin.valueOf(1, "", "Rossi", "1234", "mario@rossi", true, 1)
+            Admin.valueOf(1, "", "Rossi", "1234", "mario@rossi", true)
         );
         assertThrows(DomainViolationException.class, () ->
-            Admin.valueOf(1, "Mario", "", "1234", "mario@rossi", true, 1)
+            Admin.valueOf(1, "Mario", "", "1234", "mario@rossi", true)
         );
         assertThrows(DomainViolationException.class, () ->
-            Admin.valueOf(1, "Mario", "Rossi", "", "mario@rossi", true, 1)
+            Admin.valueOf(1, "Mario", "Rossi", "", "mario@rossi", true)
         );
         assertThrows(DomainViolationException.class, () ->
-            Admin.valueOf(1, "Mario", "Rossi", "1234", "", true, 1)
-        );
-        assertThrows(DomainViolationException.class, () ->
-            Admin.valueOf(1, "Mario", "Rossi", "1234", "", true, 0)
+            Admin.valueOf(1, "Mario", "Rossi", "1234", "", true)
         );
     }
 
