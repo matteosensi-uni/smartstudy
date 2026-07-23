@@ -34,6 +34,11 @@ public class LibraryTest {
         assertEquals("number", library.getNumber());
         assertEquals("city", library.getCity());
         assertTrue(library.hasAdmin(admins.getFirst().getId()));
+        assertFalse(library.hasAdmin(3));
+        if(LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime))
+            assertTrue(library.isOpen());
+        else
+            assertFalse(library.isOpen());
     }
     @Test
     public void testValueOfFailure(){

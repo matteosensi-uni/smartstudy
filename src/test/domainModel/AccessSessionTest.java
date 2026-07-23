@@ -69,6 +69,9 @@ public class AccessSessionTest {
         assertThrows(DomainViolationException.class, () ->
             AccessSession.valueOf(1, entryTime, exitTime, library, null)
         );
+        assertThrows(DomainViolationException.class, () ->
+                AccessSession.valueOf(1, exitTime, entryTime, library, s)
+        );
     }
     @Test
     public void testCloseSessionSuccess(){

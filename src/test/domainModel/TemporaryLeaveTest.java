@@ -33,6 +33,7 @@ public class TemporaryLeaveTest {
         assertEquals(startTime, temporaryLeave.getStartTime());
         assertEquals(expectedEndTime, temporaryLeave.getExpectedEndTime());
         assertEquals(1, temporaryLeave.getId());
+        assertTrue(temporaryLeave.isValid());
     }
 
     @Test
@@ -43,10 +44,16 @@ public class TemporaryLeaveTest {
             TemporaryLeave.valueOf(0,  startTime, expectedEndTime)
         );
         assertThrows(DomainViolationException.class, () ->
-            TemporaryLeave.valueOf(1, null, expectedEndTime)
+                TemporaryLeave.valueOf(0,  startTime, expectedEndTime)
+        );
+        assertThrows(DomainViolationException.class, () ->
+            TemporaryLeave.valueOf(1, expectedEndTime, startTime)
         );
         assertThrows(DomainViolationException.class, () ->
             TemporaryLeave.valueOf(1, startTime, null)
+        );
+        assertThrows(DomainViolationException.class, () ->
+                TemporaryLeave.valueOf(1, null, expectedEndTime)
         );
     }
 }

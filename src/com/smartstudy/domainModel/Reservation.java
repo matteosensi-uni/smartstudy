@@ -141,7 +141,8 @@ public class Reservation extends BaseModel{
     public void markActive(){
         if(status == ReservationStatus.CLOSED){
             throw new DomainViolationException("La prenotazione non può essere modificata");
-        }
+        }if(hasValidTemporaryLeave())
+            throw new DomainViolationException("La prenotazione ha una pausa attiva");
         status = ReservationStatus.ACTIVE;
     }
 
@@ -179,6 +180,9 @@ public class Reservation extends BaseModel{
         }
         if(hasActiveReport())
             throw new DomainViolationException("La prenotazione ha già una segnalazione attiva");
+        if(abandonmentReport.getAuthor().getId() == getSession().getStudent().getId()){
+            throw new DomainViolationException("Lo studente della prenotazione non può creare dei report sul posto stesso");
+        }
         abandonmentReports.add(AbandonmentReport.copy(abandonmentReport));
     }
 

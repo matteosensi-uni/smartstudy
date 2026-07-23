@@ -11,13 +11,6 @@ public class Student extends User {
         return new Student(id, name, surname, password, email, cardActive);
     }
 
-    public static Student copy(Student student){
-        if(student == null){
-            throw new  IllegalArgumentException("Lo studente non può essere nullo");
-        }
-        return new Student(student.getId(), student.getName(),  student.getSurname(), student.getPassword(), student.getEmail(), student.isCardActive());
-    }
-
     public boolean isCardActive() {return cardActive;}
 
     public boolean isAdmin() {return false;}

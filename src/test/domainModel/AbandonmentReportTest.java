@@ -38,6 +38,7 @@ public class AbandonmentReportTest {
         assertEquals(s, abandonmentReport.getAuthor());
         assertNull(abandonmentReport.getResolvedAt());
         assertNotNull(abandonmentReport.getCreatedAt());
+        assertTrue(abandonmentReport.isActive());
     }
     @Test
     public void testOpenFailure() {
@@ -52,13 +53,22 @@ public class AbandonmentReportTest {
             AbandonmentReport.valueOf(0, createdAt, resolvedAt, ReportStatus.OPENED, "", s, null)
         );
         assertThrows(DomainViolationException.class, () ->
+                AbandonmentReport.valueOf(1, null, resolvedAt, ReportStatus.OPENED, "", s, null)
+        );
+        assertThrows(DomainViolationException.class, () ->
             AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.OPENED, "", null, null)
         );
         assertThrows(DomainViolationException.class, () ->
             AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", s, null)
         );
         assertThrows(DomainViolationException.class, () ->
+                AbandonmentReport.valueOf(1, createdAt, resolvedAt, null, "", s, admin1)
+        );
+        assertThrows(DomainViolationException.class, () ->
             AbandonmentReport.valueOf(1, createdAt, resolvedAt, ReportStatus.PENDING, "", s, null)
+        );
+        assertThrows(DomainViolationException.class, () ->
+                AbandonmentReport.valueOf(1, resolvedAt, createdAt, ReportStatus.PENDING, "", s, admin1)
         );
         assertThrows(DomainViolationException.class, () ->
             AbandonmentReport.valueOf(1, createdAt, null, ReportStatus.CLOSED, "", s, admin1)
@@ -83,6 +93,15 @@ public class AbandonmentReportTest {
             openedAbandonmentReport.reject(admin1); // manda eccezione perché non è ancora stato preso in carico
         });
     }
+
+    @Test
+    public void  testTakeInChargeFailure() { // non si ripetono i test per confirm in quanto usa lo stesso metodo internamente
+        openedAbandonmentReport.takeInCharge(admin1);
+        assertThrows(DomainViolationException.class, () ->
+                openedAbandonmentReport.takeInCharge(admin2)
+        );
+    }
+
     @Test
     public void  testRejectSuccess() { // non si ripetono i test per confirm in quanto usa lo stesso metodo internamente
         openedAbandonmentReport.takeInCharge(admin1);
@@ -97,6 +116,14 @@ public class AbandonmentReportTest {
         openedAbandonmentReport.takeInCharge(admin1);
         assertThrows(DomainViolationException.class, () ->
                 openedAbandonmentReport.reject(admin2)
+        );
+    }
+
+    @Test
+    public void  testReportRejectFailureNullAdmin() {
+        openedAbandonmentReport.takeInCharge(admin1);
+        assertThrows(DomainViolationException.class, () ->
+                openedAbandonmentReport.reject(null)
         );
     }
 

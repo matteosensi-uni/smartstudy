@@ -1,10 +1,7 @@
 package test.domainModel;
 
 import com.smartstudy.domainModel.*;
-import com.smartstudy.domainModel.enums.ReservationStatus;
-import com.smartstudy.domainModel.enums.SeatStatus;
-import com.smartstudy.domainModel.enums.SeatType;
-import com.smartstudy.domainModel.enums.StudyAreaType;
+import com.smartstudy.domainModel.enums.*;
 import com.smartstudy.exceptions.DomainViolationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +15,7 @@ import static org.junit.Assert.*;
 public class ReservationTest {
     private AccessSession accessSession;
     private Seat seat;
+    private Reservation validReservation;
 
     @Before
     public void setUp() {
@@ -31,6 +29,8 @@ public class ReservationTest {
         seat = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.AVAILABLE, studyArea);
         Student s = Student.valueOf(1, "Mario", "Rossi", "1234", "m.r@test.it", true);
         accessSession = AccessSession.valueOf(1, LocalDateTime.now(), null, library, s);
+        Seat seat2 = Seat.valueOf(2, "qr", SeatType.GROUP, SeatStatus.AVAILABLE, studyArea);
+        validReservation = Reservation.start(accessSession, seat2);
     }
 
     @Test
@@ -41,6 +41,9 @@ public class ReservationTest {
         assertEquals(ReservationStatus.ACTIVE, reservation.getStatus());
         assertEquals(seat.getId(), reservation.getSeat().getId());
         assertEquals(accessSession.getId(), reservation.getSession().getId());
+        assertTrue(reservation.isActive());
+        assertTrue(reservation.getTemporaryLeaves().isEmpty());
+        assertTrue(reservation.getAbandonmentReports().isEmpty());
     }
 
     @Test
@@ -92,4 +95,58 @@ public class ReservationTest {
         );
     }
 
+    @Test
+    public void testAddLeaveSuccess(){
+        validReservation.addTemporaryLeave();
+        assertTrue(validReservation.hasValidTemporaryLeave());
+        assertTrue(validReservation.isTemporarilyLeft());
+        assertThrows(DomainViolationException.class, () ->
+            validReservation.markActive()
+        );
+    }
+
+    @Test
+    public void testAddLeaveFailure(){
+        validReservation.addTemporaryLeave();
+        assertTrue(validReservation.hasValidTemporaryLeave());
+        assertThrows(DomainViolationException.class, () ->
+                validReservation.addTemporaryLeave() //non si può aggiungere due reservation nello stesso tempo
+        );
+    }
+
+    @Test
+    public void testAddReportSuccess(){
+        Student s = Student.valueOf(2, "Mario", "Rossi", "1234", "m.r@test.it", true);
+        AbandonmentReport report = AbandonmentReport.valueOf(1, LocalDateTime.now(), null, ReportStatus.OPENED, "", s, null);
+        validReservation.addAbandonmentReport(report);
+        assertTrue(validReservation.hasActiveReport());
+    }
+
+    @Test
+    public void testAddReportFailure(){
+        Student s = Student.valueOf(2, "Mario", "Rossi", "1234", "m.r@test.it", true);
+        AbandonmentReport report = AbandonmentReport.valueOf(1, LocalDateTime.now(), null, ReportStatus.OPENED, "", s, null);
+        validReservation.addAbandonmentReport(report);
+        assertTrue(validReservation.hasActiveReport());
+        assertThrows(DomainViolationException.class, () ->
+                validReservation.addAbandonmentReport(report) //non è possibile aggiungere un report con lo stesso studente
+        );
+
+        assertThrows(DomainViolationException.class, () -> {
+            Student s1 = Student.valueOf(3, "Mario", "Rossi", "1234", "m.r@test.it", true);
+            AbandonmentReport report1 = AbandonmentReport.valueOf(2, LocalDateTime.now(), null, ReportStatus.OPENED, "", s, null);
+            validReservation.addAbandonmentReport(report1); //non è possibile aggiungere due report alla solita reservation
+        });
+    }
+
+    @Test
+    public void testCloseReservationSuccess(){
+        Student s = Student.valueOf(2, "Mario", "Rossi", "1234", "m.r@test.it", true);
+        AbandonmentReport report = AbandonmentReport.valueOf(1, LocalDateTime.now(), null, ReportStatus.OPENED, "", s, null);
+        validReservation.addAbandonmentReport(report);
+        assertEquals(1, validReservation.close().size());
+        assertEquals(ReservationStatus.CLOSED, validReservation.getStatus());
+        assertTrue(validReservation.getSeat().isAvailable());
+        assertNotNull(validReservation.getEndTime());
+    }
 }

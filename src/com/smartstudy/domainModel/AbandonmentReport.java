@@ -40,6 +40,9 @@ public class AbandonmentReport extends BaseModel{
     }
 
     public static AbandonmentReport copy(AbandonmentReport abandonmentReport) {
+        if(abandonmentReport == null){
+            throw new DomainViolationException("Il report da coipare è nullo");
+        }
         return new AbandonmentReport(abandonmentReport.getId(), abandonmentReport.getCreatedAt(), abandonmentReport.getResolvedAt(), abandonmentReport.getStatus(), abandonmentReport.getDescription(),  abandonmentReport.getAuthor(), abandonmentReport.getAdmin());
     }
 
