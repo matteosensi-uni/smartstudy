@@ -12,13 +12,15 @@ public class LibraryAccessService {
     private final StudentDAO studentDAO;
     private final ReservationDAO reservationDAO;
     private final LibraryDAO libraryDAO;
+    private final SeatDAO seatDAO;
 
-    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, ReservationDAO reservationDAO, LibraryDAO libraryDAO) {
+    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, ReservationDAO reservationDAO, LibraryDAO libraryDAO, SeatDAO seatDAO) {
         this.adminDAO = adminDAO;
         this.accessSessionDAO = accessSessionDAO;
         this.studentDAO = studentDAO;
         this.reservationDAO = reservationDAO;
         this.libraryDAO = libraryDAO;
+        this.seatDAO = seatDAO;
     }
 
     public void toggleUserPresence(long userId, long libraryId){
@@ -57,6 +59,7 @@ public class LibraryAccessService {
                 if(reservation != null){
                     reservation.close();
                     reservationDAO.update(reservation);
+                    seatDAO.update(reservation.getSeat());
                 }
                 as.closeSession();
                 accessSessionDAO.update(as);

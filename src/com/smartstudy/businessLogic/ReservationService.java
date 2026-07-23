@@ -55,8 +55,7 @@ public class ReservationService {
             }
             Reservation newReservation = Reservation.start(accessSession, seat);
             seatDAO.update(seat);
-            reservationDAO.insert(newReservation);
-            return newReservation;
+            return reservationDAO.insert(newReservation);
         });
     }
 

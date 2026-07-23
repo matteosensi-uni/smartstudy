@@ -50,8 +50,7 @@ public class ReportService {
             AbandonmentReport report = AbandonmentReport.open(description, student);
             reservation.addAbandonmentReport(report);
             reservationDAO.update(reservation);
-            abandonmentReportDAO.insert(report, reservation.getId());
-            return report;
+            return abandonmentReportDAO.insert(report, reservation.getId());
         });
     }
 
