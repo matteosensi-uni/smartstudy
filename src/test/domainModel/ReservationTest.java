@@ -134,7 +134,7 @@ public class ReservationTest {
 
         assertThrows(DomainViolationException.class, () -> {
             Student s1 = Student.valueOf(3, "Mario", "Rossi", "1234", "m.r@test.it", true);
-            AbandonmentReport report1 = AbandonmentReport.valueOf(2, LocalDateTime.now(), null, ReportStatus.OPENED, "", s, null);
+            AbandonmentReport report1 = AbandonmentReport.valueOf(2, LocalDateTime.now(), null, ReportStatus.OPENED, "", s1, null);
             validReservation.addAbandonmentReport(report1); //non è possibile aggiungere due report alla solita reservation
         });
     }
