@@ -23,6 +23,10 @@ public class LibraryAccessService {
         this.seatDAO = seatDAO;
     }
 
+    public boolean isStudentPresent(long studentId){
+        return accessSessionDAO.hasActiveAccessSessionByStudent(studentId);
+    }
+
     public void toggleUserPresence(long userId, long libraryId){
         Library library = libraryDAO.getLibraryById(libraryId);
         if(library == null){

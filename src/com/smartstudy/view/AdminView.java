@@ -27,12 +27,13 @@ public class AdminView extends BorderPane {
     private final StackPane contentArea;
 
     public AdminView(Runnable onLogout) {
-        setStyle("-fx-background-color: #f4f6f8;");
+        getStyleClass().add("root");
 
         setTop(buildHeader(onLogout));
         setLeft(buildSidebar());
 
         contentArea = new StackPane();
+        contentArea.setAlignment(Pos.TOP_LEFT);
         contentArea.setPadding(new Insets(20));
         contentArea.getChildren().add(buildPresencePanel());
         setCenter(contentArea);
@@ -40,15 +41,15 @@ public class AdminView extends BorderPane {
 
     private Node buildHeader(Runnable onLogout) {
         Label title = new Label("SmartStudy - Area Amministratore");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        title.getStyleClass().add("title-label");
 
         Button logoutButton = new Button("Esci");
+        logoutButton.getStyleClass().add("btn-secondary");
         logoutButton.setOnAction(e -> onLogout.run());
 
         HBox header = new HBox(title, spacer(), logoutButton);
+        header.getStyleClass().addAll("app-header", "admin");
         header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(15, 20, 15, 20));
-        header.setStyle("-fx-background-color: #1f2937;");
         return header;
     }
 
@@ -66,10 +67,9 @@ public class AdminView extends BorderPane {
         Button inChargeReportsBtn = navButton("Segnalazioni in Carico", () -> buildReportsPanel("Segnalazioni in carico"));
         Button closedReportsBtn = navButton("Segnalazioni Chiuse", () -> buildReportsPanel("Segnalazioni chiuse"));
 
-        VBox sidebar = new VBox(8, presenceBtn, seatsBtn, areasBtn, openReportsBtn, inChargeReportsBtn, closedReportsBtn);
-        sidebar.setPadding(new Insets(20, 10, 20, 10));
+        VBox sidebar = new VBox(6, presenceBtn, seatsBtn, areasBtn, openReportsBtn, inChargeReportsBtn, closedReportsBtn);
+        sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(210);
-        sidebar.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;");
         for (Node node : sidebar.getChildren()) {
             ((Button) node).setMaxWidth(Double.MAX_VALUE);
         }
@@ -78,6 +78,7 @@ public class AdminView extends BorderPane {
 
     private Button navButton(String text, Supplier<Node> panelSupplier) {
         Button button = new Button(text);
+        button.getStyleClass().add("nav-button");
         button.setOnAction(e -> showPanel(panelSupplier.get()));
         button.setAlignment(Pos.CENTER_LEFT);
         return button;
@@ -108,7 +109,11 @@ public class AdminView extends BorderPane {
         table.setPlaceholder(new Label("Nessun posto da mostrare"));
         table.setPrefHeight(320);
 
-        HBox actions = new HBox(10, new Button("Segna disponibile"), new Button("Segna rotto"));
+        Button availableButton = new Button("Segna disponibile");
+        availableButton.getStyleClass().add("btn-secondary");
+        Button brokenButton = new Button("Segna rotto");
+        brokenButton.getStyleClass().add("btn-danger");
+        HBox actions = new HBox(10, availableButton, brokenButton);
 
         box.getChildren().addAll(table, actions);
         return box;
@@ -150,7 +155,13 @@ public class AdminView extends BorderPane {
         table.setPlaceholder(new Label("Nessuna segnalazione da mostrare"));
         table.setPrefHeight(280);
 
-        HBox actions = new HBox(10, new Button("Prendi in carico"), new Button("Conferma"), new Button("Rifiuta"));
+        Button takeButton = new Button("Prendi in carico");
+        takeButton.getStyleClass().add("btn-secondary");
+        Button confirmButton = new Button("Conferma");
+        confirmButton.getStyleClass().add("btn-primary");
+        Button rejectButton = new Button("Rifiuta");
+        rejectButton.getStyleClass().add("btn-danger");
+        HBox actions = new HBox(10, takeButton, confirmButton, rejectButton);
 
         box.getChildren().addAll(table, actions);
         return box;
@@ -158,9 +169,10 @@ public class AdminView extends BorderPane {
 
     private VBox panelContainer(String title) {
         Label heading = new Label(title);
-        heading.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        heading.getStyleClass().add("card-heading");
         VBox box = new VBox(15, heading);
-        box.setPadding(new Insets(10));
+        box.getStyleClass().add("card");
+        box.setMaxHeight(Region.USE_PREF_SIZE);
         return box;
     }
 }

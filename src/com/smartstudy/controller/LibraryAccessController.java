@@ -14,15 +14,16 @@ public class LibraryAccessController {
         this.libraryAccessService = libraryAccessService;
     }
 
-    public void handleAccess(long userId, long libraryId){
+    public String handleAccess(long userId, long libraryId){
         try{
             libraryAccessService.toggleUserPresence(userId, libraryId);
-        }catch (BusinessViolationException e){
-            //stampa errore
-        }catch (DataAccessException e){
-            //stampa errore
-        }catch (DomainViolationException e){
-            //stampa errore
+            return null;
+        }catch (BusinessViolationException | DataAccessException | DomainViolationException e){
+            return e.getMessage();
         }
+    }
+
+    public boolean isStudentPresent(long studentId){
+        return libraryAccessService.isStudentPresent(studentId);
     }
 }
