@@ -69,7 +69,7 @@ public class ReportService {
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())) {
+            if (!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.takeInCharge(admin);
@@ -89,16 +89,14 @@ public class ReportService {
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if(reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
+            if(!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.confirm(admin);
             abandonmentReportDAO.update(report);
             reservation.close();
             reservationDAO.update(reservation);
-            Seat seat = reservation.getSeat();
-            seat.free();
-            seatDAO.update(seat);
+            seatDAO.update(reservation.getSeat());
             return report;
         });
     }
@@ -114,7 +112,7 @@ public class ReportService {
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if(reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
+            if(!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.reject(admin);

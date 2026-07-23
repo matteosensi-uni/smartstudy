@@ -38,7 +38,7 @@ public class LibraryAccessService {
     }
 
     private void toggleAdminPresence(Admin admin, Library library){
-        if(library.hasAdmin(admin.getId()))
+        if(!library.hasAdmin(admin.getId()))
             throw new BusinessViolationException("L'admin non può gestire questa biblioteca");
         TransactionManager.executeInTransaction(() -> {
             admin.togglePresence();

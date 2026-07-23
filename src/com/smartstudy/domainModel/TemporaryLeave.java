@@ -14,7 +14,7 @@ public class TemporaryLeave extends BaseModel {
             throw new DomainViolationException("I minuti devono essere maggiori di 0");
         }
         setStartTime(LocalDateTime.now());
-        setExpectedEndTime(LocalDateTime.now().plusMinutes(minutes));
+        setExpectedEndTime(startTime.plusMinutes(minutes));
     }
 
     private TemporaryLeave(long id, LocalDateTime startTime, LocalDateTime expectedEndTime) {

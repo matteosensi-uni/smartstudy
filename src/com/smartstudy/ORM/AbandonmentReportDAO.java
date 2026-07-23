@@ -58,7 +58,7 @@ public class AbandonmentReportDAO extends BaseDAO{
 
     public ArrayList<AbandonmentReport> getReportsByReservationId(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM abandonment_report WHERE  reservation_id = ?
+                SELECT * FROM abandonment_report WHERE  id_reservation = ?
             """
         )){
             ps.setLong(1, reservationId);

@@ -35,6 +35,24 @@ public class AccessSessionDAO extends BaseDAO{
         }
     }
 
+    public AccessSession getAccessSessionById(long sessionId)  {
+        try(PreparedStatement ps = conn.prepareStatement("""
+                SELECT * FROM access_session
+                WHERE id_access = ?
+            """
+            )){
+            ps.setLong(1, sessionId);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return createAccessSessionFromResultSet(rs);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Non è stato possibile recuperare le sessioni di accesso", e);
+        }
+    }
+
     public AccessSession getActiveAccessSessionByStudent(long studentId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session

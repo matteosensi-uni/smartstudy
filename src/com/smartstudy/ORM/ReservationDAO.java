@@ -137,7 +137,7 @@ public class ReservationDAO extends BaseDAO{
                 TimeUtils.getLocalTime(rs.getTimestamp("end_time")),
                 ReservationStatus.valueOf(rs.getString("status")),
                 temporaryLeaveDAO.getTemporaryLeavesByReservation(rs.getLong("id_reservation")),
-                accessSessionDAO.getActiveAccessSessionById(rs.getLong("access_id")),
+                accessSessionDAO.getAccessSessionById(rs.getLong("access_id")),
                 seatDAO.getSeatById(rs.getLong("id_seat")),
                 abandonmentReportDAO.getReportsByReservationId(rs.getLong("id_reservation"))
         );

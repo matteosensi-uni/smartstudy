@@ -45,7 +45,9 @@ public class TemporaryLeaveService {
         if(reservation.isTemporarilyLeft()) {
             if (!reservation.hasValidTemporaryLeave()){
                 reservation.markActive();
-                reservationDAO.update(reservation);
+                TransactionManager.executeInTransaction(() -> {
+                    reservationDAO.update(reservation);
+                });
             }
         }
     }
