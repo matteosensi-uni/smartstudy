@@ -16,7 +16,12 @@ import java.util.Map;
 public class SeatDAO extends BaseDAO{
     public static final String tableName = "seat";
     public static final String pkName = "id_seat";
-    public SeatDAO(Connection conn) { super(conn); }
+
+    private final StudyAreaDAO studyAreaDAO;
+
+    public SeatDAO(Connection conn, StudyAreaDAO studyAreaDAO) { super(conn);
+        this.studyAreaDAO = studyAreaDAO;
+    }
 
     public Seat getSeatById(long seatId){
         try(PreparedStatement ps = conn.prepareStatement("""
@@ -129,7 +134,6 @@ public class SeatDAO extends BaseDAO{
     }
 
     private Seat createSeatFromResultSet(ResultSet rs) throws SQLException {
-        StudyAreaDAO studyAreaDAO = new StudyAreaDAO(conn);
         return Seat.valueOf(
                 rs.getLong("id_seat"),
                 rs.getString("qr_code"),

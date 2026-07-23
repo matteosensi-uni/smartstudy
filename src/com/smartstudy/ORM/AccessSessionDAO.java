@@ -15,7 +15,13 @@ public class AccessSessionDAO extends BaseDAO{
     public static final String tableName = "access_session";
     public static final String pkName = "id_access";
 
-    public AccessSessionDAO(Connection conn) { super(conn); }
+    private final LibraryDAO libraryDAO;
+    private final StudentDAO studentDAO;
+
+    public AccessSessionDAO(Connection conn, LibraryDAO libraryDAO, StudentDAO studentDAO) { super(conn);
+        this.libraryDAO = libraryDAO;
+        this.studentDAO = studentDAO;
+    }
 
     public AccessSession getActiveAccessSessionById(long sessionId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
@@ -87,8 +93,6 @@ public class AccessSessionDAO extends BaseDAO{
     }
 
     private AccessSession createAccessSessionFromResultSet(ResultSet rs) throws SQLException {
-        LibraryDAO libraryDAO = new LibraryDAO(conn);
-        StudentDAO studentDAO = new StudentDAO(conn);
         return AccessSession.valueOf(
                 rs.getLong("id_access"),
                 TimeUtils.getLocalTime(rs.getTimestamp("entry_time")),

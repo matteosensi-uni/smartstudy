@@ -4,10 +4,7 @@ import com.smartstudy.domainModel.StudyArea;
 import com.smartstudy.domainModel.enums.StudyAreaType;
 import com.smartstudy.exceptions.DataAccessException;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,8 +13,13 @@ public class StudyAreaDAO extends BaseDAO{
     public static final String tableName = "study_area";
     public static final String pkName = "id_area";
 
-    public StudyAreaDAO(Connection conn) {
+    private final LibraryDAO libraryDAO;
+    private final TimePolicyDAO timePolicyDAO;
+
+    public StudyAreaDAO(Connection conn, LibraryDAO libraryDAO, TimePolicyDAO timePolicyDAO) {
         super(conn);
+        this.libraryDAO = libraryDAO;
+        this.timePolicyDAO = timePolicyDAO;
     }
     public StudyArea getStudyAreaById(long studyAreaId){
         try(PreparedStatement ps = conn.prepareStatement("""
@@ -57,8 +59,6 @@ public class StudyAreaDAO extends BaseDAO{
     }
 
     private StudyArea createStudyAreaFromResultSet(ResultSet rs) throws SQLException {
-        LibraryDAO libraryDAO = new LibraryDAO(conn);
-        TimePolicyDAO timePolicyDAO = new TimePolicyDAO(conn);
         return StudyArea.valueOf(
                 rs.getLong("id_area"),
                 rs.getString("name"),

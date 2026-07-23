@@ -24,9 +24,6 @@ public class TemporaryLeaveService {
         if(reservation == null || accessSession == null){
             throw new BusinessViolationException("L'utente o la prenotazione non sono stati inseriti correttamente");
         }
-        if(!reservation.isActive()){
-            throw new BusinessViolationException("La prenotazione inserita non è attiva");
-        }
         if(accessSession.getId() != reservation.getSession().getId()){
             throw new BusinessViolationException("La sessione dello studente non combacia con quella della reservation");
         }
@@ -35,21 +32,6 @@ public class TemporaryLeaveService {
             reservationDAO.update(reservation);
             return temporaryLeaveDAO.insert(temporaryLeave, reservationId);
         });
-    }
-
-    public  void checkExpiredTemporaryLeave(long reservationId) {
-        Reservation reservation = reservationDAO.getReservationById(reservationId);
-        if(reservation == null){
-            throw new BusinessViolationException("La reservation inserita non esiste");
-        }
-        if(reservation.isTemporarilyLeft()) {
-            if (!reservation.hasValidTemporaryLeave()){
-                reservation.markActive();
-                TransactionManager.executeInTransaction(() -> {
-                    reservationDAO.update(reservation);
-                });
-            }
-        }
     }
 
     public ArrayList<TemporaryLeave> getTemporaryLeavesByReservation(long reservationId, long studentId) {

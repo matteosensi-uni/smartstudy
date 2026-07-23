@@ -116,6 +116,7 @@ public class Reservation extends BaseModel{
 
 
     public ArrayList<AbandonmentReport> close() {
+        refreshState();
         if(endTime != null || status == ReservationStatus.CLOSED)
             throw new DomainViolationException("La prenotazione è già stata chiusa");
         seat.free();
@@ -132,6 +133,7 @@ public class Reservation extends BaseModel{
     }
 
     private void markTemporarilyLeft(){
+        refreshState();
         if(status == ReservationStatus.CLOSED ||  status == ReservationStatus.TEMPORARILY_LEFT){
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }
@@ -139,19 +141,21 @@ public class Reservation extends BaseModel{
     }
 
     public void markActive(){
+        refreshState();
         if(status == ReservationStatus.CLOSED){
             throw new DomainViolationException("La prenotazione non può essere modificata");
-        }if(hasValidTemporaryLeave())
+        }if(isTemporarilyLeft())
             throw new DomainViolationException("La prenotazione ha una pausa attiva");
         status = ReservationStatus.ACTIVE;
     }
 
-    public TemporaryLeave addTemporaryLeave(){
+    public TemporaryLeave addTemporaryLeave() {
+        refreshState();
+        if(isTemporarilyLeft()){
+            throw new DomainViolationException("Impossibile inserire due pause contemporaneamente");
+        }
         if(seat.getStudyArea().getTimePolicy().reachedLimit(temporaryLeaves.size())){
             throw new DomainViolationException("è stato raggiunto il limite massimo di pause");
-        }
-        if(hasValidTemporaryLeave()){
-            throw new DomainViolationException("Impossibile inserire una pausa, ne esiste già una attiva");
         }
         if(hasActiveReport()){
             throw new DomainViolationException("Impossibile creare una pausa, c'è un report attivo sulla prenotazione");
@@ -183,6 +187,9 @@ public class Reservation extends BaseModel{
         if(abandonmentReport.getAuthor().getId() == getSession().getStudent().getId()){
             throw new DomainViolationException("Lo studente della prenotazione non può creare dei report sul posto stesso");
         }
+        refreshState();
+        if(isTemporarilyLeft())
+            throw new DomainViolationException("Lo studente ha una pausa valida, non si può aggiungere un report");
         abandonmentReports.add(AbandonmentReport.copy(abandonmentReport));
     }
 
@@ -197,6 +204,28 @@ public class Reservation extends BaseModel{
         for(TemporaryLeave leave : temporaryLeaves){
             if(leave.isValid()) return true;
         }
+        return false;
+    }
+
+    public boolean refreshState() {
+        if (status == ReservationStatus.CLOSED) {
+            return false;
+        }
+
+        boolean hasValidLeave = hasValidTemporaryLeave();
+        if (hasValidLeave) {
+            if (status != ReservationStatus.TEMPORARILY_LEFT) {
+                status = ReservationStatus.TEMPORARILY_LEFT;
+                return true;
+            }
+            return false;
+        }
+
+        if (status == ReservationStatus.TEMPORARILY_LEFT) {
+            status = ReservationStatus.ACTIVE;
+            return true;
+        }
+
         return false;
     }
 }

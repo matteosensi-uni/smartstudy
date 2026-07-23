@@ -13,8 +13,18 @@ import java.util.Map;
 public class ReservationDAO extends BaseDAO{
     public static final String tableName = "reservation";
     public static final String pkName = "id_reservation";
-    public ReservationDAO(Connection conn) {
+
+    private final SeatDAO seatDAO;
+    private final AccessSessionDAO accessSessionDAO;
+    private final AbandonmentReportDAO abandonmentReportDAO;
+    private final TemporaryLeaveDAO temporaryLeaveDAO;
+
+    public ReservationDAO(Connection conn, SeatDAO seatDAO, AccessSessionDAO accessSessionDAO, AbandonmentReportDAO abandonmentReportDAO, TemporaryLeaveDAO temporaryLeaveDAO) {
         super(conn);
+        this.seatDAO = seatDAO;
+        this.accessSessionDAO = accessSessionDAO;
+        this.abandonmentReportDAO = abandonmentReportDAO;
+        this.temporaryLeaveDAO = temporaryLeaveDAO;
     }
 
     public Reservation getReservationById(long reservationId) {
@@ -26,8 +36,13 @@ public class ReservationDAO extends BaseDAO{
             )){
             ps.setLong(1, reservationId);
             try(ResultSet rs = ps.executeQuery()){
-                if(rs.next())
-                    return createReservationFromResultSet(rs);
+                if(rs.next()) {
+                    Reservation res = createReservationFromResultSet(rs);
+                    if(res.refreshState()){
+                        update(res);
+                    }
+                    return res;
+                }
                 else return null;
             }
         } catch (SQLException e) {
@@ -44,8 +59,13 @@ public class ReservationDAO extends BaseDAO{
         )){
             ps.setLong(1, reportId);
             try(ResultSet rs = ps.executeQuery()){
-                if(rs.next())
-                    return createReservationFromResultSet(rs);
+                if(rs.next()) {
+                    Reservation res = createReservationFromResultSet(rs);
+                    if(res.refreshState()){
+                        update(res);
+                    }
+                    return res;
+                }
                 else return null;
             }
         } catch (SQLException e) {
@@ -78,8 +98,13 @@ public class ReservationDAO extends BaseDAO{
             )){
             ps.setLong(1, idSeat);
             try(ResultSet rs = ps.executeQuery()){
-                if(rs.next())
-                    return createReservationFromResultSet(rs);
+                if(rs.next()) {
+                    Reservation res = createReservationFromResultSet(rs);
+                    if(res.refreshState()){
+                        update(res);
+                    }
+                    return res;
+                }
                 else return null;
             }
         } catch (SQLException e) {
@@ -97,8 +122,13 @@ public class ReservationDAO extends BaseDAO{
         )) {
             ps.setLong(1, studentId);
             try (ResultSet rs = ps.executeQuery()) {
-                if(rs.next())
-                    return createReservationFromResultSet(rs);
+                if(rs.next()) {
+                    Reservation res = createReservationFromResultSet(rs);
+                    if(res.refreshState()){
+                        update(res);
+                    }
+                    return res;
+                }
                 return null;
             }
         } catch (SQLException e) {
@@ -127,10 +157,6 @@ public class ReservationDAO extends BaseDAO{
     }
 
     private Reservation createReservationFromResultSet(ResultSet rs) throws SQLException {
-        AccessSessionDAO accessSessionDAO = new AccessSessionDAO(conn);
-        SeatDAO seatDAO = new SeatDAO(conn);
-        TemporaryLeaveDAO temporaryLeaveDAO = new TemporaryLeaveDAO(conn);
-        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn);
         return Reservation.valueOf(
                 rs.getLong("id_reservation"),
                 TimeUtils.getLocalTime(rs.getTimestamp("start_time")),
@@ -145,6 +171,7 @@ public class ReservationDAO extends BaseDAO{
 
     public Reservation insert(Reservation reservation) {
         try {
+            reservation.refreshState();
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("start_time", reservation.getStartTime());
             if (reservation.getEndTime() != null) {
@@ -165,6 +192,7 @@ public class ReservationDAO extends BaseDAO{
 
     public void update(Reservation reservation) {
         try {
+            reservation.refreshState();
             Map<String, Object> values = new LinkedHashMap<>();
             if (reservation.getEndTime() != null) {
                 values.put("end_time", reservation.getEndTime());
