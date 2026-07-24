@@ -86,11 +86,19 @@ public class Seat extends BaseModel{
         status = SeatStatus.BROKEN;
     }
 
-    public void changeSeatType(SeatType newType){
+    public void changeSeatType(String newType){
         if(isUnavailable() || isBroken()){
             throw new DomainViolationException("Non è possibile cambiare il tipo di un posto occupato");
         }
-        setType(newType);
+        if(newType == null || newType.isBlank()){
+            throw new DomainViolationException("Il tipo del posto non deve essere nullo o vuoto");
+        }
+        try{
+            SeatType newSeatType = SeatType.valueOf(newType);
+            setType(newSeatType);
+        }catch (IllegalArgumentException e){
+            throw new DomainViolationException("Il tipo di posto non è valido");
+        }
     }
 
 }

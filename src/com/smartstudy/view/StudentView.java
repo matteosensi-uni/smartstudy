@@ -121,8 +121,17 @@ public class StudentView extends BorderPane {
 
         Button reserveButton = new Button("Prenota questo posto");
         reserveButton.getStyleClass().add("btn-primary");
+        Label reportLabel = new Label("Segnala il posto:");
+        reportLabel.setStyle("-fx-font-weight: bold; -fx-padding: 10");
+        TextField reportField = new TextField();
+        reportField.setPromptText("Descrizione");
+        reportField.setStyle("-fx-padding: 10");
+        reportField.setMinWidth(300);
+        Button reportButton = new Button("Segnala Prenotazione");
+        reportButton.getStyleClass().add("btn-danger");
+        HBox reportBox = new HBox(10, reportLabel, reportField, reportButton);
 
-        box.getChildren().addAll(qrField, scanButton, seatInfo, reserveButton);
+        box.getChildren().addAll(qrField, scanButton, seatInfo, reserveButton, reportBox);
         return box;
     }
 
@@ -137,14 +146,10 @@ public class StudentView extends BorderPane {
         info.addRow(2, new Label("Inizio:"), new Label("-"));
         info.addRow(3, new Label("Stato:"), new Label("-"));
 
-        Button pauseButton = new Button("Richiedi pausa");
-        pauseButton.getStyleClass().add("btn-secondary");
-        Button reportButton = new Button("Segnala abbandono");
-        reportButton.getStyleClass().add("btn-secondary");
         Button endButton = new Button("Termina prenotazione");
         endButton.getStyleClass().add("btn-danger");
 
-        HBox actions = new HBox(10, pauseButton, reportButton, endButton);
+        HBox actions = new HBox(10, endButton);
 
         Label pausesHeading = new Label("Pause");
         pausesHeading.getStyleClass().add("section-subheading");

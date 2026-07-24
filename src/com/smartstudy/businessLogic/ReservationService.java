@@ -33,8 +33,8 @@ public class ReservationService {
             return seatDAO.getSeatByQR(qrCode);
         });
     }
-    public Reservation createReservation(long accessSessionId, long seatId){
-        AccessSession accessSession = accessSessionDAO.getActiveAccessSessionById(accessSessionId);
+    public Reservation createReservation(long studentId, long seatId){
+        AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
         if(accessSession == null){
             throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
         }
@@ -59,9 +59,9 @@ public class ReservationService {
         });
     }
 
-    public Reservation closeReservation(long reservationId, long accessSessionId){
-        return TransactionManager.executeInTransaction(() -> {
-            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionById(accessSessionId);
+    public void closeReservation(long reservationId, long studentId){
+        TransactionManager.executeInTransaction(() -> {
+            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
             if (accessSession == null) {
                 throw new BusinessViolationException("L'utente non ha un accesso valido alla biblioteca");
             }
@@ -69,7 +69,7 @@ public class ReservationService {
             if (reservation == null) {
                 throw new BusinessViolationException("La prenotazione inserita non è valida");
             }
-            if (reservation.getSession().getId() != accessSessionId) {
+            if (reservation.getSession().getId() != accessSession.getId()) {
                 throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
             }
 
@@ -79,7 +79,6 @@ public class ReservationService {
             }
             seatDAO.update(reservation.getSeat());
             reservationDAO.update(reservation);
-            return reservation;
         });
     }
 

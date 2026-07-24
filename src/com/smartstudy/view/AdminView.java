@@ -9,10 +9,7 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -63,9 +60,9 @@ public class AdminView extends BorderPane {
         Button presenceBtn = navButton("Presenza", this::buildPresencePanel);
         Button seatsBtn = navButton("Posti", this::buildSeatsPanel);
         Button areasBtn = navButton("Aree Studio", this::buildStudyAreasPanel);
-        Button openReportsBtn = navButton("Segnalazioni Aperte", () -> buildReportsPanel("Segnalazioni aperte"));
-        Button inChargeReportsBtn = navButton("Segnalazioni in Carico", () -> buildReportsPanel("Segnalazioni in carico"));
-        Button closedReportsBtn = navButton("Segnalazioni Chiuse", () -> buildReportsPanel("Segnalazioni chiuse"));
+        Button openReportsBtn = navButton("Segnalazioni Aperte", this::buildOpenReportsPanel);
+        Button inChargeReportsBtn = navButton("Segnalazioni in Carico",this::buildPendingReportsPanel);
+        Button closedReportsBtn = navButton("Segnalazioni Chiuse", this::buildClosedReportsPanel);
 
         VBox sidebar = new VBox(6, presenceBtn, seatsBtn, areasBtn, openReportsBtn, inChargeReportsBtn, closedReportsBtn);
         sidebar.getStyleClass().add("sidebar");
@@ -115,7 +112,19 @@ public class AdminView extends BorderPane {
         brokenButton.getStyleClass().add("btn-danger");
         HBox actions = new HBox(10, availableButton, brokenButton);
 
-        box.getChildren().addAll(table, actions);
+        Label typeLabel = new Label("Modifica il tipo di posto");
+        typeLabel.setStyle("-fx-padding: 10; -fx-font-weight: bold");
+        ComboBox<String> typeBox = new ComboBox<>();
+        typeBox.getItems().addAll("Opzione 1", "Opzione 2", "Opzione 3");
+        typeBox.setValue("Opzione 1"); // Valore predefinito
+
+        Button saveTypeButton = new Button("Modifica");
+        saveTypeButton.getStyleClass().add("btn-primary");
+        typeBox.getStyleClass().add("btn-secondary");
+        typeBox.setStyle("-fx-padding: 5");
+        HBox changeTypeBox = new HBox(5, typeLabel, typeBox, saveTypeButton);
+
+        box.getChildren().addAll(table, actions, changeTypeBox);
         return box;
     }
 
@@ -136,13 +145,43 @@ public class AdminView extends BorderPane {
         table.setPlaceholder(new Label("Nessuna area studio da mostrare"));
         table.setPrefHeight(320);
 
-        box.getChildren().add(table);
+        Label setNameLabel = new Label("Modifica il nome dell'area studio");
+        setNameLabel.setStyle("-fx-padding: 10; -fx-font-weight: bold");
+        TextField nameField = new TextField();
+        nameField.setPromptText("Nome dell'area studio");
+        nameField.setStyle("-fx-padding: 10");
+        Button saveNameButton = new Button("Modifica");
+        saveNameButton.getStyleClass().add("btn-primary");
+        HBox changeNameBox = new HBox(5, setNameLabel, nameField, saveNameButton);
+
+        Label typeLabel = new Label("Modifica il tipo di area studio");
+        typeLabel.setStyle("-fx-padding: 10; -fx-font-weight: bold");
+        ComboBox<String> typeBox = new ComboBox<>();
+        typeBox.getItems().addAll("Opzione 1", "Opzione 2", "Opzione 3");
+        typeBox.setValue("Opzione 1"); // Valore predefinito
+        Button saveTypeButton = new Button("Modifica");
+        saveTypeButton.getStyleClass().add("btn-primary");
+        typeBox.getStyleClass().add("btn-secondary");
+        typeBox.setStyle("-fx-padding: 5");
+        HBox changeTypeBox = new HBox(5, typeLabel, typeBox, saveTypeButton);
+
+        Label policyLabel = new Label("Modifica la regola dell'area studio");
+        policyLabel.setStyle("-fx-padding: 10; -fx-font-weight: bold");
+        ComboBox<String> policyBox = new ComboBox<>();
+        policyBox.getItems().addAll("Opzione 1", "Opzione 2", "Opzione 3");
+        policyBox.setValue("Opzione 1"); // Valore predefinito
+        policyBox.getStyleClass().add("btn-secondary");
+        policyBox.setStyle("-fx-padding: 5");
+        Button savePolicyButton = new Button("Modifica");
+        savePolicyButton.getStyleClass().add("btn-primary");
+        HBox changePolicyBox = new HBox(5, policyLabel, policyBox, savePolicyButton);
+
+        box.getChildren().addAll(table, changeTypeBox, changeNameBox, changePolicyBox);
         return box;
     }
 
-    private Node buildReportsPanel(String title) {
-        VBox box = panelContainer(title);
-
+    private Node buildOpenReportsPanel() {
+        VBox box = panelContainer("Segnalazioni aperte");
         TableView<AbandonmentReport> table = new TableView<>();
         TableColumn<AbandonmentReport, String> dateCol = new TableColumn<>("Data");
         dateCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getCreatedAt())));
@@ -164,6 +203,48 @@ public class AdminView extends BorderPane {
         HBox actions = new HBox(10, takeButton, confirmButton, rejectButton);
 
         box.getChildren().addAll(table, actions);
+        return box;
+    }
+
+    private Node buildPendingReportsPanel() {
+        VBox box = panelContainer("Segnalazioni prese in carico");
+        TableView<AbandonmentReport> table = new TableView<>();
+        TableColumn<AbandonmentReport, String> dateCol = new TableColumn<>("Data");
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getCreatedAt())));
+        TableColumn<AbandonmentReport, String> descCol = new TableColumn<>("Descrizione");
+        descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescription()));
+        TableColumn<AbandonmentReport, String> statusCol = new TableColumn<>("Stato");
+        statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
+        table.getColumns().addAll(dateCol, descCol, statusCol);
+        table.setItems(FXCollections.observableArrayList());
+        table.setPlaceholder(new Label("Nessuna segnalazione da mostrare"));
+        table.setPrefHeight(280);
+
+        Button confirmButton = new Button("Conferma");
+        confirmButton.getStyleClass().add("btn-primary");
+        Button rejectButton = new Button("Rifiuta");
+        rejectButton.getStyleClass().add("btn-danger");
+        HBox actions = new HBox(10, confirmButton, rejectButton);
+
+        box.getChildren().addAll(table, actions);
+        return box;
+    }
+
+    private Node buildClosedReportsPanel() {
+        VBox box = panelContainer("Segnalazioni gestite");
+        TableView<AbandonmentReport> table = new TableView<>();
+        TableColumn<AbandonmentReport, String> dateCol = new TableColumn<>("Data");
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getCreatedAt())));
+        TableColumn<AbandonmentReport, String> descCol = new TableColumn<>("Descrizione");
+        descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescription()));
+        TableColumn<AbandonmentReport, String> statusCol = new TableColumn<>("Stato");
+        statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
+        table.getColumns().addAll(dateCol, descCol, statusCol);
+        table.setItems(FXCollections.observableArrayList());
+        table.setPlaceholder(new Label("Nessuna segnalazione da mostrare"));
+        table.setPrefHeight(280);
+
+        box.getChildren().addAll(table);
         return box;
     }
 

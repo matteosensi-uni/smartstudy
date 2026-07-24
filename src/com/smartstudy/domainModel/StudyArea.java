@@ -70,8 +70,16 @@ public class StudyArea extends BaseModel {
         setName(newName);
     }
 
-    public void changeStudyAreaType(StudyAreaType newType){
-        setType(newType);
+    public void changeStudyAreaType(String newType){
+        if(newType == null ||  newType.isBlank()){
+            throw new DomainViolationException("Il tipo della studyArea non può essere nullo o vuoto");
+        }
+        try {
+            StudyAreaType newStudyAreaType = StudyAreaType.valueOf(newType);
+            setType(newStudyAreaType);
+        }catch (IllegalArgumentException e){
+            throw new DomainViolationException("Inserire un tipo valido");
+        }
     }
     public void changePolicy(TimePolicy timePolicy){
         setTimePolicy(timePolicy);

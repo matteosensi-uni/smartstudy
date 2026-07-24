@@ -16,7 +16,7 @@ public class LoginView extends VBox {
     private final Label errorLabel;
     private final Button loginButton;
 
-    public LoginView(Runnable onLoginSuccess, Runnable onOpenLibraryAccess) {
+    public LoginView(Runnable adminDashboard, Runnable studentDashboard, Runnable onOpenLibraryAccess) {
         getStyleClass().add("root");
         setAlignment(Pos.CENTER);
         setSpacing(15);
@@ -47,7 +47,13 @@ public class LoginView extends VBox {
         loginButton.setMaxWidth(280);
         loginButton.setDefaultButton(true);
         loginButton.getStyleClass().add("btn-primary");
-        loginButton.setOnAction(e -> onLoginSuccess.run());
+        loginButton.setOnAction(e -> {
+            if(userIdField.getText().equals("admin")){
+                adminDashboard.run();
+            }else {
+                studentDashboard.run();
+            }
+        });
 
         VBox form = new VBox(10, userIdField, passwordField, loginButton, errorLabel);
         form.setAlignment(Pos.CENTER);
@@ -69,21 +75,5 @@ public class LoginView extends VBox {
         accessSection.setMaxWidth(280);
 
         getChildren().addAll(title, subtitle, form, separator, accessSection);
-    }
-
-    public TextField getUserIdField() {
-        return userIdField;
-    }
-
-    public PasswordField getPasswordField() {
-        return passwordField;
-    }
-
-    public Label getErrorLabel() {
-        return errorLabel;
-    }
-
-    public Button getLoginButton() {
-        return loginButton;
     }
 }

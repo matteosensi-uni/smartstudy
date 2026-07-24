@@ -26,8 +26,8 @@ public class ReportService {
         this.seatDAO = seatDAO;
     }
 
-    public AbandonmentReport createReport(long studentId, String description, long reservationId) {
-        Reservation reservation = reservationDAO.getReservationById(reservationId);
+    public AbandonmentReport createReport(long studentId, String description, long seatId) {
+        Reservation reservation = reservationDAO.getActiveReservationBySeat(seatId);
         if(reservation == null)
             throw new BusinessViolationException("La postazione non ha prenotazioni associate");
         Student student = studentDAO.getStudentById(studentId);
@@ -54,7 +54,7 @@ public class ReportService {
         });
     }
 
-    public AbandonmentReport takeInCharge(long adminId, long reportId){
+    public void takeInCharge(long adminId, long reportId){
         AbandonmentReport report = abandonmentReportDAO.getReportById(reportId);
         Admin admin = adminDAO.getAdminById(adminId);
         if(admin == null || report == null){
@@ -67,17 +67,16 @@ public class ReportService {
         if(reservation == null){
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
-        return TransactionManager.executeInTransaction(() -> {
+        TransactionManager.executeInTransaction(() -> {
             if (!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.takeInCharge(admin);
             abandonmentReportDAO.update(report);
-            return report;
         });
     }
 
-    public AbandonmentReport confirm(long adminId, long reportId){
+    public void confirm(long adminId, long reportId){
         AbandonmentReport report = abandonmentReportDAO.getReportById(reportId);
         Admin admin = adminDAO.getAdminById(adminId);
         if(admin == null || report == null){
@@ -87,7 +86,7 @@ public class ReportService {
         if(reservation == null){
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
-        return TransactionManager.executeInTransaction(() -> {
+        TransactionManager.executeInTransaction(() -> {
             if(!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
@@ -96,11 +95,10 @@ public class ReportService {
             reservation.close();
             reservationDAO.update(reservation);
             seatDAO.update(reservation.getSeat());
-            return report;
         });
     }
 
-    public AbandonmentReport reject(long adminId, long reportId){
+    public void reject(long adminId, long reportId){
         AbandonmentReport report = abandonmentReportDAO.getReportById(reportId);
         Admin admin = adminDAO.getAdminById(adminId);
         if(admin == null || report == null){
@@ -110,22 +108,21 @@ public class ReportService {
         if(reservation == null){
             throw new BusinessViolationException("Il report non corrisponde a nessuna prenotazione");
         }
-        return TransactionManager.executeInTransaction(() -> {
+        TransactionManager.executeInTransaction(() -> {
             if(!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
                 throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
             }
             report.reject(admin);
             abandonmentReportDAO.update(report);
-            return report;
         });
     }
 
-    public ArrayList<AbandonmentReport> getOpenReportsByLibrary(long libraryId){
-        Library library = libraryDAO.getLibraryById(libraryId);
+    public ArrayList<AbandonmentReport> getOpenReportsByAdmin(long adminId){
+        Library library = libraryDAO.getLibraryByAdmin(adminId);
         if(library == null){
             throw new BusinessViolationException("La libreria non esiste");
         }
-        return abandonmentReportDAO.getReportsByLibrary(libraryId);
+        return abandonmentReportDAO.getReportsByLibrary(library.getId());
     }
 
     public ArrayList<AbandonmentReport> getReportsInChargeByAdmin(long adminId){

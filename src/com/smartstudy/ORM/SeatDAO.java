@@ -79,60 +79,6 @@ public class SeatDAO extends BaseDAO{
         }
     }
 
-    public int countAvailableSeatsByLibrary(long libraryId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT count(id_seat) AS total
-                FROM (seat LEFT JOIN study_area ON seat.id_area = study_area.id_area)
-                LEFT JOIN library ON study_area.id_library = library.id_library
-                WHERE library.id_library = ? AND seat.status = 'AVAILABLE'
-            """
-            )){
-            ps.setLong(1, libraryId);
-            try(ResultSet rs = ps.executeQuery()){
-                rs.next();
-                return rs.getInt("total");
-            }
-        }catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare i posti", e);
-        }
-    }
-
-    public int countBrokenSeatsByLibrary(long libraryId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT count(id_seat) AS total
-                FROM (seat LEFT JOIN study_area ON seat.id_area = study_area.id_area)
-                LEFT JOIN library ON study_area.id_library = library.id_library
-                WHERE library.id_library = ? AND seat.status = 'BROKEN'
-            """
-            )){
-            ps.setLong(1, libraryId);
-            try(ResultSet rs = ps.executeQuery()){
-                rs.next();
-                return rs.getInt("total");
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare i posti", e);
-        }
-    }
-
-    public int countOccupiedSeatsByLibrary(long libraryId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT count(id_seat) AS total
-                FROM (seat LEFT JOIN study_area ON seat.id_area = study_area.id_area)
-                LEFT JOIN library ON study_area.id_library = library.id_library
-                WHERE library.id_library = ? AND seat.status = 'UNAVAILABLE'
-            """
-            )){
-            ps.setLong(1, libraryId);
-            try(ResultSet rs = ps.executeQuery()){
-                rs.next();
-                return rs.getInt("total");
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare il posti", e);
-        }
-    }
-
     private Seat createSeatFromResultSet(ResultSet rs) throws SQLException {
         return Seat.valueOf(
                 rs.getLong("id_seat"),

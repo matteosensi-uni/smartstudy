@@ -106,7 +106,7 @@ public class SeatTest {
     @Test
     public void testChangeSeatTypeSuccess(){
         Seat seat = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.AVAILABLE, studyArea);
-        seat.changeSeatType(SeatType.INDIVIDUAL);
+        seat.changeSeatType("INDIVIDUAL");
         assertEquals(SeatType.INDIVIDUAL, seat.getType());
     }
 
@@ -122,7 +122,7 @@ public class SeatTest {
     public void testChangeSeatTypeSuccessFailureSeatUnavailable(){
         Seat seat = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.UNAVAILABLE, studyArea);
         assertThrows(DomainViolationException.class, () ->
-            seat.changeSeatType(SeatType.INDIVIDUAL)
+            seat.changeSeatType("INDIVIDUAL")
         );
     }
 }

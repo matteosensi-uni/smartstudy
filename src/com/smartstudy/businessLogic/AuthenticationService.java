@@ -29,6 +29,5 @@ public class AuthenticationService {
             return adminDAO.getAdminById(userId);
         }
         throw new BusinessViolationException("Ruolo non valido");
-
     }
 }

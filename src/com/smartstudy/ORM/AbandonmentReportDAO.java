@@ -40,7 +40,6 @@ public class AbandonmentReportDAO extends BaseDAO{
     public ArrayList<AbandonmentReport> getOpenReportsByStudent(long reportId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM abandonment_report WHERE student_id = ?
-                AND (status = 'OPENED' OR status = 'PENDING')
             """
             )){
             ps.setLong(1, reportId);

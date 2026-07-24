@@ -74,7 +74,7 @@ public class StudyAreaTest {
 
     @Test
     public void testSetTypeSuccess(){
-        correctStudyArea.changeStudyAreaType(StudyAreaType.GROUP);
+        correctStudyArea.changeStudyAreaType("GROUP");
         assertEquals(StudyAreaType.GROUP, correctStudyArea.getType());
     }
 

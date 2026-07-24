@@ -21,13 +21,18 @@ public class SmartStudyApp extends Application {
     }
 
     private void showLogin() {
-        LoginView loginView = new LoginView(this::showStudentDashboard, this::showLibraryAccessDialog);
+        LoginView loginView = new LoginView(this::showAdminDashboard, this::showStudentDashboard, this::showLibraryAccessDialog);
         setScene(loginView, 900, 600);
     }
 
     private void showStudentDashboard() {
         StudentView studentView = new StudentView(this::showLogin);
         setScene(studentView, 1100, 700);
+    }
+
+    private void showAdminDashboard() {
+        AdminView adminView = new AdminView(this::showLogin);
+        setScene(adminView, 1100, 700);
     }
 
     private void showLibraryAccessDialog() {
@@ -47,9 +52,5 @@ public class SmartStudyApp extends Application {
         Scene scene = new Scene(root, width, height);
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         primaryStage.setScene(scene);
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

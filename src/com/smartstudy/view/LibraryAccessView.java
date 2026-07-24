@@ -12,7 +12,7 @@ public class LibraryAccessView extends VBox {
     private final Button toggleButton;
 
     public LibraryAccessView() {
-        setAlignment(Pos.CENTER_LEFT);
+        setAlignment(Pos.CENTER);
         setSpacing(15);
         getStyleClass().add("card");
         setMaxHeight(Region.USE_PREF_SIZE);
