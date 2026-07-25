@@ -15,18 +15,28 @@ public class AuthenticationService {
         this.studentDAO = studentDAO;
         this.adminDAO = adminDAO;
     }
-    public User authenticateUser(long userId, String password) {
+    public User authenticateUser(String userId, String password) {
+        if(userId == null || userId.isBlank()){
+            throw new BusinessViolationException("Lo userId non può essere vuoto");
+        }
         if(password == null || password.isBlank()){
             throw new BusinessViolationException("La password non può essere vuota");
         }
         password = password.trim();
-        if(!userDAO.credentialsValid(userId, password)){
+        userId = userId.trim();
+        long userid;
+        try{
+            userid = Long.parseLong(userId);
+        }catch(NumberFormatException e){
+            throw new BusinessViolationException("Inserire un id valido");
+        }
+        if(!userDAO.credentialsValid(userid, password)){
             throw new BusinessViolationException("I dati inseriti non sono validi");
         }
-        if(studentDAO.existsById(userId)){
-            return studentDAO.getStudentById(userId);
-        }else if(adminDAO.existsById(userId)){
-            return adminDAO.getAdminById(userId);
+        if(studentDAO.existsById(userid)){
+            return studentDAO.getStudentById(userid);
+        }else if(adminDAO.existsById(userid)){
+            return adminDAO.getAdminById(userid);
         }
         throw new BusinessViolationException("Ruolo non valido");
     }

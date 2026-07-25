@@ -25,7 +25,6 @@ public class TemporaryLeaveDAO extends BaseDAO{
                 SELECT temporary_leave.*
                 FROM temporary_leave LEFT JOIN reservation ON temporary_leave.id_reservation = reservation.id_reservation
                 WHERE reservation.id_reservation = ?
-                AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
             """
             )){
             ps.setLong(1, reservationId);

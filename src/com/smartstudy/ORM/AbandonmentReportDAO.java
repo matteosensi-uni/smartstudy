@@ -137,7 +137,7 @@ public class AbandonmentReportDAO extends BaseDAO{
         StudentDAO studentDAO = new StudentDAO(conn);
         AdminDAO adminDAO = new AdminDAO(conn);
         Admin admin;
-        Long adminId = rs.getObject("admin_id", Long.class);
+        Integer adminId = rs.getObject("admin_id", Integer.class);
         if(adminId == null){
             admin = null;
         }else{

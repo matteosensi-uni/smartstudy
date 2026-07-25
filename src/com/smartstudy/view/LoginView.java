@@ -1,5 +1,12 @@
 package com.smartstudy.view;
 
+import DTO.StudentSession;
+import com.smartstudy.controller.AuthenticationController;
+import com.smartstudy.domainModel.Student;
+import com.smartstudy.domainModel.User;
+import com.smartstudy.exceptions.BusinessViolationException;
+import com.smartstudy.exceptions.DataAccessException;
+import com.smartstudy.exceptions.DomainViolationException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -9,14 +16,15 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
+import java.util.function.Consumer;
+
 public class LoginView extends VBox {
 
     private final TextField userIdField;
     private final PasswordField passwordField;
     private final Label errorLabel;
-    private final Button loginButton;
 
-    public LoginView(Runnable adminDashboard, Runnable studentDashboard, Runnable onOpenLibraryAccess) {
+    public LoginView(Consumer<User> adminDashboard, Consumer<StudentSession> studentDashboard, Runnable onOpenLibraryAccess, AuthenticationController authenticationController) {
         getStyleClass().add("root");
         setAlignment(Pos.CENTER);
         setSpacing(15);
@@ -43,15 +51,23 @@ public class LoginView extends VBox {
         errorLabel.setManaged(false);
         errorLabel.setVisible(false);
 
-        loginButton = new Button("Accedi");
+        Button loginButton = new Button("Accedi");
         loginButton.setMaxWidth(280);
         loginButton.setDefaultButton(true);
         loginButton.getStyleClass().add("btn-primary");
         loginButton.setOnAction(e -> {
-            if(userIdField.getText().equals("admin")){
-                adminDashboard.run();
-            }else {
-                studentDashboard.run();
+            try {
+                User user = authenticationController.handleLogin(userIdField.getText(), passwordField.getText());
+                if(user.isAdmin()){
+                    adminDashboard.accept(user);
+                }else {
+                    StudentSession studentSession = authenticationController.createStudentSession((Student) user);
+                    studentDashboard.accept(studentSession);
+                }
+            }catch (DomainViolationException | BusinessViolationException | DataAccessException exception){
+                errorLabel.setManaged(true);
+                errorLabel.setVisible(true);
+                errorLabel.setText(exception.getMessage());
             }
         });
 

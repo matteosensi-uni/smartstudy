@@ -9,8 +9,8 @@ public class LibraryAccessController {
         this.libraryAccessService = libraryAccessService;
     }
 
-    public void handleAccess(long userId, long libraryId){
-        libraryAccessService.toggleUserPresence(userId, libraryId);
+    public boolean handleAccess(long userId, long libraryId){
+        return libraryAccessService.toggleUserPresence(userId, libraryId);
     }
 
     public boolean isStudentPresent(long studentId){

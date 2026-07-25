@@ -5,6 +5,7 @@ import com.smartstudy.domainModel.*;
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.domainModel.enums.SeatStatus;
 import com.smartstudy.exceptions.BusinessViolationException;
+import com.smartstudy.exceptions.DomainViolationException;
 
 import java.util.ArrayList;
 
@@ -23,8 +24,13 @@ public class LibraryConfigService {
         this.timePolicyDAO = timePolicyDAO;
     }
 
-    public ArrayList<TimePolicy> getAllPolicies(){
-        return timePolicyDAO.getAllPolicies();
+    public ArrayList<String> getAllPolicies(){
+        ArrayList<TimePolicy> timePolicies = timePolicyDAO.getAllPolicies();
+        ArrayList<String> policiesNames = new ArrayList<>();
+        for(TimePolicy timePolicy : timePolicies){
+            policiesNames.add(timePolicy.getName());
+        }
+        return policiesNames;
     }
 
     public void updateStudyAreaType(long studyAreaId, long adminId, String studyAreaType) {
@@ -101,7 +107,7 @@ public class LibraryConfigService {
                 if(seat.isBroken()){
                     seat.repair();
                 } else {
-                    seat.free();
+                    throw new DomainViolationException("Non si può liberare un posto occupato");
                 }
             }else if(status == SeatStatus.BROKEN)
                 seat.markBroken();

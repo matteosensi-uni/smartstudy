@@ -23,6 +23,9 @@ public class ReservationService {
     }
 
     public Seat scanSeat(String qrCode, long studentId){
+        if(qrCode == null || qrCode.isBlank()){
+            throw new BusinessViolationException("Il qrCode è vuoto");
+        }
         return TransactionManager.executeInTransaction(() -> {
             if (!accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) {
                 throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
@@ -89,16 +92,15 @@ public class ReservationService {
         return reservationDAO.getReservationsByStudent(studentId);
     }
 
-    public Reservation getReservationBySeat(long seatId){
-        Seat seat = seatDAO.getSeatById(seatId);
-        if(seat == null){
-            throw new BusinessViolationException("Il posto indicato non risulta valida");
+    public Reservation getReservationByReport(long reportId){
+        AbandonmentReport report = abandonmentReportDAO.getReportById(reportId);
+        if(report == null){
+            throw new BusinessViolationException("il report indicato non è valido");
         }
-        return reservationDAO.getActiveReservationBySeat(seatId);
+        Reservation reservation = reservationDAO.getReservationByReport(reportId);
+        if(reservation == null){
+            throw new BusinessViolationException("il report indicato non ha una reservation associata");
+        }
+        return reservation;
     }
-
-    public boolean existReservationBySeat(long seatId){
-        return  reservationDAO.existReservationBySeat(seatId);
-    }
-
 }

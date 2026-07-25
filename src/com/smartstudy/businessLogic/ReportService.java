@@ -26,7 +26,7 @@ public class ReportService {
         this.seatDAO = seatDAO;
     }
 
-    public AbandonmentReport createReport(long studentId, String description, long seatId) {
+    public void createReport(long studentId, String description, long seatId) {
         Reservation reservation = reservationDAO.getActiveReservationBySeat(seatId);
         if(reservation == null)
             throw new BusinessViolationException("La postazione non ha prenotazioni associate");
@@ -37,7 +37,7 @@ public class ReportService {
         if(asStudent == null){
             throw new BusinessViolationException("Lo studente non ha una access session attiva");
         }
-        return TransactionManager.executeInTransaction(() -> {
+        TransactionManager.executeInTransaction(() -> {
             if (reservation.getSeat().getStudyArea().getLibrary().getId() != asStudent.getLibrary().getId()) {
                 throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
             }
@@ -48,17 +48,19 @@ public class ReportService {
                 throw new BusinessViolationException("La prenotazione ha già un report associato");
             }
             AbandonmentReport report = AbandonmentReport.open(description, student);
-            reservation.addAbandonmentReport(report);
+            reservation.addAbandonmentReport(abandonmentReportDAO.insert(report, reservation.getId()));
             reservationDAO.update(reservation);
-            return abandonmentReportDAO.insert(report, reservation.getId());
         });
     }
 
     public void takeInCharge(long adminId, long reportId){
         AbandonmentReport report = abandonmentReportDAO.getReportById(reportId);
         Admin admin = adminDAO.getAdminById(adminId);
-        if(admin == null || report == null){
-            throw new BusinessViolationException("L'admin o la reservation non sono validi");
+        if(admin == null){
+            throw new BusinessViolationException("L'admin non è valido");
+        }
+        if(report == null){
+            throw new BusinessViolationException("Il report non è valido");
         }
         if(report.getAdmin() != null){
             throw new BusinessViolationException("Il report è già stato preso in carico");

@@ -1,18 +1,25 @@
 package com.smartstudy.controller;
 
+import DTO.StudentSession;
 import com.smartstudy.businessLogic.AuthenticationService;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.User;
-
-import java.util.Optional;
 
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
+    private final LibraryAccessController libraryAccessController;
 
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService, LibraryAccessController libraryAccessController) {
         this.authenticationService = authenticationService;
+        this.libraryAccessController = libraryAccessController;
     }
 
-    public Optional<User> handleLogin(long userID, String password) {
-        return Optional.ofNullable(authenticationService.authenticateUser(userID, password));
+    public User handleLogin(String userID, String password) {
+        return authenticationService.authenticateUser(userID, password);
+    }
+
+    public StudentSession createStudentSession(Student user)
+    {
+        return StudentSession.start(user, libraryAccessController.isStudentPresent(user.getId()));
     }
 }

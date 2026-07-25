@@ -1,19 +1,19 @@
 package com.smartstudy.view;
 
-import com.smartstudy.domainModel.AbandonmentReport;
-import com.smartstudy.domainModel.Reservation;
-import com.smartstudy.domainModel.TemporaryLeave;
+import DTO.AbandonmentReportDTO;
+import DTO.StudentSession;
+import com.smartstudy.controller.StudentDashboardController;
+import com.smartstudy.domainModel.*;
 
+import com.smartstudy.exceptions.BusinessViolationException;
+import com.smartstudy.exceptions.DataAccessException;
+import com.smartstudy.exceptions.DomainViolationException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -22,13 +22,27 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.time.format.DateTimeFormatter;
 import java.util.function.Supplier;
 
 public class StudentView extends BorderPane {
 
     private final StackPane contentArea;
+    private final Label resultLabel;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public StudentView(Runnable onLogout) {
+    Button reservationBtn;
+
+    private final StudentDashboardController dashboardController;
+
+    private final StudentSession userSession;
+
+    public StudentView(Runnable onLogout, StudentDashboardController dashboardController, StudentSession userSession) {
+        this.dashboardController = dashboardController;
+        this.userSession = userSession;
+        resultLabel = new Label();
+        resultLabel.setVisible(false);
+        resultLabel.setStyle("-fx-font-weight: bold");
         getStyleClass().add("root");
 
         setTop(buildHeader(onLogout));
@@ -47,7 +61,9 @@ public class StudentView extends BorderPane {
 
         Button logoutButton = new Button("Esci");
         logoutButton.getStyleClass().add("btn-secondary");
-        logoutButton.setOnAction(e -> onLogout.run());
+        logoutButton.setOnAction(e ->
+            onLogout.run()
+        );
 
         HBox header = new HBox(12, title, spacer(), logoutButton);
         header.getStyleClass().add("app-header");
@@ -64,9 +80,16 @@ public class StudentView extends BorderPane {
     private Node buildSidebar() {
         Button homeBtn = navButton("Home", this::buildHomePanel);
         Button scanBtn = navButton("Prenota Posto", this::buildScanPanel);
-        Button reservationBtn = navButton("Prenotazione Attiva", this::buildActiveReservationPanel);
+        reservationBtn = navButton("Prenotazione Attiva", this::buildActiveReservationPanel);
         Button reportBtn = navButton("Segnalazioni", this::buildReportsPanel);
         Button historyBtn = navButton("Storico Prenotazioni", this::buildHistoryPanel);
+
+        if(!userSession.isPresent()){
+            disableWithReason(scanBtn, "Lo studente non è in biblioteca");
+            disableWithReason(reservationBtn, "Lo studente non è in biblioteca");
+        }
+
+        updateSidebar();
 
         VBox sidebar = new VBox(6, homeBtn, scanBtn, reservationBtn, reportBtn, historyBtn);
         sidebar.getStyleClass().add("sidebar");
@@ -75,6 +98,20 @@ public class StudentView extends BorderPane {
             ((Button) node).setMaxWidth(Double.MAX_VALUE);
         }
         return sidebar;
+    }
+
+    private void updateSidebar() {
+        if(!userSession.isPresent() || userSession.getReservation() == null){
+            disableWithReason(reservationBtn, "l'utente non ha una prenotazione attiva o non è in biblioteca");
+        }else{
+            reservationBtn.setDisable(false);
+        }
+
+    }
+
+    private void disableWithReason(Button button, String reason) {
+        button.setDisable(true);
+        Tooltip.install(button, new Tooltip(reason));
     }
 
     private Button navButton(String text, Supplier<Node> panelSupplier) {
@@ -92,11 +129,14 @@ public class StudentView extends BorderPane {
     // --- Pannelli ---
 
     private Node buildHomePanel() {
-        VBox box = panelContainer("Benvenuto");
+        VBox box = panelContainer("Benvenuto, " + userSession.getUser().getName() + " " + userSession.getUser().getSurname());
         Label hint = new Label("Da qui puoi prenotare un posto, gestire la tua prenotazione attiva, le segnalazioni e lo storico.");
         hint.setWrapText(true);
         hint.getStyleClass().add("hint-label");
-        box.getChildren().add(hint);
+        Label presenceLabel = new Label(userSession.isPresent()? "Lo studente è in biblioteca": "Lo studente non è in bibloteca, alcune funzioni sono limitate");
+        presenceLabel.getStyleClass().add("status-badge");
+        presenceLabel.getStyleClass().add(userSession.isPresent()?"present":"absent");
+        box.getChildren().addAll(hint, presenceLabel);
         return box;
     }
 
@@ -115,9 +155,14 @@ public class StudentView extends BorderPane {
         seatInfo.setHgap(10);
         seatInfo.setVgap(8);
         seatInfo.setPadding(new Insets(15, 0, 0, 0));
-        seatInfo.addRow(0, new Label("Tipo:"), new Label("-"));
-        seatInfo.addRow(1, new Label("Area studio:"), new Label("-"));
-        seatInfo.addRow(2, new Label("Stato:"), new Label("-"));
+        Label idSeat = new Label("-");
+        Label seatType = new Label("-");
+        Label seatArea = new Label("-");
+        Label seatStatus = new Label("-");
+        seatInfo.addRow(0, new Label("Id:"), idSeat);
+        seatInfo.addRow(1, new Label("Tipo:"), seatType);
+        seatInfo.addRow(2, new Label("Area studio:"), seatArea);
+        seatInfo.addRow(3, new Label("Stato:"), seatStatus);
 
         Button reserveButton = new Button("Prenota questo posto");
         reserveButton.getStyleClass().add("btn-primary");
@@ -131,7 +176,53 @@ public class StudentView extends BorderPane {
         reportButton.getStyleClass().add("btn-danger");
         HBox reportBox = new HBox(10, reportLabel, reportField, reportButton);
 
-        box.getChildren().addAll(qrField, scanButton, seatInfo, reserveButton, reportBox);
+        hideResult();
+
+        scanButton.setOnAction(e -> {
+            try {
+                Seat s = dashboardController.scanSeat(userSession.getUser(), qrField.getText());
+                if(s == null){
+                    showResult("Posto non trovato", false);
+                }else {
+                    idSeat.setText(String.valueOf(s.getId()));
+                    seatType.setText(String.valueOf(s.getType()));
+                    seatArea.setText(s.getStudyArea().getName());
+                    seatStatus.setText(String.valueOf(s.getStatus()));
+                    hideResult();
+                }
+            }catch (BusinessViolationException| DataAccessException | DomainViolationException exception){
+                showResult(exception.getMessage(), false);
+            }
+        });
+
+        reserveButton.setOnAction(e ->{
+            try{
+                long seatId = Long.parseLong(idSeat.getText());
+                userSession.setReservation(dashboardController.reserveSeat(userSession.getUser(), seatId));
+                updateSidebar();
+                hideResult();
+                showPanel(buildActiveReservationPanel());
+            }catch (IllegalArgumentException exception){
+                showResult("Inserire un seat valido", false);
+            }
+            catch(Exception exception1){
+                showResult(exception1.getMessage(), false);
+            }
+        });
+        reportButton.setOnAction(e -> {
+            try{
+                long seatId = Long.parseLong(idSeat.getText());
+                dashboardController.createAbandonmentReport(userSession.getUser(), reportField.getText(), seatId);
+                showResult("Segnalazione creata correttamente", true);
+            }catch (IllegalArgumentException exception){
+                showResult("Inserire un seat valido", false);
+            }
+            catch(Exception exception1){
+                showResult(exception1.getMessage(), false);
+            }
+        });
+
+        box.getChildren().addAll(qrField, scanButton, seatInfo, reserveButton, reportBox, resultLabel);
         return box;
     }
 
@@ -141,48 +232,98 @@ public class StudentView extends BorderPane {
         GridPane info = new GridPane();
         info.setHgap(10);
         info.setVgap(8);
-        info.addRow(0, new Label("Posto:"), new Label("-"));
-        info.addRow(1, new Label("Area studio:"), new Label("-"));
-        info.addRow(2, new Label("Inizio:"), new Label("-"));
-        info.addRow(3, new Label("Stato:"), new Label("-"));
+        Label seat;
+        Label studyArea;
+        Label startTime;
+        Label reservationStatus;
+        if(userSession.getReservation() == null){
+            seat = new Label("-");
+            studyArea = new Label("-");
+            startTime = new Label("-");
+            reservationStatus = new Label("-");
+        }else{
+            seat = new Label(userSession.getReservation().getSeat().getQrCode());
+            studyArea = new Label(userSession.getReservation().getSeat().getStudyArea().getName());
+            startTime = new Label(userSession.getReservation().getStartTime().format(formatter));
+            reservationStatus = new Label(userSession.getReservation().getStatus().name());
+        }
+
+        info.addRow(0, new Label("Posto:"), seat);
+        info.addRow(1, new Label("Area studio:"), studyArea);
+        info.addRow(2, new Label("Inizio:"), startTime);
+        info.addRow(3, new Label("Stato:"), reservationStatus);
 
         Button endButton = new Button("Termina prenotazione");
         endButton.getStyleClass().add("btn-danger");
+
+        hideResult();
+
+        endButton.setOnAction(e -> {
+            try{
+                dashboardController.closeReservation(userSession.getUser(), userSession.getReservation());
+                userSession.setReservation(null);
+                updateSidebar();
+                showPanel(buildScanPanel());
+            }catch (BusinessViolationException | DataAccessException | DomainViolationException exception){
+                showResult(exception.getMessage(), false);
+            }
+        });
 
         HBox actions = new HBox(10, endButton);
 
         Label pausesHeading = new Label("Pause");
         pausesHeading.getStyleClass().add("section-subheading");
-
         TableView<TemporaryLeave> pausesTable = new TableView<>();
         TableColumn<TemporaryLeave, String> startCol = new TableColumn<>("Inizio");
-        startCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStartTime())));
+        startCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStartTime().format(formatter)));
         TableColumn<TemporaryLeave, String> endCol = new TableColumn<>("Fine prevista");
-        endCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getExpectedEndTime())));
+        endCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getExpectedEndTime().format(formatter)));
         pausesTable.getColumns().addAll(startCol, endCol);
         pausesTable.setItems(FXCollections.observableArrayList());
         pausesTable.setPlaceholder(new Label("Nessuna pausa registrata"));
         pausesTable.setPrefHeight(180);
-
+        updateLeavesTable(pausesTable);
         Button startLeaveButton = new Button("Inizia una pausa");
         startLeaveButton.getStyleClass().add("btn-primary");
-
-        box.getChildren().addAll(info, actions, pausesHeading, pausesTable, startLeaveButton);
+        startLeaveButton.setOnAction(e -> {
+            try {
+                userSession.setReservation(dashboardController.createLeave(userSession.getUser(), userSession.getReservation()));
+                updateLeavesTable(pausesTable);
+                hideResult();
+            }catch (BusinessViolationException | DataAccessException | DomainViolationException exception){
+                showResult(exception.getMessage(), false);
+            }
+        });
+        box.getChildren().addAll(info, actions, pausesHeading, pausesTable, startLeaveButton, resultLabel);
         return box;
+    }
+
+    private void updateLeavesTable(TableView<TemporaryLeave> pausesTable) {
+        if(userSession.getReservation() != null) {
+            pausesTable.setItems(FXCollections.observableArrayList(userSession.getReservation().getTemporaryLeaves()));
+        }
     }
 
     private Node buildReportsPanel() {
         VBox box = panelContainer("Le mie segnalazioni");
 
-        TableView<AbandonmentReport> table = new TableView<>();
-        TableColumn<AbandonmentReport, String> dateCol = new TableColumn<>("Data");
-        dateCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getCreatedAt())));
-        TableColumn<AbandonmentReport, String> descCol = new TableColumn<>("Descrizione");
-        descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescription()));
-        TableColumn<AbandonmentReport, String> statusCol = new TableColumn<>("Stato");
-        statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
-        table.getColumns().addAll(dateCol, descCol, statusCol);
-        table.setItems(FXCollections.observableArrayList());
+        TableView<AbandonmentReportDTO> table = new TableView<>();
+        TableColumn<AbandonmentReportDTO, String> dateCol = new TableColumn<>("Data");
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getReport().getCreatedAt())));
+        TableColumn<AbandonmentReportDTO, String> descCol = new TableColumn<>("Descrizione");
+        descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getReport().getDescription()));
+        TableColumn<AbandonmentReportDTO, String> statusCol = new TableColumn<>("Stato");
+        statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getReport().getStatus())));
+        TableColumn<AbandonmentReportDTO, String> libraryCol = new TableColumn<>("Libreria");
+        libraryCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getLibraryName())));
+        table.getColumns().addAll(dateCol, descCol, statusCol, libraryCol);
+        hideResult();
+        try {
+            table.setItems(FXCollections.observableArrayList(dashboardController.getAllReports(userSession.getUser())));
+            hideResult();
+        }catch (BusinessViolationException | DomainViolationException | DataAccessException e){
+            showResult(e.getMessage(), false);
+        }
         table.setPlaceholder(new Label("Nessuna segnalazione aperta"));
         table.setPrefHeight(300);
 
@@ -197,15 +338,26 @@ public class StudentView extends BorderPane {
         TableColumn<Reservation, String> seatCol = new TableColumn<>("Posto");
         seatCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSeat().getQrCode()));
         TableColumn<Reservation, String> startCol = new TableColumn<>("Inizio");
-        startCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStartTime())));
+        startCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStartTime().format(formatter)));
         TableColumn<Reservation, String> endCol = new TableColumn<>("Fine");
-        endCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getEndTime())));
-        table.getColumns().addAll(seatCol, startCol, endCol);
-        table.setItems(FXCollections.observableArrayList());
+        endCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEndTime().format(formatter)));
+        TableColumn<Reservation, String> libraryCol = new TableColumn<>("Fine");
+        libraryCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getSeat().getStudyArea().getLibrary().getName())));
+        TableColumn<Reservation, String> numLeavesCol = new TableColumn<>("Numero pause");
+        numLeavesCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getTemporaryLeaves().size())));
+        table.getColumns().addAll(seatCol, startCol, endCol, libraryCol, numLeavesCol);
+
+        hideResult();
+        try {
+            table.setItems(FXCollections.observableArrayList(dashboardController.getAllReservations(userSession.getUser())));
+            hideResult();
+        }catch (BusinessViolationException | DomainViolationException | DataAccessException e){
+            showResult(e.getMessage(), false);
+        }
         table.setPlaceholder(new Label("Nessuna prenotazione passata"));
         table.setPrefHeight(300);
 
-        box.getChildren().add(table);
+        box.getChildren().addAll(table, resultLabel);
         return box;
     }
 
@@ -217,4 +369,19 @@ public class StudentView extends BorderPane {
         box.setMaxHeight(Region.USE_PREF_SIZE);
         return box;
     }
+
+    private void showResult(String message, boolean success) {
+        resultLabel.setText(message);
+        resultLabel.getStyleClass().removeAll("error-label", "hint-label");
+        resultLabel.getStyleClass().add(success ? "hint-label" : "error-label");
+        resultLabel.setVisible(true);
+        resultLabel.setManaged(true);
+    }
+
+    private void hideResult() {
+        resultLabel.setVisible(false);
+        resultLabel.setManaged(false);
+    }
 }
+
+
