@@ -3,13 +3,13 @@ package com.smartstudy.ORM;
 import com.smartstudy.domainModel.AccessSession;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class AccessSessionDAO extends BaseDAO{
     public static final String tableName = "access_session";
@@ -23,7 +23,7 @@ public class AccessSessionDAO extends BaseDAO{
         this.studentDAO = studentDAO;
     }
 
-    public AccessSession getAccessSessionById(long sessionId)  {
+    public Optional<AccessSession> getAccessSessionById(long sessionId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
                 WHERE id_access = ?
@@ -32,16 +32,16 @@ public class AccessSessionDAO extends BaseDAO{
             ps.setLong(1, sessionId);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                    return createAccessSessionFromResultSet(rs);
+                    return Optional.of(createAccessSessionFromResultSet(rs));
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare le sessioni di accesso", e);
         }
     }
 
-    public AccessSession getActiveAccessSessionByStudent(long studentId)  {
+    public Optional<AccessSession> getActiveAccessSessionByStudent(long studentId)  {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM access_session
                 WHERE student_id = ? AND exit_time IS NULL
@@ -50,9 +50,9 @@ public class AccessSessionDAO extends BaseDAO{
             ps.setLong(1, studentId);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                    return createAccessSessionFromResultSet(rs);
+                    return Optional.of(createAccessSessionFromResultSet(rs));
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la sessione di accesso dello studente", e);
@@ -79,8 +79,8 @@ public class AccessSessionDAO extends BaseDAO{
                 rs.getLong("id_access"),
                 TimeUtils.getLocalTime(rs.getTimestamp("entry_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("exit_time")),
-                libraryDAO.getLibraryById(rs.getLong("id_library")),
-                studentDAO.getStudentById(rs.getLong("student_id"))
+                libraryDAO.getLibraryById(rs.getLong("id_library")).orElse(null),
+                studentDAO.getStudentById(rs.getLong("student_id")).orElse(null)
         );
     }
 

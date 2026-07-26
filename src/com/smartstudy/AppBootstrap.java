@@ -37,9 +37,7 @@ public class AppBootstrap {
         LibraryAccessService libraryAccessService = new LibraryAccessService(adminDAO,
                 accessSessionDAO,
                 studentDAO,
-                reservationDAO,
-                libraryDAO,
-                seatDAO);
+                libraryDAO);
         LibraryConfigService libraryConfigService = new LibraryConfigService(seatDAO, studyAreaDAO, adminDAO, libraryDAO, timePolicyDAO);
         ReportService reportService = new ReportService(reservationDAO,
                 studentDAO,
@@ -58,7 +56,7 @@ public class AppBootstrap {
         adminController = new AdminDashboardController(reportService, libraryConfigService, reservationService);
         studentController = new StudentDashboardController(reservationService, reportService, temporaryLeaveService);
         libraryController = new LibraryAccessController(libraryAccessService);
-        authenticationController = new AuthenticationController(authenticationService, libraryController);
+        authenticationController = new AuthenticationController(authenticationService, reservationService, libraryController);
     }
 
     public static AppBootstrap getInstance() {

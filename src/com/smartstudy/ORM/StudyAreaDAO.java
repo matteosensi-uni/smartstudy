@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class StudyAreaDAO extends BaseDAO{
     public static final String tableName = "study_area";
@@ -21,7 +22,7 @@ public class StudyAreaDAO extends BaseDAO{
         this.libraryDAO = libraryDAO;
         this.timePolicyDAO = timePolicyDAO;
     }
-    public StudyArea getStudyAreaById(long studyAreaId){
+    public Optional<StudyArea> getStudyAreaById(long studyAreaId){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT *
                 FROM study_area
@@ -31,8 +32,8 @@ public class StudyAreaDAO extends BaseDAO{
             ps.setLong(1, studyAreaId);
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next())
-                    return createStudyAreaFromResultSet(rs);
-                else return null;
+                    return Optional.of(createStudyAreaFromResultSet(rs));
+                else return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare l'area studio", e);
@@ -64,8 +65,8 @@ public class StudyAreaDAO extends BaseDAO{
                 rs.getString("name"),
                 rs.getInt("floor"),
                 StudyAreaType.valueOf(rs.getString("type")),
-                timePolicyDAO.getTimePolicyById(rs.getLong("id_policy")),
-                libraryDAO.getLibraryById(rs.getLong("id_library"))
+                timePolicyDAO.getTimePolicyById(rs.getLong("id_policy")).orElse(null),
+                libraryDAO.getLibraryById(rs.getLong("id_library")).orElse(null)
         );
 
     }

@@ -5,7 +5,6 @@ import com.smartstudy.domainModel.*;
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.domainModel.enums.SeatStatus;
 import com.smartstudy.exceptions.BusinessViolationException;
-import com.smartstudy.exceptions.DomainViolationException;
 
 import java.util.ArrayList;
 
@@ -34,13 +33,10 @@ public class LibraryConfigService {
     }
 
     public void updateStudyAreaType(long studyAreaId, long adminId, String studyAreaType) {
-        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
-        Admin admin = adminDAO.getAdminById(adminId);
+        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId).orElseThrow(()->new BusinessViolationException("Area studio non valida"));
+        Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
         if(studyAreaType == null || studyAreaType.isBlank())
             throw new  BusinessViolationException("Inserire un tipo valido");
-        if(studyArea == null || admin == null){
-            throw new  BusinessViolationException("Inserire dei dati validi");
-        }
         TransactionManager.executeInTransaction(() -> {
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
@@ -51,12 +47,9 @@ public class LibraryConfigService {
     }
 
     public void updateStudyAreaName(long studyAreaId, long adminId, String name) {
-        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
-        Admin admin = adminDAO.getAdminById(adminId);
-        if(studyArea == null || admin == null){
-            throw new  BusinessViolationException("Inserire dei dati validi");
-        }
         TransactionManager.executeInTransaction(() -> {
+            StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId).orElseThrow(()->new BusinessViolationException("Area studio non valida"));
+            Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
@@ -66,13 +59,10 @@ public class LibraryConfigService {
     }
 
     public void updateStudyAreaPolicy(long studyAreaId, long adminId, String name) {
-        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId);
-        Admin admin = adminDAO.getAdminById(adminId);
-        TimePolicy timePolicy = timePolicyDAO.getTimePolicyByName(name);
-        if(studyArea == null || admin == null || timePolicy == null){
-            throw new  BusinessViolationException("Inserire dei dati validi");
-        }
         TransactionManager.executeInTransaction(() -> {
+            StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId).orElseThrow(()->new BusinessViolationException("Area studio non valida"));
+            Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
+            TimePolicy timePolicy = timePolicyDAO.getTimePolicyByName(name).orElseThrow(()->new BusinessViolationException("La regola non è valida"));
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
@@ -82,47 +72,33 @@ public class LibraryConfigService {
     }
 
     public void updateSeatStatus(long seatId, long adminId, String seatStatus)  {
-        Seat seat = seatDAO.getSeatById(seatId);
-        Admin admin = adminDAO.getAdminById(adminId);
-        if(seatStatus == null || seatStatus.isBlank()){
-            throw new  BusinessViolationException("Inserire uno stato del posto non vuoto");
-        }
-        SeatStatus status;
-        try {
-            status = SeatStatus.valueOf(seatStatus);
-        }catch (IllegalArgumentException e){
-            throw new  BusinessViolationException("Inserire un stato valido per il posto");
-        }
-        if(seat == null ||  admin == null){
-            throw new BusinessViolationException("Inserire dei dati validi");
-        }
-        if(status == SeatStatus.UNAVAILABLE){
-            throw new BusinessViolationException("Inserire uno stato valido");
-        }
         TransactionManager.executeInTransaction(() -> {
-            if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
-                throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
+            Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
+            Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
+            if(seatStatus == null || seatStatus.isBlank()){
+                throw new  BusinessViolationException("Inserire uno stato del posto non vuoto");
             }
-            if(status == SeatStatus.AVAILABLE){
-                if(seat.isBroken()){
-                    seat.repair();
-                } else {
-                    throw new DomainViolationException("Il posto è già libero");
+            try {
+                SeatStatus status = SeatStatus.valueOf(seatStatus);
+                if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
+                    throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
                 }
-            }else if(status == SeatStatus.BROKEN)
-                seat.markBroken();
-            else
-                throw new BusinessViolationException("Inserire uno stato valido");
-            seatDAO.update(seat);
+                if(status == SeatStatus.AVAILABLE){
+                    seat.repair();
+                }else if(status == SeatStatus.BROKEN)
+                    seat.markBroken();
+                else
+                    throw new BusinessViolationException("Inserire uno stato valido");
+                seatDAO.update(seat);
+            }catch (IllegalArgumentException e){
+                throw new  BusinessViolationException("Inserire un stato valido per il posto");
+            }
         });
     }
 
     public void updateSeatType(long seatId, long adminId, String type)  {
-        Seat seat = seatDAO.getSeatById(seatId);
-        Admin admin = adminDAO.getAdminById(adminId);
-        if(seat == null ||  admin == null){
-            throw new BusinessViolationException("Inserire dei dati validi");
-        }
+        Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
+        Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
         TransactionManager.executeInTransaction(() -> {
             if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
@@ -134,18 +110,12 @@ public class LibraryConfigService {
     }
 
     public ArrayList<StudyArea> getLibraryStudyAreasByAdmin(long adminId){
-        Library library = libraryDAO.getLibraryByAdmin(adminId);
-        if(library == null){
-            throw new BusinessViolationException("Non è stata trovata una biblioteca associata all'admin");
-        }
+        Library library = libraryDAO.getLibraryByAdmin(adminId).orElseThrow(() -> new BusinessViolationException("Non è stata trovata una biblioteca associata all'admin"));
         return  studyAreaDAO.getLibraryStudyAreas(library.getId());
     }
 
     public ArrayList<Seat> getLibrarySeatsByAdmin(long adminId){
-        Library library = libraryDAO.getLibraryByAdmin(adminId);
-        if(library == null){
-            throw new BusinessViolationException("Non è stata trovata una biblioteca associata all'admin");
-        }
+        Library library = libraryDAO.getLibraryByAdmin(adminId).orElseThrow(() -> new BusinessViolationException("Non è stata trovata una biblioteca associata all'admin"));
         return  seatDAO.getLibrarySeats(library.getId());
     }
 }

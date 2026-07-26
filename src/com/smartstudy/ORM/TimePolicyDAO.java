@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class TimePolicyDAO extends BaseDAO{
     public TimePolicyDAO(Connection conn) {
@@ -15,34 +16,32 @@ public class TimePolicyDAO extends BaseDAO{
     }
 
 
-    public TimePolicy getTimePolicyById(long policyId) {
+    public Optional<TimePolicy> getTimePolicyById(long policyId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM time_policy WHERE id_policy = ?
             """
             )){
             ps.setLong(1, policyId);
             try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createTimePolicyFromResultSet(rs);
-                }
-                return null;
+                if (rs.next())
+                    return Optional.of(createTimePolicyFromResultSet(rs));
+                return Optional.empty();
             }
         }  catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la regola", e);
         }
     }
 
-    public TimePolicy getTimePolicyByName(String name) {
+    public Optional<TimePolicy> getTimePolicyByName(String name) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM time_policy WHERE name = ?
             """
         )){
             ps.setString(1, name);
             try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return createTimePolicyFromResultSet(rs);
-                }
-                return null;
+                if (rs.next())
+                    return Optional.of(createTimePolicyFromResultSet(rs));
+                return Optional.empty();
             }
         }  catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la regola", e);

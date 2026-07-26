@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class AbandonmentReportDAO extends BaseDAO{
     public static final String tableName = "abandonment_report";
@@ -20,7 +21,7 @@ public class AbandonmentReportDAO extends BaseDAO{
         super(conn);
     }
 
-    public AbandonmentReport getReportById(long reportId){
+    public Optional<AbandonmentReport> getReportById(long reportId){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM abandonment_report WHERE id_report = ?
             """
@@ -28,9 +29,9 @@ public class AbandonmentReportDAO extends BaseDAO{
             ps.setLong(1, reportId);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                    return createReportFromResultSet(rs);
+                    return Optional.of(createReportFromResultSet(rs));
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Errore nel recupero della segnalazione", e);
@@ -141,7 +142,7 @@ public class AbandonmentReportDAO extends BaseDAO{
         if(adminId == null){
             admin = null;
         }else{
-            admin = adminDAO.getAdminById(adminId);
+            admin = adminDAO.getAdminById(adminId).orElse(null);
         }
         return AbandonmentReport.valueOf(
                 rs.getLong("id_report"),
@@ -149,7 +150,7 @@ public class AbandonmentReportDAO extends BaseDAO{
                 TimeUtils.getLocalTime(rs.getTimestamp("resolved_at")),
                 ReportStatus.valueOf(rs.getString("status")),
                 rs.getString("description"),
-                studentDAO.getStudentById(rs.getLong("student_id")),
+                studentDAO.getStudentById(rs.getLong("student_id")).orElse(null),
                 admin
         );
     }

@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ReservationDAO extends BaseDAO{
     public static final String tableName = "reservation";
@@ -27,7 +28,7 @@ public class ReservationDAO extends BaseDAO{
         this.temporaryLeaveDAO = temporaryLeaveDAO;
     }
 
-    public Reservation getReservationById(long reservationId) {
+    public Optional<Reservation> getReservationById(long reservationId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT *
                 FROM reservation
@@ -41,16 +42,16 @@ public class ReservationDAO extends BaseDAO{
                     if(res.refreshState()){
                         update(res);
                     }
-                    return res;
+                    return Optional.of(res);
                 }
-                else return null;
+                else return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la prenotazione", e);
         }
     }
 
-    public Reservation getReservationByReport(long reportId) {
+    public Optional<Reservation> getReservationByReport(long reportId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.*
                 FROM reservation LEFT JOIN abandonment_report ON reservation.id_reservation = abandonment_report.id_reservation
@@ -64,32 +65,16 @@ public class ReservationDAO extends BaseDAO{
                     if(res.refreshState()){
                         update(res);
                     }
-                    return res;
+                    return Optional.of(res);
                 }
-                else return null;
+                else return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la prenotazione", e);
         }
     }
 
-    public boolean existReservationBySeat(long idSeat) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT 1
-                FROM reservation
-                WHERE reservation.id_seat = ? AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
-            """
-            )){
-            ps.setLong(1, idSeat);
-            try(ResultSet rs = ps.executeQuery()){
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare la prenotazione del posto", e);
-        }
-    }
-
-    public Reservation getActiveReservationBySeat(long idSeat) {
+    public Optional<Reservation> getActiveReservationBySeat(long idSeat) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.*
                 FROM reservation
@@ -103,16 +88,16 @@ public class ReservationDAO extends BaseDAO{
                     if(res.refreshState()){
                         update(res);
                     }
-                    return res;
+                    return Optional.of(res);
                 }
-                else return null;
+                else return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la prenotazione del posto", e);
         }
     }
 
-    public Reservation getActiveReservationByStudent(long studentId) {
+    public Optional<Reservation> getActiveReservationByStudent(long studentId) {
         try (PreparedStatement ps = conn.prepareStatement("""
                 SELECT reservation.* FROM
                 (reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access)
@@ -127,9 +112,9 @@ public class ReservationDAO extends BaseDAO{
                     if(res.refreshState()){
                         update(res);
                     }
-                    return res;
+                    return Optional.of(res);
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la prenotazione dello studente", e);
@@ -163,8 +148,8 @@ public class ReservationDAO extends BaseDAO{
                 TimeUtils.getLocalTime(rs.getTimestamp("end_time")),
                 ReservationStatus.valueOf(rs.getString("status")),
                 temporaryLeaveDAO.getTemporaryLeavesByReservation(rs.getLong("id_reservation")),
-                accessSessionDAO.getAccessSessionById(rs.getLong("access_id")),
-                seatDAO.getSeatById(rs.getLong("id_seat")),
+                accessSessionDAO.getAccessSessionById(rs.getLong("access_id")).orElse(null),
+                seatDAO.getSeatById(rs.getLong("id_seat")).orElse(null),
                 abandonmentReportDAO.getReportsByReservationId(rs.getLong("id_reservation"))
         );
     }

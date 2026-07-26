@@ -30,28 +30,24 @@ public class ReservationService {
             if (!accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) {
                 throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
             }
-            if (!studentDAO.existsById(studentId)) {
+            if (studentDAO.getStudentById(studentId).isEmpty()) {
                 throw new BusinessViolationException("L'utente non è registrato nel sistema");
             }
-            return seatDAO.getSeatByQR(qrCode);
+            return seatDAO.getSeatByQR(qrCode).orElseThrow(() -> new BusinessViolationException("Il qrcode non è associato a nessun posto"));
         });
     }
     public Reservation createReservation(long studentId, long seatId){
-        AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
-        if(accessSession == null){
-            throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
-        }
-        Seat seat = seatDAO.getSeatById(seatId);
-        if(seat == null){
-            throw new BusinessViolationException("Il posto indicato non risulta valido");
-        }
-        if(seat.isBroken()){
-            throw new BusinessViolationException("Il posto indicato non può essere prenotato: è rotto");
-        }
         return TransactionManager.executeInTransaction(() -> {
-            Reservation res = reservationDAO.getActiveReservationBySeat(seat.getId());
-            if (res != null) {
+            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("L'utente non ha acceduto in una biblioteca"));
+            Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
+            if(seat.isBroken()){
+                throw new BusinessViolationException("Il posto indicato non può essere prenotato: è rotto");
+            }
+            if(reservationDAO.getActiveReservationBySeat(seat.getId()).isPresent()){
                 throw new BusinessViolationException("Il posto ha già una prenotazione valida attiva");
+            }
+            if(reservationDAO.getActiveReservationByStudent(studentId).isPresent()){
+                throw new BusinessViolationException("Lo studente ha già una prenotazione attiva");
             }
             if (seat.getStudyArea().getLibrary().getId() != accessSession.getLibrary().getId()) {
                 throw new BusinessViolationException("Il posto selezionato risulta in una biblioteca diversa di quella della sessione");
@@ -64,18 +60,11 @@ public class ReservationService {
 
     public void closeReservation(long reservationId, long studentId){
         TransactionManager.executeInTransaction(() -> {
-            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId);
-            if (accessSession == null) {
-                throw new BusinessViolationException("L'utente non ha un accesso valido alla biblioteca");
-            }
-            Reservation reservation = reservationDAO.getReservationById(reservationId);
-            if (reservation == null) {
-                throw new BusinessViolationException("La prenotazione inserita non è valida");
-            }
+            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("L'utente non ha un accesso valido alla biblioteca"));
+            Reservation reservation = reservationDAO.getReservationById(reservationId).orElseThrow(() -> new BusinessViolationException("La prenotazione inserita non è valida"));
             if (reservation.getSession().getId() != accessSession.getId()) {
                 throw new BusinessViolationException("La prenotazione non è associata alla sessione indicata");
             }
-
             ArrayList<AbandonmentReport> reports = reservation.close();
             for (AbandonmentReport report : reports) {
                 abandonmentReportDAO.update(report);
@@ -86,21 +75,17 @@ public class ReservationService {
     }
 
     public ArrayList<Reservation> getReservationHistory(long studentId){
-        if(!studentDAO.existsById(studentId)) {
+        if(studentDAO.getStudentById(studentId).isEmpty()) {
             throw new BusinessViolationException("Studente non valido");
         }
         return reservationDAO.getReservationsByStudent(studentId);
     }
 
+    public Reservation getActiveStudentReservation(long studentId){
+        return reservationDAO.getActiveReservationByStudent(studentId).orElse(null);
+    }
+
     public Reservation getReservationByReport(long reportId){
-        AbandonmentReport report = abandonmentReportDAO.getReportById(reportId);
-        if(report == null){
-            throw new BusinessViolationException("il report indicato non è valido");
-        }
-        Reservation reservation = reservationDAO.getReservationByReport(reportId);
-        if(reservation == null){
-            throw new BusinessViolationException("il report indicato non ha una reservation associata");
-        }
-        return reservation;
+        return reservationDAO.getReservationByReport(reportId).orElseThrow(() -> new BusinessViolationException("Il report indicato non ha una reservation associata"));
     }
 }

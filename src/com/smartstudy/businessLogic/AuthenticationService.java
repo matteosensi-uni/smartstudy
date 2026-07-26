@@ -1,10 +1,14 @@
 package com.smartstudy.businessLogic;
 
+import com.smartstudy.domainModel.Admin;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.User;
 import com.smartstudy.ORM.AdminDAO;
 import com.smartstudy.ORM.StudentDAO;
 import com.smartstudy.ORM.UserDAO;
 import com.smartstudy.exceptions.BusinessViolationException;
+
+import java.util.Optional;
 
 public class AuthenticationService {
     private final UserDAO userDAO;
@@ -15,29 +19,21 @@ public class AuthenticationService {
         this.studentDAO = studentDAO;
         this.adminDAO = adminDAO;
     }
-    public User authenticateUser(String userId, String password) {
-        if(userId == null || userId.isBlank()){
-            throw new BusinessViolationException("Lo userId non può essere vuoto");
-        }
+    public User authenticateUser(long userId, String password) {
         if(password == null || password.isBlank()){
             throw new BusinessViolationException("La password non può essere vuota");
         }
         password = password.trim();
-        userId = userId.trim();
-        long userid;
-        try{
-            userid = Long.parseLong(userId);
-        }catch(NumberFormatException e){
-            throw new BusinessViolationException("Inserire un id valido");
-        }
-        if(!userDAO.credentialsValid(userid, password)){
+        if(!userDAO.credentialsValid(userId, password)){
             throw new BusinessViolationException("I dati inseriti non sono validi");
         }
-        if(studentDAO.existsById(userid)){
-            return studentDAO.getStudentById(userid);
-        }else if(adminDAO.existsById(userid)){
-            return adminDAO.getAdminById(userid);
+        Optional<Student> s = studentDAO.getStudentById(userId);
+        if(s.isPresent())
+            return s.get();
+        Optional<Admin> a = adminDAO.getAdminById(userId);
+        if(a.isPresent()){
+            return a.get();
         }
-        throw new BusinessViolationException("Ruolo non valido");
+        throw new BusinessViolationException("Utente non trovato");
     }
 }

@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class SeatDAO extends BaseDAO{
     public static final String tableName = "seat";
@@ -23,7 +24,7 @@ public class SeatDAO extends BaseDAO{
         this.studyAreaDAO = studyAreaDAO;
     }
 
-    public Seat getSeatById(long seatId){
+    public Optional<Seat> getSeatById(long seatId){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT *
                 FROM seat
@@ -33,15 +34,15 @@ public class SeatDAO extends BaseDAO{
             ps.setLong(1, seatId);
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next())
-                    return createSeatFromResultSet(rs);
-                else return null;
+                    return Optional.of(createSeatFromResultSet(rs));
+                else return Optional.empty();
             }
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare il posto", e);
         }
     }
 
-    public Seat getSeatByQR(String qrCode){
+    public Optional<Seat> getSeatByQR(String qrCode){
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT *
                 FROM seat
@@ -51,8 +52,8 @@ public class SeatDAO extends BaseDAO{
             ps.setString(1, qrCode);
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next())
-                    return createSeatFromResultSet(rs);
-                else return null;
+                    return Optional.of(createSeatFromResultSet(rs));
+                else return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare il posto", e);
@@ -85,7 +86,7 @@ public class SeatDAO extends BaseDAO{
                 rs.getString("qr_code"),
                 SeatType.valueOf(rs.getString("type")),
                 SeatStatus.valueOf(rs.getString("status")),
-                studyAreaDAO.getStudyAreaById(rs.getLong("id_area"))
+                studyAreaDAO.getStudyAreaById(rs.getLong("id_area")).orElse(null)
         );
 
     }

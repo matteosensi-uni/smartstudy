@@ -5,22 +5,20 @@ import com.smartstudy.domainModel.*;
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.exceptions.BusinessViolationException;
 
+import java.util.Optional;
+
 
 public class LibraryAccessService {
     private final AdminDAO adminDAO;
     private final AccessSessionDAO accessSessionDAO;
     private final StudentDAO studentDAO;
-    private final ReservationDAO reservationDAO;
     private final LibraryDAO libraryDAO;
-    private final SeatDAO seatDAO;
 
-    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, ReservationDAO reservationDAO, LibraryDAO libraryDAO, SeatDAO seatDAO) {
+    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, LibraryDAO libraryDAO) {
         this.adminDAO = adminDAO;
         this.accessSessionDAO = accessSessionDAO;
         this.studentDAO = studentDAO;
-        this.reservationDAO = reservationDAO;
         this.libraryDAO = libraryDAO;
-        this.seatDAO = seatDAO;
     }
 
     public boolean isStudentPresent(long studentId){
@@ -28,19 +26,14 @@ public class LibraryAccessService {
     }
 
     public boolean toggleUserPresence(long userId, long libraryId){
-        Library library = libraryDAO.getLibraryById(libraryId);
-        if(library == null){
-            throw new BusinessViolationException("La biblioteca inserita non è valida");
-        }
-        if(adminDAO.existsById(userId)){
-            Admin admin = adminDAO.getAdminById(userId);
-            return toggleAdminPresence(admin,library);
-        }else if(studentDAO.existsById(userId)){
-            Student student = studentDAO.getStudentById(userId);
-            return toggleStudentAccess(student, library);
-        }else{
-            throw new BusinessViolationException("L'utente non è stato riconosciuto dal sistema");
-        }
+        Library library = libraryDAO.getLibraryById(libraryId).orElseThrow(() -> new BusinessViolationException("La libreria inserita non esiste"));
+        Optional<Admin> admin = adminDAO.getAdminById(userId);
+        if(admin.isPresent())
+            return toggleAdminPresence(admin.get(),library);
+        Optional<Student> student = studentDAO.getStudentById(userId);
+        if(student.isPresent())
+            return toggleStudentAccess(student.get(), library);
+        throw new BusinessViolationException("L'utente non è stato riconosciuto dal sistema");
     }
 
     private boolean toggleAdminPresence(Admin admin, Library library){
@@ -59,15 +52,9 @@ public class LibraryAccessService {
     private boolean toggleStudentAccess(Student student, Library library) {
         return TransactionManager.executeInTransaction(() -> {
             if (accessSessionDAO.hasActiveAccessSessionByStudent(student.getId())) { //lo studente esce dalla biblioteca
-                AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(student.getId());
+                AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(student.getId()).orElseThrow(() -> new BusinessViolationException("Sessione di accesso non trovata"));
                 if(as.getLibrary().getId() != library.getId()){
                     throw new BusinessViolationException("La libreria non combacia con quella della sessione");
-                }
-                Reservation reservation = reservationDAO.getActiveReservationByStudent(student.getId());
-                if(reservation != null){
-                    reservation.close();
-                    reservationDAO.update(reservation);
-                    seatDAO.update(reservation.getSeat());
                 }
                 as.closeSession();
                 accessSessionDAO.update(as);

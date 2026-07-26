@@ -7,10 +7,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class LibraryDAO extends BaseDAO{
     public LibraryDAO(Connection conn) { super(conn); }
-    public Library getLibraryById(long libraryId) {
+    public Optional<Library> getLibraryById(long libraryId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM library WHERE id_library = ?
             """
@@ -18,16 +19,16 @@ public class LibraryDAO extends BaseDAO{
             ps.setLong(1, libraryId);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                    return createLibraryFromResultSet(rs);
+                    return Optional.of(createLibraryFromResultSet(rs));
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la libreria", e);
         }
     }
 
-    public Library getLibraryByAdmin(long adminId) {
+    public Optional<Library> getLibraryByAdmin(long adminId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT library.*
                 FROM library LEFT JOIN admin ON admin.id_library = library.id_library
@@ -37,9 +38,9 @@ public class LibraryDAO extends BaseDAO{
             ps.setLong(1, adminId);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                    return createLibraryFromResultSet(rs);
+                    return Optional.of(createLibraryFromResultSet(rs));
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare la libreria", e);

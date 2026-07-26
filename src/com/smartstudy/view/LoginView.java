@@ -53,17 +53,24 @@ public class LoginView extends VBox {
         loginButton.setDefaultButton(true);
         loginButton.getStyleClass().add("btn-primary");
         loginButton.setOnAction(e -> {
-        ControllerResult result = authenticationController.handleLogin(userIdField.getText(), passwordField.getText());
-        if(result.isSuccess()){
-            if(result.getMessage().equals("admin")){
-                adminDashboard.accept((User) result.getResult());
-            }else
-                studentDashboard.accept((StudentSession) result.getResult());
-        }else {
-            errorLabel.setManaged(true);
-            errorLabel.setVisible(true);
-            errorLabel.setText(result.getMessage());
-        }
+            try {
+                long userID = Long.parseLong(userIdField.getText());
+                ControllerResult result = authenticationController.handleLogin(userID, passwordField.getText());
+                if(result.isSuccess()){
+                    if(result.getMessage().equals("admin")){
+                        adminDashboard.accept((User) result.getResult());
+                    }else
+                        studentDashboard.accept((StudentSession) result.getResult());
+                }else {
+                    errorLabel.setManaged(true);
+                    errorLabel.setVisible(true);
+                    errorLabel.setText(result.getMessage());
+                }
+            }catch (NumberFormatException exception){
+                errorLabel.setManaged(true);
+                errorLabel.setVisible(true);
+                errorLabel.setText("Lo userId non è valido");
+            }
         });
 
         VBox form = new VBox(10, userIdField, passwordField, loginButton, errorLabel);

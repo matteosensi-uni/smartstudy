@@ -9,13 +9,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class AdminDAO extends BaseDAO{
     public static final String tableName = "admin";
     public static final String pkName = "user_id";
     public AdminDAO(Connection conn) { super(conn); }
 
-    public Admin getAdminById(long adminId) {
+    public Optional<Admin> getAdminById(long adminId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT app_user.*, admin.is_present, admin.id_library
                 FROM admin LEFT JOIN app_user ON admin.user_id = app_user.user_id
@@ -25,27 +26,11 @@ public class AdminDAO extends BaseDAO{
             ps.setLong(1, adminId);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                    return createAdminFromResultSet(rs);
+                    return Optional.of(createAdminFromResultSet(rs));
                 }
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare l'admin", e);
-        }
-    }
-
-    public boolean existsById(long adminId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT 1
-                FROM admin
-                WHERE admin.user_id = ?
-            """
-            )){
-            ps.setLong(1, adminId);
-            try(ResultSet rs = ps.executeQuery()){
-                return rs.next();
-            }
-        }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile recuperare l'admin", e);
         }
     }

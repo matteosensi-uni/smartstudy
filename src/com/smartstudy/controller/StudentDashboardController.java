@@ -24,10 +24,7 @@ public class StudentDashboardController {
     }
     public ControllerResult<Seat> scanSeat(Student user, String qrCode){
         try {
-            Seat s = reservationService.scanSeat(qrCode, user.getId());
-            if(s == null)
-                return ControllerResult.failure("Posto non trovato");
-            return ControllerResult.success(s);
+            return ControllerResult.success(reservationService.scanSeat(qrCode, user.getId()));
         }catch (Exception e){
             return ControllerResult.failure(e.getMessage());
         }

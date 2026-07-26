@@ -3,7 +3,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin
-.idea/runConfigurations/Main.xml
+.idea/runConfigurations
 
 ### Eclipse ###
 .apt_generated
