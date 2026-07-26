@@ -1,6 +1,6 @@
 package com.smartstudy.view;
 
-import DTO.StudentSession;
+import com.smartstudy.DTO.StudentSession;
 import com.smartstudy.controller.AuthenticationController;
 import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.domainModel.User;

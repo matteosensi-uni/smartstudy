@@ -1,6 +1,6 @@
 package com.smartstudy.controller;
 
-import DTO.StudentSession;
+import com.smartstudy.DTO.StudentSession;
 import com.smartstudy.businessLogic.AuthenticationService;
 import com.smartstudy.businessLogic.ReservationService;
 import com.smartstudy.domainModel.Student;

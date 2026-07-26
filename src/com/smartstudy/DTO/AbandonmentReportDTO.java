@@ -1,4 +1,4 @@
-package DTO;
+package com.smartstudy.DTO;
 
 import com.smartstudy.domainModel.AbandonmentReport;
 

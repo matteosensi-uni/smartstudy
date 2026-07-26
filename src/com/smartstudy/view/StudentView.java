@@ -1,7 +1,7 @@
 package com.smartstudy.view;
 
-import DTO.AbandonmentReportDTO;
-import DTO.StudentSession;
+import com.smartstudy.DTO.AbandonmentReportDTO;
+import com.smartstudy.DTO.StudentSession;
 import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.controller.StudentDashboardController;
 import com.smartstudy.domainModel.*;

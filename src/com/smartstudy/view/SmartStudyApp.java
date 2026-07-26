@@ -1,6 +1,6 @@
 package com.smartstudy.view;
 
-import DTO.StudentSession;
+import com.smartstudy.DTO.StudentSession;
 import com.smartstudy.AppBootstrap;
 import com.smartstudy.domainModel.Admin;
 import com.smartstudy.domainModel.User;
