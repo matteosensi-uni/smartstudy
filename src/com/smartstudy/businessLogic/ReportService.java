@@ -27,10 +27,10 @@ public class ReportService {
     }
 
     public void createReport(long studentId, String description, long seatId) {
-        Reservation reservation = reservationDAO.getActiveReservationBySeat(seatId).orElseThrow(() -> new BusinessViolationException("La postazione non ha prenotazioni associate"));
-        Student student = studentDAO.getStudentById(studentId).orElseThrow(() -> new BusinessViolationException("Studente non valido"));
-        AccessSession asStudent = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("Lo studente non ha una access session attiva"));
         TransactionManager.executeInTransaction(() -> {
+            Reservation reservation = reservationDAO.getActiveReservationBySeat(seatId).orElseThrow(() -> new BusinessViolationException("La postazione non ha prenotazioni associate"));
+            Student student = studentDAO.getStudentById(studentId).orElseThrow(() -> new BusinessViolationException("Studente non valido"));
+            AccessSession asStudent = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("Lo studente non ha una access session attiva"));
             if (reservation.getSeat().getStudyArea().getLibrary().getId() != asStudent.getLibrary().getId()) {
                 throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
             }

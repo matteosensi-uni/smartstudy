@@ -33,11 +33,11 @@ public class LibraryConfigService {
     }
 
     public void updateStudyAreaType(long studyAreaId, long adminId, String studyAreaType) {
-        StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId).orElseThrow(()->new BusinessViolationException("Area studio non valida"));
-        Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
         if(studyAreaType == null || studyAreaType.isBlank())
             throw new  BusinessViolationException("Inserire un tipo valido");
         TransactionManager.executeInTransaction(() -> {
+            StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId).orElseThrow(()->new BusinessViolationException("Area studio non valida"));
+            Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
@@ -72,12 +72,12 @@ public class LibraryConfigService {
     }
 
     public void updateSeatStatus(long seatId, long adminId, String seatStatus)  {
+        if(seatStatus == null || seatStatus.isBlank()){
+            throw new  BusinessViolationException("Inserire uno stato del posto non vuoto");
+        }
         TransactionManager.executeInTransaction(() -> {
             Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
             Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
-            if(seatStatus == null || seatStatus.isBlank()){
-                throw new  BusinessViolationException("Inserire uno stato del posto non vuoto");
-            }
             try {
                 SeatStatus status = SeatStatus.valueOf(seatStatus);
                 if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
@@ -97,9 +97,9 @@ public class LibraryConfigService {
     }
 
     public void updateSeatType(long seatId, long adminId, String type)  {
-        Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
-        Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
         TransactionManager.executeInTransaction(() -> {
+            Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
+            Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
             if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }

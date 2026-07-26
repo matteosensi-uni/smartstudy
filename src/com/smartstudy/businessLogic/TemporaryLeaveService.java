@@ -17,13 +17,13 @@ public class TemporaryLeaveService {
     }
 
     public Reservation createTemporaryLeave(long reservationId, long studentId) {
-        Reservation reservation = reservationDAO.getReservationById(reservationId).orElseThrow(() -> new BusinessViolationException("La prenotazione inserita non è valida"));
-        AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("L'utente non ha una sessione di accesso valida"));
-        if(accessSession.getId() != reservation.getSession().getId()){
-            throw new BusinessViolationException("La sessione dello studente non combacia con quella della reservation");
-        }
-        TemporaryLeave temporaryLeave = reservation.addTemporaryLeave();
         return TransactionManager.executeInTransaction(() -> {
+            Reservation reservation = reservationDAO.getReservationById(reservationId).orElseThrow(() -> new BusinessViolationException("La prenotazione inserita non è valida"));
+            AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("L'utente non ha una sessione di accesso valida"));
+            if(accessSession.getId() != reservation.getSession().getId()){
+                throw new BusinessViolationException("La sessione dello studente non combacia con quella della reservation");
+            }
+            TemporaryLeave temporaryLeave = reservation.addTemporaryLeave();
             reservationDAO.update(reservation);
             temporaryLeaveDAO.insert(temporaryLeave, reservationId);
             return reservation;
