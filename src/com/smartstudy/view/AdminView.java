@@ -2,6 +2,7 @@ package com.smartstudy.view;
 
 import DTO.AbandonmentReportDTO;
 import com.smartstudy.controller.AdminDashboardController;
+import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.domainModel.AbandonmentReport;
 import com.smartstudy.domainModel.Admin;
 import com.smartstudy.domainModel.Seat;
@@ -10,9 +11,6 @@ import com.smartstudy.domainModel.StudyArea;
 import com.smartstudy.domainModel.enums.SeatStatus;
 import com.smartstudy.domainModel.enums.SeatType;
 import com.smartstudy.domainModel.enums.StudyAreaType;
-import com.smartstudy.exceptions.BusinessViolationException;
-import com.smartstudy.exceptions.DataAccessException;
-import com.smartstudy.exceptions.DomainViolationException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -28,6 +26,7 @@ import javafx.scene.layout.VBox;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class AdminView extends BorderPane {
@@ -145,6 +144,7 @@ public class AdminView extends BorderPane {
         TableColumn<Seat, String> statusCol = new TableColumn<>("Stato");
         statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
         table.getColumns().addAll(qrCol, typeCol, statusCol);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         table.setPlaceholder(new Label("Nessun posto da mostrare"));
         table.setPrefHeight(320);
         refreshSeatTable(table);
@@ -167,55 +167,56 @@ public class AdminView extends BorderPane {
         HBox changeTypeBox = new HBox(5, typeLabel, typeBox, saveTypeButton);
 
         availableButton.setOnAction(e -> {
-            try{
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Seleziona un posto valido", false);
-                } else {
-                    dashboardController.updateSeatStatus(user, table.getSelectionModel().getSelectedItem(), SeatStatus.AVAILABLE.name());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Seleziona un posto valido");
+            } else {
+                ControllerResult<Void> res =dashboardController.updateSeatStatus(user, table.getSelectionModel().getSelectedItem(), SeatStatus.AVAILABLE.name());
+                if(res.isSuccess()){
                     hideResult();
                     refreshSeatTable(table);
+                }else {
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | DomainViolationException | BusinessViolationException exception){
-                showResult(exception.getMessage(), false);
             }
         });
         brokenButton.setOnAction(e -> {
-            try{
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Seleziona un posto valido", false);
-                }else {
-                    dashboardController.updateSeatStatus(user, table.getSelectionModel().getSelectedItem(), SeatStatus.BROKEN.name());
-                    resultLabel.setVisible(false);
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Seleziona un posto valido");
+            }else {
+                ControllerResult<Void> res = dashboardController.updateSeatStatus(user, table.getSelectionModel().getSelectedItem(), SeatStatus.BROKEN.name());
+                if(res.isSuccess()) {
                     refreshSeatTable(table);
                     hideResult();
+                }else {
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | DomainViolationException | BusinessViolationException exception){
-                showResult(exception.getMessage(), false);
             }
         });
         saveTypeButton.setOnAction(e -> {
-            try{
                 if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Seleziona un posto valido", false);
+                    showResult("Seleziona un posto valido");
                 }else {
-                    dashboardController.updateSeatType(user, table.getSelectionModel().getSelectedItem(), typeBox.getValue());
-                    hideResult();
+                    ControllerResult<Void> res = dashboardController.updateSeatType(user, table.getSelectionModel().getSelectedItem(), typeBox.getValue());
+                    if(res.isSuccess()) {
+                        refreshSeatTable(table);
+                        hideResult();
+                    }else {
+                        showResult(res.getMessage());
+                    }
                 }
-                refreshSeatTable(table);
-            }catch (DataAccessException | DomainViolationException | BusinessViolationException exception){
-                showResult(exception.getMessage(), false);
-            }
         });
         box.getChildren().addAll(table, actions, changeTypeBox, resultLabel);
         return box;
     }
 
     private void refreshSeatTable(TableView<Seat> table) {
-        try {
-            table.setItems(FXCollections.observableArrayList(dashboardController.getAllSeats(user)));
+        ControllerResult<List<Seat>> items = dashboardController.getAllSeats(user);
+        if(items.isSuccess()){
+            table.setItems(FXCollections.observableArrayList(items.getResult()));
+            table.getSelectionModel().clearSelection();
             hideResult();
-        }catch (DataAccessException | BusinessViolationException | DomainViolationException exception){
-            showResult(exception.getMessage(), false);
+        }else{
+            showResult(items.getMessage());
         }
     }
 
@@ -232,6 +233,7 @@ public class AdminView extends BorderPane {
         TableColumn<StudyArea, String> policyCol = new TableColumn<>("Regola pause");
         policyCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTimePolicy().getName()));
         table.getColumns().addAll(nameCol, floorCol, typeCol, policyCol);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         refreshStudyAreaTable(table);
         table.setPlaceholder(new Label("Nessuna area studio da mostrare"));
         table.setPrefHeight(320);
@@ -259,7 +261,12 @@ public class AdminView extends BorderPane {
         Label policyLabel = new Label("Modifica la regola dell'area studio");
         policyLabel.setStyle("-fx-padding: 10; -fx-font-weight: bold");
         ComboBox<String> policyBox = new ComboBox<>();
-        policyBox.getItems().addAll(dashboardController.getAllTimePolicies());
+        ControllerResult<List<String>> items = dashboardController.getAllTimePolicies();
+        if(items.isSuccess()){
+            policyBox.getItems().addAll((items.getResult()));
+        }else {
+            showResult(items.getMessage());
+        }
         policyBox.setValue(policyBox.getItems().getFirst()); // Valore predefinito
         policyBox.getStyleClass().add("btn-secondary");
         policyBox.setStyle("-fx-padding: 5");
@@ -268,46 +275,49 @@ public class AdminView extends BorderPane {
         HBox changePolicyBox = new HBox(5, policyLabel, policyBox, savePolicyButton);
 
         savePolicyButton.setOnAction(e -> {
-            try{
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una area studio valida", false);
-                }
-                else {
-                    dashboardController.updateStudyAreaPolicy(user, table.getSelectionModel().getSelectedItem(), policyBox.getValue());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una area studio valida");
+            }
+            else {
+                ControllerResult<Void> res = dashboardController.updateStudyAreaPolicy(user, table.getSelectionModel().getSelectedItem(), policyBox.getValue());
+                if(res.isSuccess()){
                     hideResult();
                     refreshStudyAreaTable(table);
+                }else{
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | DomainViolationException | BusinessViolationException exception){
-                showResult(exception.getMessage(), true);
             }
+
         });
         saveNameButton.setOnAction(e -> {
-            try{
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una area studio valida", false);
-                }
-                else {
-                    dashboardController.updateStudyAreaName(user, nameField.getText(), table.getSelectionModel().getSelectedItem());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una area studio valida");
+            }
+            else {
+                ControllerResult<Void> res = dashboardController.updateStudyAreaName(user, nameField.getText(), table.getSelectionModel().getSelectedItem());
+                if(res.isSuccess()) {
                     hideResult();
                     refreshStudyAreaTable(table);
+                }else {
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | DomainViolationException | BusinessViolationException exception){
-                showResult(exception.getMessage(), false);
             }
         });
         saveTypeButton.setOnAction(e -> {
-            try{
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una area studio valida", false);
-                }
-                else {
-                    dashboardController.updateStudyAreaType(user, typeBox.getValue(), table.getSelectionModel().getSelectedItem());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una area studio valida");
+            }
+            else {
+                ControllerResult<Void> res = dashboardController.updateStudyAreaType(user, typeBox.getValue(), table.getSelectionModel().getSelectedItem());
+                if(res.isSuccess()) {
                     hideResult();
                     refreshStudyAreaTable(table);
+                }else {
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | DomainViolationException | BusinessViolationException exception){
-                showResult(exception.getMessage(), false);
+
             }
+
         });
 
         box.getChildren().addAll(table, changeTypeBox, changeNameBox, changePolicyBox, resultLabel);
@@ -315,11 +325,13 @@ public class AdminView extends BorderPane {
     }
 
     private void refreshStudyAreaTable(TableView<StudyArea> table) {
-        try {
-            table.setItems(FXCollections.observableArrayList(dashboardController.getAllStudyAreas(user)));
+        ControllerResult<List<StudyArea>> items = dashboardController.getAllStudyAreas(user);
+        if(items.isSuccess()){
+            table.setItems(FXCollections.observableArrayList(items.getResult()));
+            table.getSelectionModel().clearSelection();
             hideResult();
-        }catch (DataAccessException | BusinessViolationException | DomainViolationException exception){
-            showResult(exception.getMessage(), false);
+        }else {
+            showResult(items.getMessage());
         }
     }
 
@@ -339,13 +351,14 @@ public class AdminView extends BorderPane {
         TableColumn<AbandonmentReportDTO, String> areaNameCol = new TableColumn<>("Nome area");
         areaNameCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStudyAreaName()));
         table.getColumns().addAll(dateCol, descCol, statusCol,  authorCol,  seatIdCol, areaNameCol);
-        table.getSelectionModel().clearSelection();
-        try {
-            table.setItems(FXCollections.observableArrayList(dashboardController.getOpenAbandonmentReports(user)));
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        ControllerResult<List<AbandonmentReportDTO>> items = dashboardController.getOpenAbandonmentReports(user);
+        if(items.isSuccess()){
+            table.setItems(FXCollections.observableArrayList(items.getResult()));
             hideResult();
-        }catch (BusinessViolationException | DomainViolationException | DataAccessException e){
-            showResult(e.getMessage(),false);
-        }
+        }else
+            showResult(items.getMessage());
+        table.getSelectionModel().clearSelection();
         table.setPlaceholder(new Label("Nessuna segnalazione da mostrare"));
         table.setPrefHeight(280);
 
@@ -358,43 +371,45 @@ public class AdminView extends BorderPane {
         HBox actions = new HBox(10, takeButton, confirmButton, rejectButton);
 
         takeButton.setOnAction(event -> {
-            try {
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una segnalazione valida", false);
-                }else{
-                    dashboardController.takeInChargeReport(user , table.getSelectionModel().getSelectedItem().getReport());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una segnalazione valida");
+            }else{
+                ControllerResult<Void> res = dashboardController.takeInChargeReport(user , table.getSelectionModel().getSelectedItem().getReport());
+                if(res.isSuccess()) {
                     table.getItems().remove(table.getFocusModel().getFocusedItem());
                     hideResult();
+                }else {
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | BusinessViolationException | DomainViolationException e){
-                showResult(e.getMessage(),false);
             }
         });
         confirmButton.setOnAction(event -> {
-            try {
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una segnalazione valida", false);
-                }else{
-                    dashboardController.directConfirmReport(user , table.getSelectionModel().getSelectedItem().getReport());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una segnalazione valida");
+            }else{
+                ControllerResult<Void> res = dashboardController.directConfirmReport(user , table.getSelectionModel().getSelectedItem().getReport());
+                if(res.isSuccess()) {
                     table.getItems().remove(table.getFocusModel().getFocusedItem());
                     hideResult();
+                }else{
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | BusinessViolationException | DomainViolationException e){
-                showResult(e.getMessage(),false);
             }
+
         });
         rejectButton.setOnAction(event -> {
-            try {
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una segnalazione valida", false);
-                }else{
-                    dashboardController.directRejectReport(user , table.getSelectionModel().getSelectedItem().getReport());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una segnalazione valida");
+            }else{
+                ControllerResult<Void> res = dashboardController.directRejectReport(user , table.getSelectionModel().getSelectedItem().getReport());
+                if(res.isSuccess()) {
                     table.getItems().remove(table.getFocusModel().getFocusedItem());
                     hideResult();
+                }else{
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | BusinessViolationException | DomainViolationException e){
-                showResult(e.getMessage(),false);
             }
+
         });
         box.getChildren().addAll(table, actions, resultLabel);
         return box;
@@ -415,14 +430,16 @@ public class AdminView extends BorderPane {
         seatIdCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getSeatId())));
         TableColumn<AbandonmentReportDTO, String> areaNameCol = new TableColumn<>("Nome area");
         areaNameCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStudyAreaName()));
-
         table.getColumns().addAll(dateCol, descCol, statusCol,  authorCol,  seatIdCol, areaNameCol);
-        try {
-            table.setItems(FXCollections.observableArrayList(dashboardController.getPendingAbandonmentReports(user)));
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        ControllerResult<List<AbandonmentReportDTO>> items = dashboardController.getPendingAbandonmentReports(user);
+        if(items.isSuccess()){
+            table.setItems(FXCollections.observableArrayList(items.getResult()));
             hideResult();
-        }catch (BusinessViolationException | DomainViolationException | DataAccessException e){
-            showResult(e.getMessage(),false);
-        }
+        }else
+            showResult(items.getMessage());
+        table.getSelectionModel().clearSelection();
+
         table.setPlaceholder(new Label("Nessuna segnalazione da mostrare"));
         table.setPrefHeight(280);
 
@@ -433,29 +450,29 @@ public class AdminView extends BorderPane {
         HBox actions = new HBox(10, confirmButton, rejectButton);
 
         rejectButton.setOnAction(event -> {
-            try {
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una segnalazione valida", false);
-                }else{
-                    dashboardController.rejectReport(user , table.getSelectionModel().getSelectedItem().getReport());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una segnalazione valida");
+            }else{
+                ControllerResult<Void> res = dashboardController.rejectReport(user , table.getSelectionModel().getSelectedItem().getReport());
+                if(res.isSuccess()) {
                     table.getItems().remove(table.getFocusModel().getFocusedItem());
                     hideResult();
+                }else {
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | BusinessViolationException | DomainViolationException e){
-                showResult(e.getMessage(),false);
             }
         });
         confirmButton.setOnAction(event -> {
-            try {
-                if(table.getSelectionModel().getSelectedItem() == null){
-                    showResult("Scegliere una segnalazione valida", false);
-                }else{
-                    dashboardController.confirmReport(user , table.getSelectionModel().getSelectedItem().getReport());
+            if(table.getSelectionModel().getSelectedItem() == null){
+                showResult("Scegliere una segnalazione valida");
+            }else{
+                ControllerResult<Void> res = dashboardController.confirmReport(user , table.getSelectionModel().getSelectedItem().getReport());
+                if(res.isSuccess()) {
                     table.getItems().remove(table.getFocusModel().getFocusedItem());
                     hideResult();
+                }else{
+                    showResult(res.getMessage());
                 }
-            }catch (DataAccessException | BusinessViolationException | DomainViolationException e){
-                showResult(e.getMessage(),false);
             }
         });
 
@@ -475,12 +492,14 @@ public class AdminView extends BorderPane {
         TableColumn<AbandonmentReport, String> statusCol = new TableColumn<>("Stato");
         statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
         table.getColumns().addAll(dateCol, descCol, statusCol);
-        try {
-            table.setItems(FXCollections.observableArrayList(dashboardController.getAbandonmentReportHandled(user)));
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        ControllerResult<List<AbandonmentReport>> items = dashboardController.getAbandonmentReportHandled(user);
+        if(items.isSuccess()){
+            table.setItems(FXCollections.observableArrayList(items.getResult()));
             hideResult();
-        }catch (BusinessViolationException | DomainViolationException | DataAccessException e){
-            showResult(e.getMessage(),false);
-        }
+        }else
+            showResult(items.getMessage());
+        table.getSelectionModel().clearSelection();
         table.setPlaceholder(new Label("Nessuna segnalazione da mostrare"));
         table.setPrefHeight(280);
 
@@ -498,10 +517,8 @@ public class AdminView extends BorderPane {
         return box;
     }
 
-    private void showResult(String message, boolean success) {
+    private void showResult(String message) {
         resultLabel.setText(message);
-        resultLabel.getStyleClass().removeAll("error-label", "hint-label");
-        resultLabel.getStyleClass().add(success ? "hint-label" : "error-label");
         resultLabel.setVisible(true);
         resultLabel.setManaged(true);
     }

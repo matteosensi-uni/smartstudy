@@ -14,12 +14,15 @@ public class AuthenticationController {
         this.libraryAccessController = libraryAccessController;
     }
 
-    public User handleLogin(String userID, String password) {
-        return authenticationService.authenticateUser(userID, password);
-    }
-
-    public StudentSession createStudentSession(Student user)
-    {
-        return StudentSession.start(user, libraryAccessController.isStudentPresent(user.getId()));
+    public ControllerResult handleLogin(String userID, String password) {
+        try {
+            User user = authenticationService.authenticateUser(userID, password);
+            if (user.isAdmin()) {
+                return ControllerResult.success(user, "admin");
+            } else
+                return ControllerResult.success(StudentSession.start((Student) user, libraryAccessController.isStudentPresent(user.getId())), "student");
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
     }
 }

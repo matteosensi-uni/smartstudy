@@ -9,11 +9,16 @@ public class LibraryAccessController {
         this.libraryAccessService = libraryAccessService;
     }
 
-    public boolean handleAccess(long userId, long libraryId){
-        return libraryAccessService.toggleUserPresence(userId, libraryId);
+    public ControllerResult<Void> handleAccess(long userId, long libraryId){
+        try{
+            boolean res = libraryAccessService.toggleUserPresence(userId, libraryId);
+            return ControllerResult.success(null,"L'utente è "+ (res? "entrato":"uscito") + " correttamente");
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
     }
 
-    public boolean isStudentPresent(long studentId){
+    boolean isStudentPresent(long studentId){
         return libraryAccessService.isStudentPresent(studentId);
     }
 }

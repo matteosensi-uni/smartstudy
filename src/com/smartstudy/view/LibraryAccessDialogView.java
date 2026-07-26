@@ -1,5 +1,6 @@
 package com.smartstudy.view;
 
+import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.controller.LibraryAccessController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -64,16 +65,10 @@ public class LibraryAccessDialogView extends VBox {
         try {
             long studentId = Long.parseLong(studentIdField.getText());
             long libraryId = Long.parseLong(libraryIdField.getText());
-            boolean state = libraryAccessController.handleAccess(studentId, libraryId);
-            resultLabel.setVisible(true);
-            showResult("L'utente è "+ (state? "entrato":"uscito") + " correttamente", true);
+            ControllerResult<Void> result = libraryAccessController.handleAccess(studentId, libraryId);
+            showResult(result.getMessage(), result.isSuccess());
         }catch (IllegalArgumentException exception){
-            resultLabel.setVisible(true);
             showResult("Inserire dei dati corretti", false);
-        }catch (Exception exception){
-            resultLabel.setVisible(true);
-            showResult(exception.getMessage(), false);
-
         }
     }
 

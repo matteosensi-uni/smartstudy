@@ -2,11 +2,8 @@ package com.smartstudy.view;
 
 import DTO.StudentSession;
 import com.smartstudy.controller.AuthenticationController;
-import com.smartstudy.domainModel.Student;
+import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.domainModel.User;
-import com.smartstudy.exceptions.BusinessViolationException;
-import com.smartstudy.exceptions.DataAccessException;
-import com.smartstudy.exceptions.DomainViolationException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -56,19 +53,17 @@ public class LoginView extends VBox {
         loginButton.setDefaultButton(true);
         loginButton.getStyleClass().add("btn-primary");
         loginButton.setOnAction(e -> {
-            try {
-                User user = authenticationController.handleLogin(userIdField.getText(), passwordField.getText());
-                if(user.isAdmin()){
-                    adminDashboard.accept(user);
-                }else {
-                    StudentSession studentSession = authenticationController.createStudentSession((Student) user);
-                    studentDashboard.accept(studentSession);
-                }
-            }catch (DomainViolationException | BusinessViolationException | DataAccessException exception){
-                errorLabel.setManaged(true);
-                errorLabel.setVisible(true);
-                errorLabel.setText(exception.getMessage());
-            }
+        ControllerResult result = authenticationController.handleLogin(userIdField.getText(), passwordField.getText());
+        if(result.isSuccess()){
+            if(result.getMessage().equals("admin")){
+                adminDashboard.accept((User) result.getResult());
+            }else
+                studentDashboard.accept((StudentSession) result.getResult());
+        }else {
+            errorLabel.setManaged(true);
+            errorLabel.setVisible(true);
+            errorLabel.setText(result.getMessage());
+        }
         });
 
         VBox form = new VBox(10, userIdField, passwordField, loginButton, errorLabel);

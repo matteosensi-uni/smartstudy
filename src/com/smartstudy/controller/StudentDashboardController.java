@@ -22,37 +22,73 @@ public class StudentDashboardController {
         this.reportService = reportService;
         this.temporaryLeaveService = temporaryLeaveService;
     }
-    public Seat scanSeat(Student user, String qrCode){
-        return reservationService.scanSeat(qrCode, user.getId());
-    }
-
-    public Reservation reserveSeat(Student user, long seatId){
-        return reservationService.createReservation(user.getId(), seatId);
-    }
-
-    public void closeReservation(Student user, Reservation reservation){
-        reservationService.closeReservation(reservation.getId(), user.getId());
-    }
-
-    public Reservation createLeave(Student user, Reservation reservation){
-        return temporaryLeaveService.createTemporaryLeave(reservation.getId(), user.getId());
-    }
-
-    public List<AbandonmentReportDTO> getAllReports(Student user){
-        ArrayList<AbandonmentReport> reports = reportService.getOpenReportsByStudent(user.getId());
-        ArrayList<AbandonmentReportDTO> dtos = new ArrayList<>();
-        for (AbandonmentReport report : reports) {
-            Reservation res = reservationService.getReservationByReport(report.getId());
-            dtos.add(new AbandonmentReportDTO(AbandonmentReport.copy(report), res.getSeat().getId(), res.getSeat().getStudyArea().getName(), res.getSeat().getStudyArea().getLibrary().getName()));
+    public ControllerResult<Seat> scanSeat(Student user, String qrCode){
+        try {
+            Seat s = reservationService.scanSeat(qrCode, user.getId());
+            if(s == null)
+                return ControllerResult.failure("Posto non trovato");
+            return ControllerResult.success(s);
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
         }
-        return dtos;
     }
 
-    public List<Reservation> getAllReservations(Student user){
-        return reservationService.getReservationHistory(user.getId());
+    public ControllerResult<Reservation> reserveSeat(Student user, long seatId){
+        try{
+            return ControllerResult.success(reservationService.createReservation(user.getId(), seatId));
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
+
     }
 
-    public void createAbandonmentReport(Student user, String description, long seatId) {
-        reportService.createReport(user.getId(), description, seatId);
+    public ControllerResult<Void> closeReservation(Student user, Reservation reservation){
+        try{
+            reservationService.closeReservation(reservation.getId(), user.getId());
+            return ControllerResult.success(null);
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
+    }
+
+    public ControllerResult<Reservation> createLeave(Student user, Reservation reservation){
+        try {
+            return ControllerResult.success(temporaryLeaveService.createTemporaryLeave(reservation.getId(), user.getId()));
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
+    }
+
+    public ControllerResult<List<AbandonmentReportDTO>> getAllReports(Student user){
+        try {
+            ArrayList<AbandonmentReport> reports = reportService.getOpenReportsByStudent(user.getId());
+            ArrayList<AbandonmentReportDTO> dtos = new ArrayList<>();
+            for (AbandonmentReport report : reports) {
+                Reservation res = reservationService.getReservationByReport(report.getId());
+                dtos.add(new AbandonmentReportDTO(AbandonmentReport.copy(report), res.getSeat().getId(), res.getSeat().getStudyArea().getName(), res.getSeat().getStudyArea().getLibrary().getName()));
+            }
+            return ControllerResult.success(dtos);
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
+    }
+
+    public ControllerResult<List<Reservation>> getAllReservations(Student user){
+        try{
+            return ControllerResult.success(reservationService.getReservationHistory(user.getId()));
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
+
+    }
+
+    public ControllerResult<Void> createAbandonmentReport(Student user, String description, long seatId) {
+        try {
+            reportService.createReport(user.getId(), description, seatId);
+            return ControllerResult.success(null, "Segnalazione creata correttamente");
+        }catch (Exception e){
+            return ControllerResult.failure(e.getMessage());
+        }
+
     }
 }

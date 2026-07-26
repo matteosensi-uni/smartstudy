@@ -107,7 +107,7 @@ public class LibraryConfigService {
                 if(seat.isBroken()){
                     seat.repair();
                 } else {
-                    throw new DomainViolationException("Non si può liberare un posto occupato");
+                    throw new DomainViolationException("Il posto è già libero");
                 }
             }else if(status == SeatStatus.BROKEN)
                 seat.markBroken();
