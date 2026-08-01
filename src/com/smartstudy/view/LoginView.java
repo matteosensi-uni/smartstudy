@@ -1,6 +1,6 @@
 package com.smartstudy.view;
 
-import com.smartstudy.DTO.StudentSession;
+import com.smartstudy.dto.StudentSessionDTO;
 import com.smartstudy.controller.AuthenticationController;
 import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.domainModel.User;
@@ -21,7 +21,7 @@ public class LoginView extends VBox {
     private final PasswordField passwordField;
     private final Label errorLabel;
 
-    public LoginView(Consumer<User> adminDashboard, Consumer<StudentSession> studentDashboard, Runnable onOpenLibraryAccess, AuthenticationController authenticationController) {
+    public LoginView(Consumer<User> adminDashboard, Consumer<StudentSessionDTO> studentDashboard, Runnable onOpenLibraryAccess, AuthenticationController authenticationController) {
         getStyleClass().add("root");
         setAlignment(Pos.CENTER);
         setSpacing(15);
@@ -60,7 +60,7 @@ public class LoginView extends VBox {
                     if(result.getMessage().equals("admin")){
                         adminDashboard.accept((User) result.getResult());
                     }else
-                        studentDashboard.accept((StudentSession) result.getResult());
+                        studentDashboard.accept((StudentSessionDTO) result.getResult());
                 }else {
                     errorLabel.setManaged(true);
                     errorLabel.setVisible(true);

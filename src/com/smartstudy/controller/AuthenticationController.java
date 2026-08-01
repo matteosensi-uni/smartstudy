@@ -1,6 +1,6 @@
 package com.smartstudy.controller;
 
-import com.smartstudy.DTO.StudentSession;
+import com.smartstudy.dto.StudentSessionDTO;
 import com.smartstudy.businessLogic.AuthenticationService;
 import com.smartstudy.businessLogic.ReservationService;
 import com.smartstudy.domainModel.Student;
@@ -23,7 +23,7 @@ public class AuthenticationController {
             if (user.isAdmin()) {
                 return ControllerResult.success(user, "admin");
             } else
-                return ControllerResult.success(StudentSession.start((Student) user, libraryAccessController.isStudentPresent(user.getId()), reservationService.getActiveStudentReservation(user.getId())),"student");
+                return ControllerResult.success(StudentSessionDTO.start((Student) user, libraryAccessController.isStudentPresent(user.getId()), reservationService.getActiveStudentReservation(user.getId())),"student");
         }catch (Exception e){
             return ControllerResult.failure(e.getMessage());
         }

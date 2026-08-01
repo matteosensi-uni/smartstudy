@@ -3,9 +3,9 @@ package com.smartstudy.businessLogic;
 import com.smartstudy.domainModel.Admin;
 import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.User;
-import com.smartstudy.ORM.AdminDAO;
-import com.smartstudy.ORM.StudentDAO;
-import com.smartstudy.ORM.UserDAO;
+import com.smartstudy.orm.AdminDAO;
+import com.smartstudy.orm.StudentDAO;
+import com.smartstudy.orm.UserDAO;
 import com.smartstudy.exceptions.BusinessViolationException;
 
 import java.util.Optional;

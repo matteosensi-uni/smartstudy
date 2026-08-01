@@ -1,4 +1,4 @@
-package com.smartstudy.ORM;
+package com.smartstudy.orm;
 
 import com.smartstudy.domainModel.StudyArea;
 import com.smartstudy.domainModel.enums.StudyAreaType;

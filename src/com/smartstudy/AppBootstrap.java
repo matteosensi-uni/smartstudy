@@ -1,6 +1,6 @@
 package com.smartstudy;
 
-import com.smartstudy.ORM.*;
+import com.smartstudy.orm.*;
 import com.smartstudy.businessLogic.*;
 import com.smartstudy.controller.*;
 import com.smartstudy.db.ConnectionManager;

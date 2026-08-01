@@ -1,6 +1,6 @@
 package com.smartstudy.view;
 
-import com.smartstudy.DTO.StudentSession;
+import com.smartstudy.dto.StudentSessionDTO;
 import com.smartstudy.AppBootstrap;
 import com.smartstudy.domainModel.Admin;
 import com.smartstudy.domainModel.User;
@@ -34,7 +34,7 @@ public class SmartStudyApp extends Application {
         setScene(loginView, 900, 600);
     }
 
-    private void showStudentDashboard(StudentSession studentSession) {
+    private void showStudentDashboard(StudentSessionDTO studentSession) {
         StudentView studentView = new StudentView(this::showLogin, appBootstrap.getStudentController(), studentSession);
         setScene(studentView, 1100, 700);
     }

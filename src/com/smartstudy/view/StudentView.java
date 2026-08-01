@@ -1,7 +1,7 @@
 package com.smartstudy.view;
 
-import com.smartstudy.DTO.AbandonmentReportDTO;
-import com.smartstudy.DTO.StudentSession;
+import com.smartstudy.dto.AbandonmentReportDTO;
+import com.smartstudy.dto.StudentSessionDTO;
 import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.controller.StudentDashboardController;
 import com.smartstudy.domainModel.*;
@@ -33,9 +33,9 @@ public class StudentView extends BorderPane {
 
     private final StudentDashboardController dashboardController;
 
-    private final StudentSession userSession;
+    private final StudentSessionDTO userSession;
 
-    public StudentView(Runnable onLogout, StudentDashboardController dashboardController, StudentSession userSession) {
+    public StudentView(Runnable onLogout, StudentDashboardController dashboardController, StudentSessionDTO userSession) {
         this.dashboardController = dashboardController;
         this.userSession = userSession;
         resultLabel = new Label();
@@ -224,22 +224,11 @@ public class StudentView extends BorderPane {
         GridPane info = new GridPane();
         info.setHgap(10);
         info.setVgap(8);
-        Label seat;
-        Label studyArea;
-        Label startTime;
-        Label reservationStatus;
-        if(userSession.getReservation() == null){
-            seat = new Label("-");
-            studyArea = new Label("-");
-            startTime = new Label("-");
-            reservationStatus = new Label("-");
-        }else{
-            seat = new Label(userSession.getReservation().getSeat().getQrCode());
-            studyArea = new Label(userSession.getReservation().getSeat().getStudyArea().getName());
-            startTime = new Label(userSession.getReservation().getStartTime().format(formatter));
-            reservationStatus = new Label(userSession.getReservation().getStatus().name());
-        }
-
+        Label seat = new Label("-");
+        Label studyArea = new Label("-");
+        Label startTime = new Label("-");
+        Label reservationStatus = new Label("-");
+        updateReservationInfo(seat, startTime, reservationStatus, studyArea);
         info.addRow(0, new Label("Posto:"), seat);
         info.addRow(1, new Label("Area studio:"), studyArea);
         info.addRow(2, new Label("Inizio:"), startTime);
@@ -283,6 +272,7 @@ public class StudentView extends BorderPane {
             if(result.isSuccess()) {
                 userSession.setReservation(result.getResult());
                 updateLeavesTable(pausesTable);
+                updateReservationInfo(seat, startTime, reservationStatus, studyArea);
                 hideResult();
             }else {
                 showResult(result.getMessage(), false);
@@ -295,6 +285,20 @@ public class StudentView extends BorderPane {
     private void updateLeavesTable(TableView<TemporaryLeave> pausesTable) {
         if(userSession.getReservation() != null) {
             pausesTable.setItems(FXCollections.observableArrayList(userSession.getReservation().getTemporaryLeaves()));
+        }
+    }
+
+    private void updateReservationInfo(Label seat, Label startTime, Label reservationStatus, Label studyArea) {
+        if(userSession.getReservation() == null){
+            seat.setText("-");
+            studyArea.setText("-");
+            startTime.setText("-");
+            reservationStatus.setText("-");
+        }else{
+            seat.setText(userSession.getReservation().getSeat().getQrCode());
+            studyArea.setText(userSession.getReservation().getSeat().getStudyArea().getName());
+            startTime.setText(userSession.getReservation().getStartTime().format(formatter));
+            reservationStatus.setText(userSession.getReservation().getStatus().name());
         }
     }
 

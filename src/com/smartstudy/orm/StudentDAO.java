@@ -1,4 +1,4 @@
-package com.smartstudy.ORM;
+package com.smartstudy.orm;
 import com.smartstudy.domainModel.Student;
 import com.smartstudy.exceptions.DataAccessException;
 

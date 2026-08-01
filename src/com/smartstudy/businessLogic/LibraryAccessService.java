@@ -1,6 +1,6 @@
 package com.smartstudy.businessLogic;
 
-import com.smartstudy.ORM.*;
+import com.smartstudy.orm.*;
 import com.smartstudy.domainModel.*;
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.exceptions.BusinessViolationException;
@@ -39,6 +39,8 @@ public class LibraryAccessService {
     }
 
     private boolean toggleAdminPresence(Admin admin, Library library){
+        if(!admin.isPresent() && !library.isOpen())
+            throw new BusinessViolationException("La biblioteca è chiusa, l'admin non può entrare");
         if(!library.hasAdmin(admin.getId()))
             throw new BusinessViolationException("L'admin non può gestire questa biblioteca");
         if(!admin.isPresent() && !library.isOpen()){
@@ -59,6 +61,8 @@ public class LibraryAccessService {
             accessSessionDAO.update(as);
             return false;
         } else { //lo studente entra in biblioteca
+            if(!library.isOpen())
+                throw new BusinessViolationException("La biblioteca è chiusa, non si può entrare");
             if (!student.isCardActive()) {
                 throw new BusinessViolationException("La carta dello studente non è attiva");
             }

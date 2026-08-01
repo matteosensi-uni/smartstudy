@@ -1,4 +1,4 @@
-package com.smartstudy.ORM;
+package com.smartstudy.orm;
 
 import com.smartstudy.domainModel.Reservation;
 import com.smartstudy.domainModel.enums.ReservationStatus;
@@ -39,9 +39,6 @@ public class ReservationDAO extends BaseDAO{
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next()) {
                     Reservation res = createReservationFromResultSet(rs);
-                    if(res.refreshState()){
-                        update(res);
-                    }
                     return Optional.of(res);
                 }
                 else return Optional.empty();
@@ -62,9 +59,6 @@ public class ReservationDAO extends BaseDAO{
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next()) {
                     Reservation res = createReservationFromResultSet(rs);
-                    if(res.refreshState()){
-                        update(res);
-                    }
                     return Optional.of(res);
                 }
                 else return Optional.empty();
@@ -85,9 +79,6 @@ public class ReservationDAO extends BaseDAO{
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next()) {
                     Reservation res = createReservationFromResultSet(rs);
-                    if(res.refreshState()){
-                        update(res);
-                    }
                     return Optional.of(res);
                 }
                 else return Optional.empty();
@@ -109,9 +100,6 @@ public class ReservationDAO extends BaseDAO{
             try (ResultSet rs = ps.executeQuery()) {
                 if(rs.next()) {
                     Reservation res = createReservationFromResultSet(rs);
-                    if(res.refreshState()){
-                        update(res);
-                    }
                     return Optional.of(res);
                 }
                 return Optional.empty();

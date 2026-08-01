@@ -1,4 +1,4 @@
-package com.smartstudy.ORM;
+package com.smartstudy.orm;
 import com.smartstudy.domainModel.AbandonmentReport;
 import com.smartstudy.domainModel.Admin;
 import com.smartstudy.domainModel.enums.ReportStatus;

@@ -1,24 +1,27 @@
-package com.smartstudy.DTO;
+package com.smartstudy.dto;
 
 import com.smartstudy.domainModel.Reservation;
 import com.smartstudy.domainModel.Student;
 
-public class StudentSession {
+public class StudentSessionDTO {
     private final Student user;
     private final boolean presence;
     private Reservation reservation;
-    private StudentSession(Student user, boolean presence, Reservation reservation) {
+    private StudentSessionDTO(Student user, boolean presence, Reservation reservation) {
         this.user = user;
         this.presence = presence;
         this.reservation = reservation;
     }
 
-    public static StudentSession start(Student user, boolean presence, Reservation reservation) {
-        return new StudentSession(user, presence, reservation);
+    public static StudentSessionDTO start(Student user, boolean presence, Reservation reservation) {
+        return new StudentSessionDTO(user, presence, reservation);
     }
 
     public Student getUser() { return user; }
     public boolean isPresent() { return presence; }
-    public Reservation getReservation() { return reservation; }
+    public Reservation getReservation() {
+        if (reservation != null)
+            reservation.refreshState();
+        return reservation; }
     public void setReservation(Reservation reservation) { this.reservation = reservation; }
 }

@@ -1,6 +1,6 @@
 package com.smartstudy.controller;
 
-import com.smartstudy.DTO.AbandonmentReportDTO;
+import com.smartstudy.dto.AbandonmentReportDTO;
 import com.smartstudy.businessLogic.ReportService;
 import com.smartstudy.businessLogic.ReservationService;
 import com.smartstudy.businessLogic.TemporaryLeaveService;

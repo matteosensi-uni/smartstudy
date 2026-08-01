@@ -1,6 +1,6 @@
 package com.smartstudy.view;
 
-import com.smartstudy.DTO.AbandonmentReportDTO;
+import com.smartstudy.dto.AbandonmentReportDTO;
 import com.smartstudy.controller.AdminDashboardController;
 import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.domainModel.AbandonmentReport;

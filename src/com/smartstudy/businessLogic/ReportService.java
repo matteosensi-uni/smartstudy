@@ -2,7 +2,7 @@ package com.smartstudy.businessLogic;
 
 import com.smartstudy.db.TransactionManager;
 import com.smartstudy.domainModel.*;
-import com.smartstudy.ORM.*;
+import com.smartstudy.orm.*;
 import com.smartstudy.exceptions.BusinessViolationException;
 
 import java.util.ArrayList;
