@@ -1,6 +1,9 @@
 package com.smartstudy.orm;
 
+import com.smartstudy.domainModel.AccessSession;
 import com.smartstudy.domainModel.Reservation;
+import com.smartstudy.domainModel.Seat;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.enums.ReservationStatus;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
@@ -16,22 +19,26 @@ public class ReservationDAO extends BaseDAO{
     public static final String pkName = "id_reservation";
 
     private final SeatDAO seatDAO;
-    private final AccessSessionDAO accessSessionDAO;
     private final AbandonmentReportDAO abandonmentReportDAO;
     private final TemporaryLeaveDAO temporaryLeaveDAO;
 
-    public ReservationDAO(Connection conn, SeatDAO seatDAO, AccessSessionDAO accessSessionDAO, AbandonmentReportDAO abandonmentReportDAO, TemporaryLeaveDAO temporaryLeaveDAO) {
+    private final String AGGREGATE_QUERY = """
+            select reservation.*, access_session.*, app_user.*, student.*
+            FROM reservation
+            LEFT JOIN access_session on reservation.access_id = access_session.id_access
+            LEFT JOIN app_user ON app_user.user_id = access_session.student_id
+            LEFT JOIN student on app_user.user_id = student.user_id
+            """;
+
+    public ReservationDAO(Connection conn, SeatDAO seatDAO, AbandonmentReportDAO abandonmentReportDAO, TemporaryLeaveDAO temporaryLeaveDAO) {
         super(conn);
         this.seatDAO = seatDAO;
-        this.accessSessionDAO = accessSessionDAO;
         this.abandonmentReportDAO = abandonmentReportDAO;
         this.temporaryLeaveDAO = temporaryLeaveDAO;
     }
 
     public Optional<Reservation> getReservationById(long reservationId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT *
-                FROM reservation
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE id_reservation = ?
             """
             )){
@@ -49,9 +56,8 @@ public class ReservationDAO extends BaseDAO{
     }
 
     public Optional<Reservation> getReservationByReport(long reportId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT reservation.*
-                FROM reservation LEFT JOIN abandonment_report ON reservation.id_reservation = abandonment_report.id_reservation
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
+                LEFT JOIN abandonment_report ON reservation.id_reservation = abandonment_report.id_reservation
                 WHERE id_report = ?
             """
         )){
@@ -69,9 +75,7 @@ public class ReservationDAO extends BaseDAO{
     }
 
     public Optional<Reservation> getActiveReservationBySeat(long idSeat) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT reservation.*
-                FROM reservation
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE reservation.id_seat = ? AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
             """
             )){
@@ -89,10 +93,7 @@ public class ReservationDAO extends BaseDAO{
     }
 
     public Optional<Reservation> getActiveReservationByStudent(long studentId) {
-        try (PreparedStatement ps = conn.prepareStatement("""
-                SELECT reservation.* FROM
-                (reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access)
-                LEFT JOIN student ON access_session.student_id = student.user_id
+        try (PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE student.user_id = ? AND (reservation.status = 'ACTIVE' OR reservation.status = 'TEMPORARILY_LEFT')
             """
         )) {
@@ -110,18 +111,27 @@ public class ReservationDAO extends BaseDAO{
     }
 
     public ArrayList<Reservation> getReservationsByStudent(long studentId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT reservation.* FROM
-                (reservation LEFT JOIN access_session ON reservation.access_id = access_session.id_access)
-                LEFT JOIN student ON access_session.student_id = student.user_id
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE student.user_id = ? AND reservation.status = 'CLOSED'
             """
             )){
             ps.setLong(1, studentId);
             try(ResultSet rs = ps.executeQuery()){
                 ArrayList<Reservation> res = new ArrayList<>();
-                while(rs.next())
-                    res.add(createReservationFromResultSet(rs));
+                Student s = null;
+                while(rs.next()) {
+                    if (s == null) {
+                        s = Student.valueOf(
+                                rs.getLong("user_id"),
+                                rs.getString("name"),
+                                rs.getString("surname"),
+                                rs.getString("password"),
+                                rs.getString("email"),
+                                rs.getBoolean("card_active")
+                        );
+                    }
+                    res.add(createReservationFromResultSet(rs, s));
+                }
                 return res;
             }
         }catch (SQLException e) {
@@ -130,14 +140,28 @@ public class ReservationDAO extends BaseDAO{
     }
 
     private Reservation createReservationFromResultSet(ResultSet rs) throws SQLException {
+        Student s = Student.valueOf(
+                rs.getLong("user_id"),
+                rs.getString("name"),
+                rs.getString("surname"),
+                rs.getString("password"),
+                rs.getString("email"),
+                rs.getBoolean("card_active")
+        );
+        return createReservationFromResultSet(rs, s);
+    }
+
+    private Reservation createReservationFromResultSet(ResultSet rs, Student s) throws SQLException {
+        Seat seat = seatDAO.getSeatById(rs.getLong("id_seat")).orElseThrow(() -> new DataAccessException("Seat non trovato"));
+        AccessSession as = AccessSession.valueOf(rs.getLong("access_id"), TimeUtils.getLocalTime(rs.getTimestamp("entry_time")), TimeUtils.getLocalTime(rs.getTimestamp("exit_time")), seat.getStudyArea().getLibrary(), s);
         return Reservation.valueOf(
                 rs.getLong("id_reservation"),
                 TimeUtils.getLocalTime(rs.getTimestamp("start_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("end_time")),
                 ReservationStatus.valueOf(rs.getString("status")),
                 temporaryLeaveDAO.getTemporaryLeavesByReservation(rs.getLong("id_reservation")),
-                accessSessionDAO.getAccessSessionById(rs.getLong("access_id")).orElse(null),
-                seatDAO.getSeatById(rs.getLong("id_seat")).orElse(null),
+                as,
+                seat,
                 abandonmentReportDAO.getReportsByReservationId(rs.getLong("id_reservation"))
         );
     }

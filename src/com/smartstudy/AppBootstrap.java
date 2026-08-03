@@ -25,12 +25,12 @@ public class AppBootstrap {
         TimePolicyDAO timePolicyDAO = new TimePolicyDAO(conn);
         AdminDAO adminDAO = new AdminDAO(conn);
         StudentDAO studentDAO = new StudentDAO(conn);
-        StudyAreaDAO studyAreaDAO = new StudyAreaDAO(conn, libraryDAO, timePolicyDAO);
-        SeatDAO seatDAO = new SeatDAO(conn, studyAreaDAO);
-        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn, adminDAO,  studentDAO);
+        StudyAreaDAO studyAreaDAO = new StudyAreaDAO(conn, adminDAO);
+        SeatDAO seatDAO = new SeatDAO(conn, adminDAO);
+        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn);
         TemporaryLeaveDAO temporaryLeaveDAO = new TemporaryLeaveDAO(conn);
-        AccessSessionDAO accessSessionDAO = new AccessSessionDAO(conn, libraryDAO, studentDAO);
-        ReservationDAO reservationDAO = new ReservationDAO(conn, seatDAO, accessSessionDAO, abandonmentReportDAO, temporaryLeaveDAO);
+        AccessSessionDAO accessSessionDAO = new AccessSessionDAO(conn, adminDAO);
+        ReservationDAO reservationDAO = new ReservationDAO(conn, seatDAO, abandonmentReportDAO, temporaryLeaveDAO);
 
         //Service
         AuthenticationService authenticationService = new AuthenticationService(userDAO, studentDAO, adminDAO);

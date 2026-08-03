@@ -1,14 +1,12 @@
 package com.smartstudy.orm;
 
-import com.smartstudy.domainModel.Seat;
+import com.smartstudy.domainModel.*;
 import com.smartstudy.domainModel.enums.SeatStatus;
 import com.smartstudy.domainModel.enums.SeatType;
+import com.smartstudy.domainModel.enums.StudyAreaType;
 import com.smartstudy.exceptions.DataAccessException;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -18,16 +16,30 @@ public class SeatDAO extends BaseDAO{
     public static final String tableName = "seat";
     public static final String pkName = "id_seat";
 
-    private final StudyAreaDAO studyAreaDAO;
+    private final AdminDAO adminDAO;
 
-    public SeatDAO(Connection conn, StudyAreaDAO studyAreaDAO) { super(conn);
-        this.studyAreaDAO = studyAreaDAO;
+    private final String AGGREGATE_QUERY = """
+            select seat.*,
+                    library.*,
+                    study_area.name as sa_name,
+                    study_area.floor,
+                    study_area.type as sa_type,
+                    time_policy.name as tp_name,
+                    time_policy.max_temporary_leave_min,
+                    time_policy.max_temporary_leave_times,
+                    time_policy.id_policy
+            FROM seat
+            LEFT JOIN study_area ON study_area.id_area = seat.id_area
+            LEFT JOIN library ON library.id_library = study_area.id_library
+            LEFT JOIN time_policy ON study_area.id_policy = time_policy.id_policy
+    """;
+
+    public SeatDAO(Connection conn, AdminDAO adminDAO) { super(conn);
+        this.adminDAO = adminDAO;
     }
 
     public Optional<Seat> getSeatById(long seatId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT *
-                FROM seat
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE id_seat = ?
             """
             )){
@@ -43,9 +55,7 @@ public class SeatDAO extends BaseDAO{
     }
 
     public Optional<Seat> getSeatByQR(String qrCode){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT *
-                FROM seat
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE qr_code = ?
             """
             )){
@@ -61,18 +71,29 @@ public class SeatDAO extends BaseDAO{
     }
 
     public ArrayList<Seat> getLibrarySeats(long libraryId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT seat.*
-                FROM (seat LEFT JOIN study_area ON seat.id_area = study_area.id_area)
-                LEFT JOIN library ON study_area.id_library = library.id_library
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE library.id_library = ?
             """
             )){
             ps.setLong(1, libraryId);
             try(ResultSet rs = ps.executeQuery()){
                 ArrayList<Seat> res = new ArrayList<>();
-                while(rs.next())
-                    res.add(createSeatFromResultSet(rs));
+                Library library = null;
+                while(rs.next()) {
+                    if(library == null){
+                        library = Library.valueOf(
+                                rs.getLong("id_library"),
+                                rs.getString("name"),
+                                rs.getTime("opening_time").toLocalTime(),
+                                rs.getTime("closing_time").toLocalTime(),
+                                rs.getString("street"),
+                                rs.getString("number"),
+                                rs.getString("city"),
+                                adminDAO.getAdminsByLibraryId(rs.getLong("id_library"))
+                        );
+                    }
+                    res.add(createSeatFromResultSet(rs, library));
+                }
                 return res;
             }
         } catch (SQLException e) {
@@ -81,14 +102,36 @@ public class SeatDAO extends BaseDAO{
     }
 
     private Seat createSeatFromResultSet(ResultSet rs) throws SQLException {
+        Library lib = Library.valueOf(
+                rs.getLong("id_library"),
+                rs.getString("name"),
+                rs.getTime("opening_time").toLocalTime(),
+                rs.getTime("closing_time").toLocalTime(),
+                rs.getString("street"),
+                rs.getString("number"),
+                rs.getString("city"),
+                adminDAO.getAdminsByLibraryId(rs.getLong("id_library"))
+        );
+        return createSeatFromResultSet(rs, lib);
+    }
+
+    private Seat createSeatFromResultSet(ResultSet rs, Library lib) throws SQLException {
+        TimePolicy timePolicy = TimePolicy.valueOf(rs.getLong("id_policy"), rs.getInt("max_temporary_leave_min"), rs.getInt("max_temporary_leave_times"), rs.getString("tp_name"));
+        StudyArea studyArea = StudyArea.valueOf(
+                rs.getLong("id_area"),
+                rs.getString("sa_name"),
+                rs.getInt("floor"),
+                StudyAreaType.valueOf(rs.getString("sa_type")),
+                timePolicy,
+                lib
+        );
         return Seat.valueOf(
                 rs.getLong("id_seat"),
                 rs.getString("qr_code"),
                 SeatType.valueOf(rs.getString("type")),
                 SeatStatus.valueOf(rs.getString("status")),
-                studyAreaDAO.getStudyAreaById(rs.getLong("id_area")).orElse(null)
+                studyArea
         );
-
     }
 
     public void update(Seat seat) {

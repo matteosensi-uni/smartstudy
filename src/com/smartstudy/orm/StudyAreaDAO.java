@@ -1,6 +1,8 @@
 package com.smartstudy.orm;
 
+import com.smartstudy.domainModel.Library;
 import com.smartstudy.domainModel.StudyArea;
+import com.smartstudy.domainModel.TimePolicy;
 import com.smartstudy.domainModel.enums.StudyAreaType;
 import com.smartstudy.exceptions.DataAccessException;
 
@@ -14,18 +16,29 @@ public class StudyAreaDAO extends BaseDAO{
     public static final String tableName = "study_area";
     public static final String pkName = "id_area";
 
-    private final LibraryDAO libraryDAO;
-    private final TimePolicyDAO timePolicyDAO;
+    private final String AGGREGATE_QUERY = """
+            select library.*,
+                    study_area.id_area,
+                    study_area.name as sa_name,
+                    study_area.floor,
+                    study_area.type as sa_type,
+                    time_policy.name as tp_name,
+                    time_policy.max_temporary_leave_min,
+                    time_policy.max_temporary_leave_times,
+                    time_policy.id_policy
+            FROM study_area
+            LEFT JOIN library ON library.id_library = study_area.id_library
+            LEFT JOIN time_policy ON study_area.id_policy = time_policy.id_policy
+    """;
 
-    public StudyAreaDAO(Connection conn, LibraryDAO libraryDAO, TimePolicyDAO timePolicyDAO) {
+    private final AdminDAO adminDAO;
+
+    public StudyAreaDAO(Connection conn, AdminDAO adminDAO) {
         super(conn);
-        this.libraryDAO = libraryDAO;
-        this.timePolicyDAO = timePolicyDAO;
+        this.adminDAO = adminDAO;
     }
     public Optional<StudyArea> getStudyAreaById(long studyAreaId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT *
-                FROM study_area
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE study_area.id_area = ?
             """
             )){
@@ -41,17 +54,29 @@ public class StudyAreaDAO extends BaseDAO{
     }
 
     public ArrayList<StudyArea> getLibraryStudyAreas(long libraryId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT *
-                FROM study_area
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE study_area.id_library = ?
             """
             )){
             ps.setLong(1, libraryId);
-            try(ResultSet rs = ps.executeQuery()){
+            try(ResultSet rs = ps.executeQuery()) {
                 ArrayList<StudyArea> res = new ArrayList<>();
-                while(rs.next())
-                    res.add(createStudyAreaFromResultSet(rs));
+                Library library = null;
+                while (rs.next()){
+                    if (library == null) {
+                        library = Library.valueOf(
+                                rs.getLong("id_library"),
+                                rs.getString("name"),
+                                rs.getTime("opening_time").toLocalTime(),
+                                rs.getTime("closing_time").toLocalTime(),
+                                rs.getString("street"),
+                                rs.getString("number"),
+                                rs.getString("city"),
+                                adminDAO.getAdminsByLibraryId(rs.getLong("id_library"))
+                        );
+                    }
+                    res.add(createStudyAreaFromResultSet(rs, library));
+                }
                 return res;
             }
         } catch (SQLException e) {
@@ -60,13 +85,28 @@ public class StudyAreaDAO extends BaseDAO{
     }
 
     private StudyArea createStudyAreaFromResultSet(ResultSet rs) throws SQLException {
+        Library lib = Library.valueOf(
+                rs.getLong("id_library"),
+                rs.getString("name"),
+                rs.getTime("opening_time").toLocalTime(),
+                rs.getTime("closing_time").toLocalTime(),
+                rs.getString("street"),
+                rs.getString("number"),
+                rs.getString("city"),
+                adminDAO.getAdminsByLibraryId(rs.getLong("id_library"))
+        );
+        return createStudyAreaFromResultSet(rs, lib);
+    }
+
+    private StudyArea createStudyAreaFromResultSet(ResultSet rs, Library lib) throws SQLException {
+        TimePolicy timePolicy = TimePolicy.valueOf(rs.getLong("id_policy"), rs.getInt("max_temporary_leave_min"), rs.getInt("max_temporary_leave_times"), rs.getString("tp_name"));
         return StudyArea.valueOf(
                 rs.getLong("id_area"),
-                rs.getString("name"),
+                rs.getString("sa_name"),
                 rs.getInt("floor"),
-                StudyAreaType.valueOf(rs.getString("type")),
-                timePolicyDAO.getTimePolicyById(rs.getLong("id_policy")).orElse(null),
-                libraryDAO.getLibraryById(rs.getLong("id_library")).orElse(null)
+                StudyAreaType.valueOf(rs.getString("sa_type")),
+                timePolicy,
+                lib
         );
 
     }

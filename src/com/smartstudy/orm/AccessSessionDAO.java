@@ -1,6 +1,8 @@
 package com.smartstudy.orm;
 
 import com.smartstudy.domainModel.AccessSession;
+import com.smartstudy.domainModel.Library;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
 import java.sql.Connection;
@@ -15,35 +17,28 @@ public class AccessSessionDAO extends BaseDAO{
     public static final String tableName = "access_session";
     public static final String pkName = "id_access";
 
-    private final LibraryDAO libraryDAO;
-    private final StudentDAO studentDAO;
+    private final AdminDAO adminDAO;
 
-    public AccessSessionDAO(Connection conn, LibraryDAO libraryDAO, StudentDAO studentDAO) { super(conn);
-        this.libraryDAO = libraryDAO;
-        this.studentDAO = studentDAO;
-    }
+    private final String AGGREGATE_QUERY = """
+        select access_session.*,
+                library.*,
+                app_user.name as student_name,
+                app_user.surname,
+                app_user.password,
+                app_user.email,
+                student.*
+        FROM access_session
+        LEFT JOIN library ON library.id_library = access_session.id_library
+        LEFT JOIN app_user ON app_user.user_id = access_session.student_id
+        LEFT JOIN student ON app_user.user_id = student.user_id
+    """;
 
-    public Optional<AccessSession> getAccessSessionById(long sessionId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM access_session
-                WHERE id_access = ?
-            """
-            )){
-            ps.setLong(1, sessionId);
-            try(ResultSet rs = ps.executeQuery()){
-                if (rs.next()){
-                    return Optional.of(createAccessSessionFromResultSet(rs));
-                }
-                return Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Non è stato possibile recuperare le sessioni di accesso", e);
-        }
+    public AccessSessionDAO(Connection conn, AdminDAO adminDAO) { super(conn);
+        this.adminDAO = adminDAO;
     }
 
     public Optional<AccessSession> getActiveAccessSessionByStudent(long studentId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM access_session
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE student_id = ? AND exit_time IS NULL
             """
             )){
@@ -75,12 +70,28 @@ public class AccessSessionDAO extends BaseDAO{
     }
 
     private AccessSession createAccessSessionFromResultSet(ResultSet rs) throws SQLException {
+        Library library = Library.valueOf(
+                rs.getLong("id_library"),
+                rs.getString("name"),
+                rs.getTime("opening_time").toLocalTime(),
+                rs.getTime("closing_time").toLocalTime(),
+                rs.getString("street"),
+                rs.getString("number"),
+                rs.getString("city"),
+                adminDAO.getAdminsByLibraryId(rs.getLong("id_library"))
+        );
+        Student student = Student.valueOf(rs.getLong("student_id"),
+                rs.getString("student_name"),
+                rs.getString("surname"),
+                rs.getString("password"),
+                rs.getString("email"),
+                rs.getBoolean("card_active"));
         return AccessSession.valueOf(
                 rs.getLong("id_access"),
                 TimeUtils.getLocalTime(rs.getTimestamp("entry_time")),
                 TimeUtils.getLocalTime(rs.getTimestamp("exit_time")),
-                libraryDAO.getLibraryById(rs.getLong("id_library")).orElse(null),
-                studentDAO.getStudentById(rs.getLong("student_id")).orElse(null)
+                library,
+                student
         );
     }
 

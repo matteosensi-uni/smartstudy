@@ -1,6 +1,7 @@
 package com.smartstudy.orm;
 import com.smartstudy.domainModel.AbandonmentReport;
 import com.smartstudy.domainModel.Admin;
+import com.smartstudy.domainModel.Student;
 import com.smartstudy.domainModel.enums.ReportStatus;
 import com.smartstudy.exceptions.DataAccessException;
 import com.smartstudy.utils.TimeUtils;
@@ -17,18 +18,32 @@ public class AbandonmentReportDAO extends BaseDAO{
     public static final String tableName = "abandonment_report";
     public static final String pkName = "id_report";
 
-    private final AdminDAO adminDAO;
-    private final StudentDAO studentDAO;
+    private final String AGGREGATE_QUERY = """
+            select abandonment_report.*,
+            		student_data.name as student_name,
+            		student_data.surname as student_surname,
+            		student_data.password AS student_pwd,
+            		student_data.email as student_email,
+            		student.card_active,
+            		admin_data.name as admin_name,
+            		admin_data.surname as admin_surname,
+            		admin_data.password AS admin_pwd,
+            		admin_data.email as admin_email,
+            		admin.is_present
+            from abandonment_report
+            left join app_user as student_data on student_data.user_id = abandonment_report.student_id
+            left join student on student.user_id = student_data.user_id
+            left join app_user as admin_data on admin_data.user_id = abandonment_report.admin_id
+            left join admin on admin.user_id = admin_data.user_id
+            """;
 
-    public AbandonmentReportDAO(Connection conn, AdminDAO adminDAO, StudentDAO studentDAO) {
+    public AbandonmentReportDAO(Connection conn) {
         super(conn);
-        this.adminDAO = adminDAO;
-        this.studentDAO = studentDAO;
     }
 
     public Optional<AbandonmentReport> getReportById(long reportId){
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM abandonment_report WHERE id_report = ?
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
+                WHERE id_report = ?
             """
             )){
             ps.setLong(1, reportId);
@@ -44,8 +59,8 @@ public class AbandonmentReportDAO extends BaseDAO{
     }
 
     public ArrayList<AbandonmentReport> getOpenReportsByStudent(long studentId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM abandonment_report WHERE student_id = ?
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
+                WHERE student_id = ?
             """
             )){
             ps.setLong(1, studentId);
@@ -62,8 +77,8 @@ public class AbandonmentReportDAO extends BaseDAO{
     }
 
     public ArrayList<AbandonmentReport> getReportsByReservationId(long reservationId) {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM abandonment_report WHERE  id_reservation = ?
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
+                WHERE  id_reservation = ?
             """
         )){
             ps.setLong(1, reservationId);
@@ -80,8 +95,8 @@ public class AbandonmentReportDAO extends BaseDAO{
     }
 
     public ArrayList<AbandonmentReport> getInProgressReportsByAdmin(long adminId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM abandonment_report WHERE admin_id = ?
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
+                WHERE admin_id = ?
                 AND status = 'PENDING'
             """
             )){
@@ -99,8 +114,8 @@ public class AbandonmentReportDAO extends BaseDAO{
     }
 
     public ArrayList<AbandonmentReport> getClosedReportsByAdmin(long adminId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT * FROM abandonment_report WHERE admin_id = ?
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY +"""
+                WHERE admin_id = ?
                 AND (status = 'CONFIRMED' OR status = 'REJECTED')
             """
             )){
@@ -118,9 +133,8 @@ public class AbandonmentReportDAO extends BaseDAO{
     }
 
     public ArrayList<AbandonmentReport> getReportsByLibrary(long libraryId)  {
-        try(PreparedStatement ps = conn.prepareStatement("""
-                SELECT abandonment_report.* FROM
-                abandonment_report LEFT JOIN reservation ON reservation.id_reservation = abandonment_report.id_reservation
+        try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
+                LEFT JOIN reservation ON reservation.id_reservation = abandonment_report.id_reservation
                 LEFT JOIN access_session ON reservation.access_id = access_session.id_access
                 WHERE access_session.id_library = ?
                 AND abandonment_report.status = 'OPENED'
@@ -145,15 +159,16 @@ public class AbandonmentReportDAO extends BaseDAO{
         if(adminId == null){
             admin = null;
         }else{
-            admin = adminDAO.getAdminById(adminId).orElse(null);
+            admin = Admin.valueOf(adminId, rs.getString("admin_name"), rs.getString("admin_surname"), rs.getString("admin_pwd"), rs.getString("admin_email"), rs.getBoolean("is_present"));
         }
+        Student author = Student.valueOf(rs.getLong("student_id"), rs.getString("student_name"), rs.getString("student_surname"), rs.getString("student_pwd"), rs.getString("student_email"), rs.getBoolean("card_active"));
         return AbandonmentReport.valueOf(
                 rs.getLong("id_report"),
                 TimeUtils.getLocalTime(rs.getTimestamp("created_at")),
                 TimeUtils.getLocalTime(rs.getTimestamp("resolved_at")),
                 ReportStatus.valueOf(rs.getString("status")),
                 rs.getString("description"),
-                studentDAO.getStudentById(rs.getLong("student_id")).orElse(null),
+                author,
                 admin
         );
     }
