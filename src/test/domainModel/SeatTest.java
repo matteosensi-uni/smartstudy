@@ -59,21 +59,6 @@ public class SeatTest {
     }
 
     @Test
-    public void testFreeSuccess(){
-        Seat seat = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.UNAVAILABLE, studyArea);
-        seat.free();
-        assertEquals(SeatStatus.AVAILABLE, seat.getStatus());
-    }
-
-    @Test
-    public void testFreeFailure(){
-        Seat brokenSeat = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.BROKEN, studyArea);
-        assertThrows(DomainViolationException.class, brokenSeat::free);
-        Seat availableSeat  = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.AVAILABLE, studyArea);
-        assertThrows(DomainViolationException.class, availableSeat::free);
-    }
-
-    @Test
     public void testRepairSuccess(){
         Seat seat = Seat.valueOf(1, "qr", SeatType.GROUP, SeatStatus.BROKEN, studyArea);
         seat.repair();

@@ -19,9 +19,6 @@ public class StudentSessionDTO {
 
     public Student getUser() { return user; }
     public boolean isPresent() { return presence; }
-    public Reservation getReservation() {
-        if (reservation != null)
-            reservation.refreshState();
-        return reservation; }
+    public Reservation getReservation() {return reservation; }
     public void setReservation(Reservation reservation) { this.reservation = reservation; }
 }

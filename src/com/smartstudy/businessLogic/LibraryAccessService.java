@@ -43,9 +43,6 @@ public class LibraryAccessService {
             throw new BusinessViolationException("La biblioteca è chiusa, l'admin non può entrare");
         if(!library.hasAdmin(admin.getId()))
             throw new BusinessViolationException("L'admin non può gestire questa biblioteca");
-        if(!admin.isPresent() && !library.isOpen()){
-            throw new BusinessViolationException("La biblioteca è chiusa, l'admin non può entrare");
-        }
         admin.togglePresence();
         adminDAO.update(admin);
         return admin.isPresent();

@@ -11,6 +11,7 @@ import com.smartstudy.domainModel.StudyArea;
 import com.smartstudy.domainModel.enums.SeatStatus;
 import com.smartstudy.domainModel.enums.SeatType;
 import com.smartstudy.domainModel.enums.StudyAreaType;
+import com.smartstudy.utils.TimeUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -33,7 +34,6 @@ public class AdminView extends BorderPane {
 
     private final StackPane contentArea;
     private final Label resultLabel;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final AdminDashboardController dashboardController;
     private final Admin user;
@@ -339,7 +339,7 @@ public class AdminView extends BorderPane {
         VBox box = panelContainer("Segnalazioni aperte");
         TableView<AbandonmentReportDTO> table = new TableView<>();
         TableColumn<AbandonmentReportDTO, String> dateCol = new TableColumn<>("Data");
-        dateCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getReport().getCreatedAt().format(formatter)));
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getReport().getCreatedAt())));
         TableColumn<AbandonmentReportDTO, String> descCol = new TableColumn<>("Descrizione");
         descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getReport().getDescription()));
         TableColumn<AbandonmentReportDTO, String> statusCol = new TableColumn<>("Stato");
@@ -419,7 +419,7 @@ public class AdminView extends BorderPane {
         VBox box = panelContainer("Segnalazioni prese in carico");
         TableView<AbandonmentReportDTO> table = new TableView<>();
         TableColumn<AbandonmentReportDTO, String> dateCol = new TableColumn<>("Data");
-        dateCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getReport().getCreatedAt().format(formatter)));
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getReport().getCreatedAt())));
         TableColumn<AbandonmentReportDTO, String> descCol = new TableColumn<>("Descrizione");
         descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getReport().getDescription()));
         TableColumn<AbandonmentReportDTO, String> statusCol = new TableColumn<>("Stato");
@@ -484,9 +484,9 @@ public class AdminView extends BorderPane {
         VBox box = panelContainer("Segnalazioni gestite");
         TableView<AbandonmentReport> table = new TableView<>();
         TableColumn<AbandonmentReport, String> dateCol = new TableColumn<>("Data Apertura");
-        dateCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCreatedAt().format(formatter)));
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getCreatedAt())));
         TableColumn<AbandonmentReport, String> closedDateCol = new TableColumn<>("Data Apertura");
-        closedDateCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getResolvedAt().format(formatter)));
+        closedDateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getResolvedAt())));
         TableColumn<AbandonmentReport, String> descCol = new TableColumn<>("Descrizione");
         descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescription()));
         TableColumn<AbandonmentReport, String> statusCol = new TableColumn<>("Stato");

@@ -17,8 +17,13 @@ public class AbandonmentReportDAO extends BaseDAO{
     public static final String tableName = "abandonment_report";
     public static final String pkName = "id_report";
 
-    public AbandonmentReportDAO(Connection conn) {
+    private final AdminDAO adminDAO;
+    private final StudentDAO studentDAO;
+
+    public AbandonmentReportDAO(Connection conn, AdminDAO adminDAO, StudentDAO studentDAO) {
         super(conn);
+        this.adminDAO = adminDAO;
+        this.studentDAO = studentDAO;
     }
 
     public Optional<AbandonmentReport> getReportById(long reportId){
@@ -38,12 +43,12 @@ public class AbandonmentReportDAO extends BaseDAO{
         }
     }
 
-    public ArrayList<AbandonmentReport> getOpenReportsByStudent(long reportId) {
+    public ArrayList<AbandonmentReport> getOpenReportsByStudent(long studentId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM abandonment_report WHERE student_id = ?
             """
             )){
-            ps.setLong(1, reportId);
+            ps.setLong(1, studentId);
             try(ResultSet rs = ps.executeQuery()){
                 ArrayList<AbandonmentReport> res = new ArrayList<>();
                 while(rs.next()){
@@ -135,8 +140,6 @@ public class AbandonmentReportDAO extends BaseDAO{
     }
 
     private AbandonmentReport createReportFromResultSet(ResultSet rs) throws SQLException {
-        StudentDAO studentDAO = new StudentDAO(conn);
-        AdminDAO adminDAO = new AdminDAO(conn);
         Admin admin;
         Integer adminId = rs.getObject("admin_id", Integer.class);
         if(adminId == null){

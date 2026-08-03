@@ -1,9 +1,12 @@
-package com.smartstudy.view;
+package com.smartstudy;
 
 import com.smartstudy.dto.StudentSessionDTO;
-import com.smartstudy.AppBootstrap;
 import com.smartstudy.domainModel.Admin;
 import com.smartstudy.domainModel.User;
+import com.smartstudy.view.AdminView;
+import com.smartstudy.view.LibraryAccessDialogView;
+import com.smartstudy.view.LoginView;
+import com.smartstudy.view.StudentView;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -47,7 +50,7 @@ public class SmartStudyApp extends Application {
     private void showLibraryAccessDialog() {
         LibraryAccessDialogView dialogView = new LibraryAccessDialogView(appBootstrap.getLibraryController());
         Scene scene = new Scene(dialogView, 360, 420);
-        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("view/style.css").toExternalForm());
 
         Stage dialogStage = new Stage();
         dialogStage.setTitle("Accesso Biblioteca");
@@ -59,7 +62,7 @@ public class SmartStudyApp extends Application {
 
     private void setScene(Parent root, double width, double height) {
         Scene scene = new Scene(root, width, height);
-        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("view/style.css").toExternalForm());
         primaryStage.setScene(scene);
     }
 }

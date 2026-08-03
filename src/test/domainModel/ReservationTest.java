@@ -100,9 +100,6 @@ public class ReservationTest {
         validReservation.addTemporaryLeave();
         assertTrue(validReservation.hasValidTemporaryLeave());
         assertTrue(validReservation.isTemporarilyLeft());
-        assertThrows(DomainViolationException.class, () ->
-            validReservation.markActive()
-        );
     }
 
     @Test

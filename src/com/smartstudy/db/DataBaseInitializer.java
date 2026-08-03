@@ -56,8 +56,4 @@ public class DataBaseInitializer {
         }
     }
 
-    public static void main(String[] args) {
-        DataBaseInitializer dataBaseInitializer = new DataBaseInitializer(ConnectionManager.getInstance().getConnection());
-        dataBaseInitializer.prepareTestSchema();
-    }
 }

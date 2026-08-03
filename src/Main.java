@@ -1,4 +1,4 @@
-import com.smartstudy.view.SmartStudyApp;
+import com.smartstudy.SmartStudyApp;
 import javafx.application.Application;
 
 public class Main {

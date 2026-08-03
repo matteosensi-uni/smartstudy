@@ -144,7 +144,6 @@ public class ReservationDAO extends BaseDAO{
 
     public Reservation insert(Reservation reservation) {
         try {
-            reservation.refreshState();
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("start_time", reservation.getStartTime());
             if (reservation.getEndTime() != null) {
@@ -165,7 +164,6 @@ public class ReservationDAO extends BaseDAO{
 
     public void update(Reservation reservation) {
         try {
-            reservation.refreshState();
             Map<String, Object> values = new LinkedHashMap<>();
             if (reservation.getEndTime() != null) {
                 values.put("end_time", reservation.getEndTime());

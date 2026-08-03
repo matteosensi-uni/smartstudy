@@ -6,6 +6,7 @@ import com.smartstudy.controller.ControllerResult;
 import com.smartstudy.controller.StudentDashboardController;
 import com.smartstudy.domainModel.*;
 
+import com.smartstudy.utils.TimeUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -28,11 +29,9 @@ public class StudentView extends BorderPane {
 
     private final StackPane contentArea;
     private final Label resultLabel;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private Button reservationBtn;
 
     private final StudentDashboardController dashboardController;
-
     private final StudentSessionDTO userSession;
 
     public StudentView(Runnable onLogout, StudentDashboardController dashboardController, StudentSessionDTO userSession) {
@@ -256,9 +255,9 @@ public class StudentView extends BorderPane {
         pausesHeading.getStyleClass().add("section-subheading");
         TableView<TemporaryLeave> pausesTable = new TableView<>();
         TableColumn<TemporaryLeave, String> startCol = new TableColumn<>("Inizio");
-        startCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStartTime().format(formatter)));
+        startCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getStartTime())));
         TableColumn<TemporaryLeave, String> endCol = new TableColumn<>("Fine prevista");
-        endCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getExpectedEndTime().format(formatter)));
+        endCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getExpectedEndTime())));
         pausesTable.getColumns().addAll(startCol, endCol);
         pausesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         pausesTable.setItems(FXCollections.observableArrayList());
@@ -297,7 +296,7 @@ public class StudentView extends BorderPane {
         }else{
             seat.setText(userSession.getReservation().getSeat().getQrCode());
             studyArea.setText(userSession.getReservation().getSeat().getStudyArea().getName());
-            startTime.setText(userSession.getReservation().getStartTime().format(formatter));
+            startTime.setText(TimeUtils.format(userSession.getReservation().getStartTime()));
             reservationStatus.setText(userSession.getReservation().getStatus().name());
         }
     }
@@ -338,9 +337,9 @@ public class StudentView extends BorderPane {
         TableColumn<Reservation, String> seatCol = new TableColumn<>("Posto");
         seatCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSeat().getQrCode()));
         TableColumn<Reservation, String> startCol = new TableColumn<>("Inizio");
-        startCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStartTime().format(formatter)));
+        startCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getStartTime())));
         TableColumn<Reservation, String> endCol = new TableColumn<>("Fine");
-        endCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEndTime().format(formatter)));
+        endCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getEndTime())));
         TableColumn<Reservation, String> libraryCol = new TableColumn<>("Fine");
         libraryCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getSeat().getStudyArea().getLibrary().getName())));
         TableColumn<Reservation, String> numLeavesCol = new TableColumn<>("Numero pause");

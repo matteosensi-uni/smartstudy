@@ -107,12 +107,18 @@ public class Reservation extends BaseModel{
 
     public LocalDateTime getStartTime() {return startTime;}
     public LocalDateTime getEndTime() {return endTime;}
-    public ReservationStatus getStatus() {return status;}
+    public ReservationStatus getStatus() {
+        refreshState();
+        return status;}
     public Seat getSeat() {return Seat.copy(seat);}
     public AccessSession getSession() {return AccessSession.copy(session);}
 
-    public boolean isActive(){ return status == ReservationStatus.ACTIVE; }
-    public boolean isTemporarilyLeft(){ return status == ReservationStatus.TEMPORARILY_LEFT; }
+    public boolean isActive(){
+        refreshState();
+        return status == ReservationStatus.ACTIVE; }
+    public boolean isTemporarilyLeft(){
+        refreshState();
+        return status == ReservationStatus.TEMPORARILY_LEFT; }
 
 
     public ArrayList<AbandonmentReport> close() {
@@ -138,15 +144,6 @@ public class Reservation extends BaseModel{
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }
         status = ReservationStatus.TEMPORARILY_LEFT;
-    }
-
-    public void markActive(){
-        refreshState();
-        if(status == ReservationStatus.CLOSED){
-            throw new DomainViolationException("La prenotazione non può essere modificata");
-        }if(isTemporarilyLeft())
-            throw new DomainViolationException("La prenotazione ha una pausa attiva");
-        status = ReservationStatus.ACTIVE;
     }
 
     public TemporaryLeave addTemporaryLeave() {
@@ -207,25 +204,23 @@ public class Reservation extends BaseModel{
         return false;
     }
 
-    public boolean refreshState() {
+    private void refreshState() {
         if (status == ReservationStatus.CLOSED) {
-            return false;
+            return;
         }
 
         boolean hasValidLeave = hasValidTemporaryLeave();
         if (hasValidLeave) {
             if (status != ReservationStatus.TEMPORARILY_LEFT) {
                 status = ReservationStatus.TEMPORARILY_LEFT;
-                return true;
+                return;
             }
-            return false;
+            return;
         }
 
         if (status == ReservationStatus.TEMPORARILY_LEFT) {
             status = ReservationStatus.ACTIVE;
-            return true;
         }
 
-        return false;
     }
 }

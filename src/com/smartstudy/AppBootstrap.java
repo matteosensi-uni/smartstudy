@@ -27,7 +27,7 @@ public class AppBootstrap {
         StudentDAO studentDAO = new StudentDAO(conn);
         StudyAreaDAO studyAreaDAO = new StudyAreaDAO(conn, libraryDAO, timePolicyDAO);
         SeatDAO seatDAO = new SeatDAO(conn, studyAreaDAO);
-        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn);
+        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn, adminDAO,  studentDAO);
         TemporaryLeaveDAO temporaryLeaveDAO = new TemporaryLeaveDAO(conn);
         AccessSessionDAO accessSessionDAO = new AccessSessionDAO(conn, libraryDAO, studentDAO);
         ReservationDAO reservationDAO = new ReservationDAO(conn, seatDAO, accessSessionDAO, abandonmentReportDAO, temporaryLeaveDAO);
