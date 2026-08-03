@@ -25,7 +25,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -143,7 +142,9 @@ public class AdminView extends BorderPane {
         typeCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getType())));
         TableColumn<Seat, String> statusCol = new TableColumn<>("Stato");
         statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
-        table.getColumns().addAll(qrCol, typeCol, statusCol);
+        TableColumn<Seat, String> studyAreaName = new TableColumn<>("Nome Area");
+        studyAreaName.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStudyArea().getName())));
+        table.getColumns().addAll(qrCol, typeCol, statusCol, studyAreaName);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         table.setPlaceholder(new Label("Nessun posto da mostrare"));
         table.setPrefHeight(320);
