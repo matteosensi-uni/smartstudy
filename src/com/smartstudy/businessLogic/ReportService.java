@@ -29,7 +29,6 @@ public class ReportService {
     public void createReport(long studentId, String description, long seatId) {
         TransactionManager.executeInTransaction(() -> {
             Reservation reservation = reservationDAO.getActiveReservationBySeat(seatId).orElseThrow(() -> new BusinessViolationException("La postazione non ha prenotazioni associate"));
-            Student student = studentDAO.getStudentById(studentId).orElseThrow(() -> new BusinessViolationException("Studente non valido"));
             AccessSession asStudent = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("Lo studente non ha una access session attiva"));
             if (reservation.getSeat().getStudyArea().getLibrary().getId() != asStudent.getLibrary().getId()) {
                 throw new BusinessViolationException("Lo studente non può fare report al posto di questa biblioteca");
@@ -40,7 +39,7 @@ public class ReportService {
             if (reservation.hasActiveReport()) {
                 throw new BusinessViolationException("La prenotazione ha già un report associato");
             }
-            AbandonmentReport report = AbandonmentReport.open(description, student);
+            AbandonmentReport report = AbandonmentReport.open(description, asStudent.getStudent());
             reservation.addAbandonmentReport(abandonmentReportDAO.insert(report, reservation.getId()));
             reservationDAO.update(reservation);
         });
@@ -64,9 +63,6 @@ public class ReportService {
             AbandonmentReport report = abandonmentReportDAO.getReportById(reportId).orElseThrow(() -> new BusinessViolationException("Il report non è valido"));
             Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
             Reservation reservation =  reservationDAO.getReservationByReport(report.getId()).orElseThrow(() -> new BusinessViolationException("Il report non corrisponde a nessuna prenotazione"));
-            if(!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
-                throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
-            }
             report.confirm(admin);
             abandonmentReportDAO.update(report);
             reservation.close();
@@ -79,16 +75,13 @@ public class ReportService {
         TransactionManager.executeInTransaction(() -> {
             AbandonmentReport report = abandonmentReportDAO.getReportById(reportId).orElseThrow(() -> new BusinessViolationException("Il report non è valido"));
             Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
-            Reservation reservation =  reservationDAO.getReservationByReport(report.getId()).orElseThrow(() -> new BusinessViolationException("Il report non corrisponde a nessuna prenotazione"));
-            if(!reservation.getSeat().getStudyArea().getLibrary().hasAdmin(admin.getId())){
-                throw new BusinessViolationException("Il report non corrisponde alla biblioteca gestita dall'admin");
-            }
             report.reject(admin);
             abandonmentReportDAO.update(report);
         });
     }
 
     public ArrayList<AbandonmentReport> getOpenReportsByAdmin(long adminId){
+        adminDAO.getAdminById(adminId).orElseThrow(() -> new BusinessViolationException("Admin non trovato"));
         Library library = libraryDAO.getLibraryByAdmin(adminId).orElseThrow(() -> new BusinessViolationException("Non è stata trovata una biblioteca associata all'admin"));
         return abandonmentReportDAO.getReportsByLibrary(library.getId());
     }

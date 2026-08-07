@@ -17,13 +17,12 @@ public class AppBootstrap {
 
     private AppBootstrap() {
         Connection conn = ConnectionManager.getInstance().getConnection();
-        DataBaseInitializer initializer = new DataBaseInitializer(conn);
-        initializer.prepareTestSchema();
+        DataBaseInitializer.prepareTestSchema();
         //DAO
         UserDAO userDAO = new UserDAO(conn);
-        LibraryDAO libraryDAO = new LibraryDAO(conn);
         TimePolicyDAO timePolicyDAO = new TimePolicyDAO(conn);
         AdminDAO adminDAO = new AdminDAO(conn);
+        LibraryDAO libraryDAO = new LibraryDAO(conn, adminDAO);
         StudentDAO studentDAO = new StudentDAO(conn);
         StudyAreaDAO studyAreaDAO = new StudyAreaDAO(conn, adminDAO);
         SeatDAO seatDAO = new SeatDAO(conn, adminDAO);
@@ -37,7 +36,8 @@ public class AppBootstrap {
         LibraryAccessService libraryAccessService = new LibraryAccessService(adminDAO,
                 accessSessionDAO,
                 studentDAO,
-                libraryDAO);
+                libraryDAO,
+                reservationDAO);
         LibraryConfigService libraryConfigService = new LibraryConfigService(seatDAO, studyAreaDAO, adminDAO, libraryDAO, timePolicyDAO);
         ReportService reportService = new ReportService(reservationDAO,
                 studentDAO,
@@ -69,11 +69,9 @@ public class AppBootstrap {
     public AdminDashboardController getAdminController() {
         return adminController;
     }
-
     public AuthenticationController getAuthenticationController() {
         return authenticationController;
     }
-
     public LibraryAccessController getLibraryController() {
         return libraryController;
     }

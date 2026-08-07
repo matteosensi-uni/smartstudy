@@ -10,7 +10,13 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class LibraryDAO extends BaseDAO{
-    public LibraryDAO(Connection conn) { super(conn); }
+
+    private final AdminDAO adminDAO;
+
+    public LibraryDAO(Connection conn, AdminDAO adminDAO) {
+        super(conn);
+        this.adminDAO = adminDAO;
+    }
     public Optional<Library> getLibraryById(long libraryId) {
         try(PreparedStatement ps = conn.prepareStatement("""
                 SELECT * FROM library WHERE id_library = ?
@@ -48,7 +54,6 @@ public class LibraryDAO extends BaseDAO{
     }
 
     private Library createLibraryFromResultSet(ResultSet rs) throws SQLException {
-        AdminDAO adminDAO = new AdminDAO(conn);
         return Library.valueOf(
                     rs.getLong("id_library"),
                     rs.getString("name"),

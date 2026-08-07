@@ -1,10 +1,6 @@
--- ===========================
--- LIBRARIES
--- ===========================
-
 INSERT INTO library (name, opening_time, closing_time, street, number, city)
 VALUES
-    ('Biblioteca Centrale', '08:00', '22:00', 'Via Roma', '10', 'Milano'),
+    ('Biblioteca Centrale', '00:00', '00:00', 'Via Roma', '10', 'Milano'),
     ('Biblioteca Scientifica', '09:00', '20:00', 'Via Verdi', '15', 'Milano');
 
 
@@ -36,8 +32,9 @@ VALUES
 
 INSERT INTO seat (qr_code, type, status, id_area)
 VALUES
-    ('QR001','GROUP','AVAILABLE',1),
-    ('QR002','GROUP','UNAVAILABLE',1),
+    ('QR001','GROUP','UNAVAILABLE',1),
+    ('QR002','GROUP','AVAILABLE',1),
+    ('QR009','GROUP','BROKEN',1),
 
     ('QR003','INDIVIDUAL','AVAILABLE',2),
     ('QR004','INDIVIDUAL','AVAILABLE',2),
@@ -59,7 +56,8 @@ VALUES
     ('Luigi','password','Verdi','luigi.verdi@test.it'),
     ('Anna','password','Bianchi','anna.bianchi@test.it'),
     ('Marco','admin123','Neri','marco.neri@test.it'),
-    ('Sara','admin123','Gialli','sara.gialli@test.it');
+    ('Sara','admin123','Gialli','sara.gialli@test.it'),
+    ('Luca','admin123','Esposito','luca.esposito@test.it');
 
 
 -- ===========================
@@ -80,6 +78,7 @@ VALUES
 INSERT INTO admin(user_id, is_present, id_library)
 VALUES
     (4, TRUE, 1),
+    (6, TRUE, 1),
     (5, FALSE, 2);
 
 
@@ -90,6 +89,8 @@ VALUES
 INSERT INTO access_session(entry_time, exit_time, id_library, student_id)
 VALUES
     ('2026-07-24 09:00:00', NULL, 1, 1),
+
+    ('2026-07-24 09:00:00', NULL, 1, 2),
 
     ('2026-07-24 10:00:00',
      '2026-07-24 12:30:00',
@@ -107,7 +108,12 @@ VALUES
      '2026-07-24 12:00:00',
      'CLOSED',
      5,
-     2);
+     2),
+    ('2026-07-24 10:10:00',
+     null,
+     'ACTIVE',
+     1,
+     1);
 
 
 -- ===========================
@@ -137,9 +143,9 @@ INSERT INTO abandonment_report(
 VALUES(
           '2026-07-24 11:00:00',
           NULL,
-          'OPENED',
+          'CLOSED',
           'Lo studente ha lasciato gli effetti personali sul tavolo.',
           1,
-          1,
+          2,
           NULL
       );

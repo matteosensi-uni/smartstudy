@@ -193,6 +193,7 @@ public class ReservationDAO extends BaseDAO{
                 values.put("end_time", reservation.getEndTime());
             }
             values.put("status", reservation.getStatus().name());
+            values.put("access_id", reservation.getSession().getId());
             DAOUtils.update(conn, values, tableName, pkName, reservation.getId());
         }catch (SQLException e) {
             throw new DataAccessException("Non è stato possibile modificare la prenotazione nel DB", e);

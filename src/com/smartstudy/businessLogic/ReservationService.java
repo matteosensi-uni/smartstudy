@@ -27,15 +27,13 @@ public class ReservationService {
             throw new BusinessViolationException("Il qrCode è vuoto");
         }
         return TransactionManager.executeInTransaction(() -> {
-            if (!accessSessionDAO.hasActiveAccessSessionByStudent(studentId)) {
-                throw new BusinessViolationException("L'utente non ha acceduto in una biblioteca");
-            }
-            if (studentDAO.getStudentById(studentId).isEmpty()) {
-                throw new BusinessViolationException("L'utente non è registrato nel sistema");
-            }
-            return seatDAO.getSeatByQR(qrCode).orElseThrow(() -> new BusinessViolationException("Il qrcode non è associato a nessun posto"));
+            AccessSession as = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(()->new BusinessViolationException("Lo studente non è acceduto in biblioteca"));
+            Seat s = seatDAO.getSeatByQR(qrCode).orElseThrow(() -> new BusinessViolationException("Il qrcode non è associato a nessun posto"));
+            if(s.getStudyArea().getLibrary().getId() != as.getLibrary().getId()) throw new BusinessViolationException("Il posto non si trova nella biblioteca in cui è lo studente");
+            return s;
         });
     }
+
     public Reservation createReservation(long studentId, long seatId){
         return TransactionManager.executeInTransaction(() -> {
             AccessSession accessSession = accessSessionDAO.getActiveAccessSessionByStudent(studentId).orElseThrow(() -> new BusinessViolationException("L'utente non ha acceduto in una biblioteca"));

@@ -33,14 +33,13 @@ public class LibraryConfigService {
     }
 
     public void updateStudyAreaType(long studyAreaId, long adminId, String studyAreaType) {
-        if(studyAreaType == null || studyAreaType.isBlank())
-            throw new  BusinessViolationException("Inserire un tipo valido");
         TransactionManager.executeInTransaction(() -> {
             StudyArea studyArea = studyAreaDAO.getStudyAreaById(studyAreaId).orElseThrow(()->new BusinessViolationException("Area studio non valida"));
             Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
+            if(!admin.isPresent()) throw new  BusinessViolationException("L'admin non è presente in biblioteca");
             studyArea.changeStudyAreaType(studyAreaType);
             studyAreaDAO.update(studyArea);
         });
@@ -53,6 +52,7 @@ public class LibraryConfigService {
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
+            if(!admin.isPresent()) throw new  BusinessViolationException("L'admin non è presente in biblioteca");
             studyArea.changeName(name);
             studyAreaDAO.update(studyArea);
         });
@@ -66,15 +66,13 @@ public class LibraryConfigService {
             if (!studyArea.getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
+            if(!admin.isPresent()) throw new  BusinessViolationException("L'admin non è presente in biblioteca");
             studyArea.changePolicy(timePolicy);
             studyAreaDAO.update(studyArea);
         });
     }
 
     public void updateSeatStatus(long seatId, long adminId, String seatStatus)  {
-        if(seatStatus == null || seatStatus.isBlank()){
-            throw new  BusinessViolationException("Inserire uno stato del posto non vuoto");
-        }
         TransactionManager.executeInTransaction(() -> {
             Seat seat = seatDAO.getSeatById(seatId).orElseThrow(() -> new BusinessViolationException("Posto non trovato"));
             Admin admin = adminDAO.getAdminById(adminId).orElseThrow(() ->  new BusinessViolationException("Admin non trovato"));
@@ -83,6 +81,7 @@ public class LibraryConfigService {
                 if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                     throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
                 }
+                if(!admin.isPresent()) throw new  BusinessViolationException("L'admin non è presente in biblioteca");
                 if(status == SeatStatus.AVAILABLE){
                     seat.repair();
                 }else if(status == SeatStatus.BROKEN)
@@ -103,6 +102,7 @@ public class LibraryConfigService {
             if (!seat.getStudyArea().getLibrary().hasAdmin(admin.getId())) {
                 throw new BusinessViolationException("L'admin non può modificare questa biblioteca");
             }
+            if(!admin.isPresent()) throw new  BusinessViolationException("L'admin non è presente in biblioteca");
             seat.changeSeatType(type);
             seatDAO.update(seat);
         });

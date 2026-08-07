@@ -13,12 +13,14 @@ public class LibraryAccessService {
     private final AccessSessionDAO accessSessionDAO;
     private final StudentDAO studentDAO;
     private final LibraryDAO libraryDAO;
+    private final ReservationDAO reservationDAO;
 
-    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, LibraryDAO libraryDAO) {
+    public LibraryAccessService(AdminDAO adminDAO, AccessSessionDAO accessSessionDAO, StudentDAO studentDAO, LibraryDAO libraryDAO, ReservationDAO reservationDAO) {
         this.adminDAO = adminDAO;
         this.accessSessionDAO = accessSessionDAO;
         this.studentDAO = studentDAO;
         this.libraryDAO = libraryDAO;
+        this.reservationDAO = reservationDAO;
     }
 
     public boolean isStudentPresent(long studentId){
@@ -63,8 +65,19 @@ public class LibraryAccessService {
             if (!student.isCardActive()) {
                 throw new BusinessViolationException("La carta dello studente non è attiva");
             }
-            AccessSession as = AccessSession.startSession(library, student);
-            accessSessionDAO.insert(as);
+            AccessSession as = accessSessionDAO.insert(AccessSession.startSession(library, student));
+            reservationDAO.getActiveReservationByStudent(student.getId()).ifPresent(reservation -> { //aggiorno l'access session di una prenotazione associata
+                Reservation res = Reservation.valueOf(reservation.getId(),                                      // a uno studente che è uscito e rientrato
+                        reservation.getStartTime(),
+                        reservation.getEndTime(),
+                        reservation.getStatus(),
+                        reservation.getTemporaryLeaves(),
+                        as,
+                        reservation.getSeat(),
+                        reservation.getAbandonmentReports()
+                );
+                reservationDAO.update(res);
+            });
             return true;
         }
     }

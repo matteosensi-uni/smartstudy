@@ -80,7 +80,9 @@ CREATE TABLE IF NOT EXISTS study_area
         FOREIGN KEY (id_policy)
             REFERENCES time_policy (id_policy)
             ON UPDATE CASCADE
-            ON DELETE RESTRICT
+            ON DELETE RESTRICT,
+
+    CONSTRAINT chk_valid_type CHECK (type IN ('STANDARD', 'GROUP', 'SILENT'))
 );
 
 CREATE TABLE IF NOT EXISTS seat
@@ -95,7 +97,11 @@ CREATE TABLE IF NOT EXISTS seat
         FOREIGN KEY (id_area)
             REFERENCES study_area (id_area)
             ON UPDATE CASCADE
-            ON DELETE CASCADE
+            ON DELETE CASCADE,
+
+    CONSTRAINT chk_valid_type CHECK (type IN ('INDIVIDUAL', 'GROUP')),
+
+    CONSTRAINT chk_valid_status CHECK (status IN ('AVAILABLE', 'UNAVAILABLE', 'BROKEN'))
 );
 
 CREATE TABLE IF NOT EXISTS access_session
@@ -144,7 +150,9 @@ CREATE TABLE IF NOT EXISTS reservation
             ON DELETE CASCADE,
 
     CONSTRAINT chk_reservation_time
-        CHECK (end_time IS NULL OR end_time > start_time)
+        CHECK (end_time IS NULL OR end_time > start_time),
+
+    CONSTRAINT chk_valid_status CHECK (status IN ('ACTIVE', 'TEMPORARILY_LEFT', 'CLOSED'))
 );
 
 CREATE TABLE IF NOT EXISTS temporary_leave
@@ -195,5 +203,7 @@ CREATE TABLE IF NOT EXISTS abandonment_report
             ON DELETE SET NULL,
 
     CONSTRAINT chk_abandonment_report_time
-        CHECK (resolved_at IS NULL OR resolved_at >= created_at)
+        CHECK (resolved_at IS NULL OR resolved_at >= created_at),
+
+    CONSTRAINT chk_valid_status CHECK (status IN ('OPENED', 'PENDING', 'CONFIRMED', 'REJECTED', 'CLOSED'))
 );
