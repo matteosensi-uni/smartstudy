@@ -306,7 +306,7 @@ public class StudentView extends BorderPane {
 
         TableView<AbandonmentReportDTO> table = new TableView<>();
         TableColumn<AbandonmentReportDTO, String> dateCol = new TableColumn<>("Data");
-        dateCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getReport().getCreatedAt())));
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getReport().getCreatedAt())));
         TableColumn<AbandonmentReportDTO, String> descCol = new TableColumn<>("Descrizione");
         descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getReport().getDescription()));
         TableColumn<AbandonmentReportDTO, String> statusCol = new TableColumn<>("Stato");
@@ -340,7 +340,7 @@ public class StudentView extends BorderPane {
         startCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getStartTime())));
         TableColumn<Reservation, String> endCol = new TableColumn<>("Fine");
         endCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getEndTime())));
-        TableColumn<Reservation, String> libraryCol = new TableColumn<>("Fine");
+        TableColumn<Reservation, String> libraryCol = new TableColumn<>("Libreria");
         libraryCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getSeat().getStudyArea().getLibrary().getName())));
         TableColumn<Reservation, String> numLeavesCol = new TableColumn<>("Numero pause");
         numLeavesCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getTemporaryLeaves().size())));

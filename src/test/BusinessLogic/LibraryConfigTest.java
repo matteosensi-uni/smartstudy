@@ -71,13 +71,12 @@ public class LibraryConfigTest {
         libraryConfigService.updateStudyAreaPolicy(studyArea.getId(), adminId, "Extended");
         libraryConfigService.updateStudyAreaName(studyArea.getId(), adminId, "a");
         libraryConfigService.updateStudyAreaType(studyArea.getId(), adminId, "GROUP");
-        for(StudyArea sa: libraryConfigService.getLibraryStudyAreasByAdmin(adminId)){
-            if(sa.getId() == studyArea.getId()){
-                assertEquals("Extended", sa.getTimePolicy().getName());
-                assertEquals("a", sa.getName());
-                assertEquals("GROUP", sa.getType().name());
-            }
-        }
+        StudyArea updated = libraryConfigService.getLibraryStudyAreasByAdmin(adminId).stream()
+                .filter(sa -> sa.getId() == studyArea.getId())
+                .findFirst().orElseThrow(AssertionError::new);
+        assertEquals("Extended", updated.getTimePolicy().getName());
+        assertEquals("a", updated.getName());
+        assertEquals("GROUP", updated.getType().name());
     }
 
     @Test
@@ -88,12 +87,11 @@ public class LibraryConfigTest {
                 .findFirst().orElseThrow(AssertionError::new);
         libraryConfigService.updateSeatType(seat.getId(), adminId, "GROUP");
         libraryConfigService.updateSeatStatus(seat.getId(), adminId, "BROKEN");
-        for(Seat s: libraryConfigService.getLibrarySeatsByAdmin(adminId)){
-            if(s.getId() == seat.getId()){
-                assertEquals("BROKEN", s.getStatus().name());
-                assertEquals("GROUP", s.getType().name());
-            }
-        }
+        Seat updated = libraryConfigService.getLibrarySeatsByAdmin(adminId).stream()
+                .filter(s -> s.getId() == seat.getId())
+                .findFirst().orElseThrow(AssertionError::new);
+        assertEquals("BROKEN", updated.getStatus().name());
+        assertEquals("GROUP", updated.getType().name());
     }
 
     @Test

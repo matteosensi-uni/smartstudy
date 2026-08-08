@@ -3,7 +3,9 @@ package test.BusinessLogic;
 import com.smartstudy.businessLogic.ReportService;
 import com.smartstudy.db.ConnectionManager;
 import com.smartstudy.db.DataBaseInitializer;
+import com.smartstudy.domainModel.AbandonmentReport;
 import com.smartstudy.domainModel.Reservation;
+import com.smartstudy.domainModel.enums.ReportStatus;
 import com.smartstudy.exceptions.BusinessViolationException;
 import com.smartstudy.orm.*;
 import org.junit.After;
@@ -13,6 +15,7 @@ import org.junit.Test;
 import org.junit.Assert.*;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
@@ -47,6 +50,9 @@ public class ReportTest {
     @Test
     public void testCreateReportSuccess() {
         reportService.createReport(2, "", 1);
+        ArrayList<AbandonmentReport> openReports = reportService.getOpenReportsByAdmin(4);
+        assertEquals(1, openReports.size());
+        assertEquals(ReportStatus.OPENED, openReports.getFirst().getStatus());
     }
 
     @Test
@@ -63,7 +69,6 @@ public class ReportTest {
         TemporaryLeaveDAO temporaryLeaveDAO = new TemporaryLeaveDAO(connection);
         ReservationDAO reservationDAO = new ReservationDAO(connection, new SeatDAO(connection, new AdminDAO(connection)), new AbandonmentReportDAO(connection), temporaryLeaveDAO);
         Reservation res  = reservationDAO.getActiveReservationBySeat(1).orElseThrow(AssertionError::new);
-        reservationDAO.update(res);
         temporaryLeaveDAO.insert(res.addTemporaryLeave(), res.getId());
         assertThrows(BusinessViolationException.class, ()-> reportService.createReport(2, "", 1));
     }
@@ -97,22 +102,36 @@ public class ReportTest {
 
     @Test
     public void testGetOpenReportsByAdminSuccess() {
-        reportService.getOpenReportsByAdmin(4);
+        // nel db di test l'unico report esistente è già CLOSED, quindi non deve comparire tra gli "aperti"
+        ArrayList<AbandonmentReport> reports = reportService.getOpenReportsByAdmin(4);
+        assertTrue(reports.isEmpty());
     }
 
     @Test
     public void testGetOpenReportsByStudentSuccess() {
-        reportService.getOpenReportsByStudent(1);
+        // lo studente 2 è l'autore del report seed (status CLOSED)
+        ArrayList<AbandonmentReport> reports = reportService.getOpenReportsByStudent(2);
+        assertEquals(1, reports.size());
+        assertEquals("Lo studente ha lasciato gli effetti personali sul tavolo.", reports.getFirst().getDescription());
     }
 
     @Test
     public void testGetReportsInChargeByAdminSuccess(){
-        reportService.getReportsInChargeByAdmin(4);
+        reportService.createReport(2, "", 1);
+        reportService.takeInCharge(4, 2); // nel db di test c'è un solo report quindi quello creato sarà il secondo
+        ArrayList<AbandonmentReport> reports = reportService.getReportsInChargeByAdmin(4);
+        assertEquals(1, reports.size());
+        assertEquals(ReportStatus.PENDING, reports.getFirst().getStatus());
     }
 
     @Test
     public void getClosedReportsByAdmin(){
-        reportService.getClosedReportsByAdmin(4);
+        reportService.createReport(2, "", 1);
+        reportService.takeInCharge(4, 2);
+        reportService.confirm(4, 2);
+        ArrayList<AbandonmentReport> reports = reportService.getClosedReportsByAdmin(4);
+        assertEquals(1, reports.size());
+        assertEquals(ReportStatus.CONFIRMED, reports.getFirst().getStatus());
     }
 
     @Test

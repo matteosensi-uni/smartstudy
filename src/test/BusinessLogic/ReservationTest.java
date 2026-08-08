@@ -1,10 +1,13 @@
 package test.BusinessLogic;
 
+import com.smartstudy.businessLogic.ReportService;
 import com.smartstudy.businessLogic.ReservationService;
 import com.smartstudy.db.ConnectionManager;
 import com.smartstudy.db.DataBaseInitializer;
+import com.smartstudy.domainModel.AbandonmentReport;
 import com.smartstudy.domainModel.Reservation;
 import com.smartstudy.domainModel.Seat;
+import com.smartstudy.domainModel.enums.ReportStatus;
 import com.smartstudy.exceptions.BusinessViolationException;
 import com.smartstudy.orm.*;
 import org.junit.After;
@@ -60,6 +63,10 @@ public class ReservationTest {
     public void testCreateReservationSuccess(){
         Seat s = reservationService.scanSeat("QR002", 2); // lo studente deve essere in biblioteca per scannerizzare il qr
         reservationService.createReservation(2, s.getId());
+        Reservation active = reservationService.getActiveStudentReservation(2);
+        assertNotNull(active);
+        assertEquals(s.getId(), active.getSeat().getId());
+        assertTrue(active.isActive());
     }
 
     @Test
@@ -96,6 +103,31 @@ public class ReservationTest {
         assertThrows(BusinessViolationException.class,()-> reservationService.closeReservation(3, 1)); //reservation non trovata
         assertThrows(BusinessViolationException.class,()-> reservationService.closeReservation(res.getId(), 3)); //studente non in biblioteca
 
+    }
+
+    @Test
+    public void testCloseReservationWithPendingReportRegression(){
+        // regressione: chiudere una prenotazione con un report preso in carico da un admin (status PENDING)
+        // non deve lasciare admin_id valorizzato su un report CLOSED, né in memoria né su DB
+        Connection conn = ConnectionManager.getInstance().getConnection();
+        AdminDAO adminDAO = new AdminDAO(conn);
+        StudentDAO studentDAO = new StudentDAO(conn);
+        SeatDAO seatDAO = new SeatDAO(conn, adminDAO);
+        LibraryDAO libraryDAO = new LibraryDAO(conn, adminDAO);
+        AbandonmentReportDAO abandonmentReportDAO = new AbandonmentReportDAO(conn);
+        AccessSessionDAO accessSessionDAO = new AccessSessionDAO(conn, adminDAO);
+        ReservationDAO reservationDAO = new ReservationDAO(conn, seatDAO, abandonmentReportDAO, new TemporaryLeaveDAO(conn));
+        ReportService reportService = new ReportService(reservationDAO, studentDAO, abandonmentReportDAO, accessSessionDAO, libraryDAO, adminDAO, seatDAO);
+
+        Reservation res = reservationService.getActiveStudentReservation(1);
+        reportService.createReport(2, "", 1); // report id 2 sulla prenotazione attiva dello studente 1
+        reportService.takeInCharge(4, 2); // report PENDING, admin_id valorizzato su DB
+
+        reservationService.closeReservation(res.getId(), 1);
+
+        AbandonmentReport reloaded = abandonmentReportDAO.getReportById(2).orElseThrow(AssertionError::new);
+        assertEquals(ReportStatus.CLOSED, reloaded.getStatus());
+        assertNull(reloaded.getAdmin());
     }
 
     @Test

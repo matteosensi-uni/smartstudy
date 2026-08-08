@@ -44,8 +44,6 @@ public class AccessSession extends BaseModel{
     private void setEntryTime(LocalDateTime entryTime) {
         if(entryTime == null)
             throw new DomainViolationException("la data di ingresso è nulla");
-        if(exitTime != null &&  exitTime.isBefore(entryTime))
-            throw new DomainViolationException("Inserire la data di entrata valida");
         this.entryTime = entryTime;
     }
 

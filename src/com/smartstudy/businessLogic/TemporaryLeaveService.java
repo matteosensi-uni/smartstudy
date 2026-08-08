@@ -26,7 +26,7 @@ public class TemporaryLeaveService {
             TemporaryLeave temporaryLeave = reservation.addTemporaryLeave();
             reservationDAO.update(reservation);
             temporaryLeaveDAO.insert(temporaryLeave, reservationId);
-            return reservation;
+            return reservationDAO.getReservationById(reservationId).orElseThrow(() -> new BusinessViolationException("La prenotazione inserita non è valida"));
         });
     }
 }

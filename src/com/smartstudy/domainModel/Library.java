@@ -101,6 +101,9 @@ public class Library extends BaseModel {
     public boolean isOpen(){
         LocalTime now = LocalTime.now();
         if(openingTime.equals(closingTime)) return true;
+        if(closingTime.isBefore(openingTime)){
+            return now.isAfter(openingTime) || now.isBefore(closingTime);
+        }
         return now.isAfter(openingTime) &&  now.isBefore(closingTime);
     }
 

@@ -129,7 +129,7 @@ public class AbandonmentReportTest {
 
     @Test
     public void testRepeatedRejectFailure() {
-        openedAbandonmentReport.takeInCharge(admin1); // manda eccezione perché non si può modificare un report chiuso
+        openedAbandonmentReport.takeInCharge(admin1); // prende in carico il report, ora è gestibile da admin1
         openedAbandonmentReport.reject(admin1);
         assertNotNull(openedAbandonmentReport.getResolvedAt()); //controllo che la data venga aggiornata
         assertEquals(ReportStatus.REJECTED, openedAbandonmentReport.getStatus()); // controllo che lo stato venga aggiornato

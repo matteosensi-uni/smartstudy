@@ -43,16 +43,11 @@ public class LibraryAccessTest {
     @Test
     public void testToggleStudentPresenceSuccess() {
         long studentId = 2L; //studente con un'accesssession
-        long libraryId = 1L;
-        try {
-            boolean res = libraryAccessService.toggleUserPresence(studentId, libraryId);
-            assertFalse(res); //lo studente esce dalla biblioteca
-            res = libraryAccessService.toggleUserPresence(studentId, libraryId);
-            assertTrue(res); //lo studente è entrato nuovamente in biblioteca
-        }catch (BusinessViolationException ignored) {
-            //biblioteca chiusa
-        }
-
+        long libraryId = 1L; //biblioteca sempre aperta (opening_time == closing_time)
+        boolean res = libraryAccessService.toggleUserPresence(studentId, libraryId);
+        assertFalse(res); //lo studente esce dalla biblioteca
+        res = libraryAccessService.toggleUserPresence(studentId, libraryId);
+        assertTrue(res); //lo studente è entrato nuovamente in biblioteca
     }
 
     @Test

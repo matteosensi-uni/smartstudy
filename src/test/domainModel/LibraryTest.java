@@ -35,11 +35,14 @@ public class LibraryTest {
         assertEquals("city", library.getCity());
         assertTrue(library.hasAdmin(admins.getFirst().getId()));
         assertFalse(library.hasAdmin(3));
-        if(LocalTime.now().isAfter(openingTime) && LocalTime.now().isBefore(closingTime))
-            assertTrue(library.isOpen());
-        else
-            assertFalse(library.isOpen());
     }
+
+    @Test
+    public void testIsOpenAlwaysOpenWhenOpeningEqualsClosing(){
+        Library library = Library.valueOf(1, "name", LocalTime.of(0,0), LocalTime.of(0,0), "street", "number", "city", admins);
+        assertTrue(library.isOpen());
+    }
+
     @Test
     public void testValueOfFailure(){
         LocalTime openingTime = LocalTime.of(1,0,0);

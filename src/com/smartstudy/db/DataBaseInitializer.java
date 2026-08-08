@@ -13,9 +13,8 @@ public class DataBaseInitializer {
     private DataBaseInitializer() {}
 
     private static void executeScript(String path, Connection connection) throws SQLException {
-        Statement statement = connection.createStatement();
-        try{
-            BufferedReader br = new BufferedReader(new FileReader(path));
+        try(Statement statement = connection.createStatement();
+            BufferedReader br = new BufferedReader(new FileReader(path))){
 
             StringBuilder query = new StringBuilder();
             String line;
@@ -29,8 +28,6 @@ public class DataBaseInitializer {
                     query = new StringBuilder();
                 }
             }
-            br.close();
-            statement.close();
         }catch (IOException e){
             throw new RuntimeException("Impossibile aprire il file: "+ path, e);
         }

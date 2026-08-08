@@ -3,6 +3,7 @@ package test.BusinessLogic;
 import com.smartstudy.businessLogic.TemporaryLeaveService;
 import com.smartstudy.db.ConnectionManager;
 import com.smartstudy.db.DataBaseInitializer;
+import com.smartstudy.domainModel.Reservation;
 import com.smartstudy.exceptions.BusinessViolationException;
 import com.smartstudy.orm.*;
 import org.junit.After;
@@ -12,7 +13,9 @@ import org.junit.Test;
 
 import java.sql.Connection;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class TemporaryLeaveServiceTest {
     private TemporaryLeaveService temporaryLeaveService;
@@ -42,7 +45,9 @@ public class TemporaryLeaveServiceTest {
     public void testCreateLeaveSuccess(){
         long reservationId = 2; //reservation nel db associata alla sessione dello studente 1 nella biblioteca 1
         long studentId = 1;
-        temporaryLeaveService.createTemporaryLeave(reservationId, studentId);
+        Reservation res = temporaryLeaveService.createTemporaryLeave(reservationId, studentId);
+        assertEquals(1, res.getTemporaryLeaves().size());
+        assertTrue(res.isTemporarilyLeft());
     }
 
     @Test

@@ -204,9 +204,7 @@ public class AbandonmentReportDAO extends BaseDAO{
         try {
             Map<String, Object> values = new LinkedHashMap<>();
             values.put("status", abandonmentReport.getStatus().name());
-            if (abandonmentReport.getAdmin() != null) {
-                values.put("admin_id", abandonmentReport.getAdmin().getId());
-            }
+            values.put("admin_id", abandonmentReport.getAdmin() != null ? abandonmentReport.getAdmin().getId() : null);
             values.put("resolved_at", abandonmentReport.getResolvedAt());
             DAOUtils.update(conn, values, tableName, pkName, abandonmentReport.getId());
         } catch (SQLException e) {

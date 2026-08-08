@@ -268,11 +268,16 @@ public class AdminView extends BorderPane {
         }else {
             showResult(items.getMessage());
         }
-        policyBox.setValue(policyBox.getItems().getFirst()); // Valore predefinito
         policyBox.getStyleClass().add("btn-secondary");
         policyBox.setStyle("-fx-padding: 5");
         Button savePolicyButton = new Button("Modifica");
         savePolicyButton.getStyleClass().add("btn-primary");
+        if(policyBox.getItems().isEmpty()){
+            policyBox.setDisable(true);
+            savePolicyButton.setDisable(true);
+        } else {
+            policyBox.setValue(policyBox.getItems().getFirst()); // Valore predefinito
+        }
         HBox changePolicyBox = new HBox(5, policyLabel, policyBox, savePolicyButton);
 
         savePolicyButton.setOnAction(e -> {
@@ -377,7 +382,7 @@ public class AdminView extends BorderPane {
             }else{
                 ControllerResult<Void> res = dashboardController.takeInChargeReport(user , table.getSelectionModel().getSelectedItem().getReport());
                 if(res.isSuccess()) {
-                    table.getItems().remove(table.getFocusModel().getFocusedItem());
+                    table.getItems().remove(table.getSelectionModel().getSelectedItem());
                     hideResult();
                 }else {
                     showResult(res.getMessage());
@@ -390,7 +395,7 @@ public class AdminView extends BorderPane {
             }else{
                 ControllerResult<Void> res = dashboardController.directConfirmReport(user , table.getSelectionModel().getSelectedItem().getReport());
                 if(res.isSuccess()) {
-                    table.getItems().remove(table.getFocusModel().getFocusedItem());
+                    table.getItems().remove(table.getSelectionModel().getSelectedItem());
                     hideResult();
                 }else{
                     showResult(res.getMessage());
@@ -404,7 +409,7 @@ public class AdminView extends BorderPane {
             }else{
                 ControllerResult<Void> res = dashboardController.directRejectReport(user , table.getSelectionModel().getSelectedItem().getReport());
                 if(res.isSuccess()) {
-                    table.getItems().remove(table.getFocusModel().getFocusedItem());
+                    table.getItems().remove(table.getSelectionModel().getSelectedItem());
                     hideResult();
                 }else{
                     showResult(res.getMessage());
@@ -456,7 +461,7 @@ public class AdminView extends BorderPane {
             }else{
                 ControllerResult<Void> res = dashboardController.rejectReport(user , table.getSelectionModel().getSelectedItem().getReport());
                 if(res.isSuccess()) {
-                    table.getItems().remove(table.getFocusModel().getFocusedItem());
+                    table.getItems().remove(table.getSelectionModel().getSelectedItem());
                     hideResult();
                 }else {
                     showResult(res.getMessage());
@@ -469,7 +474,7 @@ public class AdminView extends BorderPane {
             }else{
                 ControllerResult<Void> res = dashboardController.confirmReport(user , table.getSelectionModel().getSelectedItem().getReport());
                 if(res.isSuccess()) {
-                    table.getItems().remove(table.getFocusModel().getFocusedItem());
+                    table.getItems().remove(table.getSelectionModel().getSelectedItem());
                     hideResult();
                 }else{
                     showResult(res.getMessage());
@@ -486,13 +491,13 @@ public class AdminView extends BorderPane {
         TableView<AbandonmentReport> table = new TableView<>();
         TableColumn<AbandonmentReport, String> dateCol = new TableColumn<>("Data Apertura");
         dateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getCreatedAt())));
-        TableColumn<AbandonmentReport, String> closedDateCol = new TableColumn<>("Data Apertura");
+        TableColumn<AbandonmentReport, String> closedDateCol = new TableColumn<>("Data Chiusura");
         closedDateCol.setCellValueFactory(d -> new SimpleStringProperty(TimeUtils.format(d.getValue().getResolvedAt())));
         TableColumn<AbandonmentReport, String> descCol = new TableColumn<>("Descrizione");
         descCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescription()));
         TableColumn<AbandonmentReport, String> statusCol = new TableColumn<>("Stato");
         statusCol.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getStatus())));
-        table.getColumns().addAll(dateCol, descCol, statusCol);
+        table.getColumns().addAll(dateCol, closedDateCol, descCol, statusCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         ControllerResult<List<AbandonmentReport>> items = dashboardController.getAbandonmentReportHandled(user);
         if(items.isSuccess()){

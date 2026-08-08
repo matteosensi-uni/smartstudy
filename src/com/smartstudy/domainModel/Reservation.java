@@ -143,7 +143,7 @@ public class Reservation extends BaseModel{
         if(status == ReservationStatus.CLOSED ||  status == ReservationStatus.TEMPORARILY_LEFT){
             throw new DomainViolationException("La prenotazione non può essere modificata");
         }
-        status = ReservationStatus.TEMPORARILY_LEFT;
+        setStatus(ReservationStatus.TEMPORARILY_LEFT);
     }
 
     public TemporaryLeave addTemporaryLeave() {
@@ -212,14 +212,14 @@ public class Reservation extends BaseModel{
         boolean hasValidLeave = hasValidTemporaryLeave();
         if (hasValidLeave) {
             if (status != ReservationStatus.TEMPORARILY_LEFT) {
-                status = ReservationStatus.TEMPORARILY_LEFT;
+                setStatus(ReservationStatus.TEMPORARILY_LEFT);
                 return;
             }
             return;
         }
 
         if (status == ReservationStatus.TEMPORARILY_LEFT) {
-            status = ReservationStatus.ACTIVE;
+            setStatus(ReservationStatus.ACTIVE);
         }
 
     }

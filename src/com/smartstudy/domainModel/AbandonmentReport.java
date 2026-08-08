@@ -111,6 +111,7 @@ public class AbandonmentReport extends BaseModel{
     void close(){ //la prenotazione è stata chiusa prima che un admin abbia gestito la prenotazione
         if(status == ReportStatus.PENDING || status == ReportStatus.OPENED){
             setStatus(ReportStatus.CLOSED);
+            setAdmin(null);
         }else {
             throw new DomainViolationException("La prenotazione è già stata gestita");
         }
