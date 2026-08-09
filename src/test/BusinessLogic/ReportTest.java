@@ -109,10 +109,12 @@ public class ReportTest {
 
     @Test
     public void testGetOpenReportsByStudentSuccess() {
-        // lo studente 2 è l'autore del report seed (status CLOSED)
+        // il report seed dello studente 2 è CLOSED e non deve comparire tra gli "aperti"
+        reportService.createReport(2, "nuovo report", 1);
         ArrayList<AbandonmentReport> reports = reportService.getOpenReportsByStudent(2);
         assertEquals(1, reports.size());
-        assertEquals("Lo studente ha lasciato gli effetti personali sul tavolo.", reports.getFirst().getDescription());
+        assertEquals(ReportStatus.OPENED, reports.getFirst().getStatus());
+        assertEquals("nuovo report", reports.getFirst().getDescription());
     }
 
     @Test

@@ -61,6 +61,7 @@ public class AbandonmentReportDAO extends BaseDAO{
     public ArrayList<AbandonmentReport> getOpenReportsByStudent(long studentId) {
         try(PreparedStatement ps = conn.prepareStatement(AGGREGATE_QUERY + """
                 WHERE student_id = ?
+                AND status = 'OPENED'
             """
             )){
             ps.setLong(1, studentId);
